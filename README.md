@@ -1,6 +1,6 @@
 # Probot: DCO
 
-a GitHub Integration built with [probot](https://github.com/probot/probot) that enforces the [Developer Certificate of Origin](https://developercertificate.org/) (DCO) on commits and pull requests. It requires all commit messages to contain the `Signed-Off-By` line with an email address that matches the commit author.
+a GitHub Integration built with [probot](https://github.com/probot/probot) that enforces the [Developer Certificate of Origin](https://developercertificate.org/) (DCO) on Pull Requests. It requires all commit messages to contain the `Signed-Off-By` line with an email address that matches the commit author.
 
 ## Usage
 
