@@ -1,25 +1,10 @@
 const dco = require('./lib/dco');
 
 module.exports = robot => {
-  robot.on('push', async (event, context) => {
-    const github = await robot.auth(event.payload.installation.id);
+  robot.on('pull_request.opened', check);
+  robot.on('pull_request.synchronize', check);
 
-    return event.payload.commits.map(commit => {
-      const signedOff = dco(commit);
-      return github.repos.createStatus(context.repo({
-        sha: commit.id,
-        state: signedOff ? 'success' : 'failure',
-        target_url: 'https://developercertificate.org/',
-        context: 'DCO/commit',
-        description: 'git commit --signoff'
-      }));
-    });
-  });
-
-  robot.on('pull_request.opened', sync);
-  robot.on('pull_request.synchronize', sync);
-
-  async function sync(event, context) {
+  async function check(event, context) {
     const github = await robot.auth(event.payload.installation.id);
     const pr = event.payload.pull_request;
 
@@ -34,7 +19,7 @@ module.exports = robot => {
       sha: pr.head.sha,
       state: signedOff ? 'success' : 'failure',
       target_url: 'https://developercertificate.org/',
-      context: 'DCO/pr',
+      context: 'DCO',
       description: 'git commit --signoff'
     }));
   }
