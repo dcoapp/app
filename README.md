@@ -19,6 +19,6 @@ Now pushes to `master` will not be allowed, and all pull requests must pass the 
 - [x] status for each commit
 - [x] status for PRs
 - [x] Deploy
-- [ ] Check that signoff matches commit author
+- [x] Check that signoff matches commit author
 - [ ] Configurable description/url for commit & PR failure
 - [ ] Recommend protected branches

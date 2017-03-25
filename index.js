@@ -5,7 +5,7 @@ module.exports = (robot) => {
     const github = await robot.auth(event.payload.installation.id);
 
     return event.payload.commits.map(commit => {
-      const signedOff = dco(commit.message);
+      const signedOff = dco(commit);
       return github.repos.createStatus(context.repo({
         sha: commit.id,
         state: signedOff ? 'success' : 'failure',
@@ -28,7 +28,7 @@ module.exports = (robot) => {
       head: pr.head.sha
     }));
 
-    const signedOff = compare.commits.every(data => dco(data.commit.message));
+    const signedOff = compare.commits.every(data => dco(data.commit));
 
     return github.repos.createStatus(context.repo({
       sha: pr.head.sha,
