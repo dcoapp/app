@@ -18,7 +18,7 @@ For more information, see the [documentation for probot](https://github.com/prob
 
 - [x] status for each commit
 - [x] status for PRs
-- [ ] Deploy
+- [x] Deploy
 - [ ] Check that signoff matches commit author
 - [ ] Configurable description/url for commit & PR failure
 - [ ] Recommend protected branches
