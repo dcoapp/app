@@ -1,9 +1,10 @@
 {
   "name": "probot-dco",
   "version": "1.0.0",
-  "description": "{{ description }}",
-  "author": "{{ author }}",
-  "private": true,
+  "description": "a GitHub Integration that enforces the DCO on Pull Requests",
+  "author": "Brandon Keepers",
+  "license": "ISC",
+  "repository": "https://github.com/probot/dco.git",
   "scripts": {
     "start": "probot run ./index.js",
     "test": "mocha && xo"
