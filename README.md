@@ -13,12 +13,3 @@ Enable [required status checks](https://help.github.com/articles/about-required-
 ![](https://cloud.githubusercontent.com/assets/173/24323183/3281121e-1140-11e7-91fe-b2d9452dd3ba.png)
 
 Now pushes to `master` will not be allowed, and all pull requests must pass the DCO checks before being merged.
-
-## TODO
-
-- [x] status for each commit
-- [x] status for PRs
-- [x] Deploy
-- [x] Check that signoff matches commit author
-- [ ] Configurable description/url for commit & PR failure
-- [ ] Recommend protected branches
