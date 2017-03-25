@@ -1,5 +1,17 @@
 const dco = require('./lib/dco');
 
+const defaults = {
+  success: {
+    state: 'success',
+    description: 'All commits have a DCO sign-off from the author'
+  },
+  failure: {
+    state: 'failure',
+    description: 'All commits must have a DCO sign-off from the author',
+    target_url: 'https://developercertificate.org/'
+  }
+};
+
 module.exports = robot => {
   robot.on('pull_request.opened', check);
   robot.on('pull_request.synchronize', check);
@@ -15,12 +27,11 @@ module.exports = robot => {
 
     const signedOff = compare.commits.every(data => dco(data.commit));
 
-    return github.repos.createStatus(context.repo({
+    const params = Object.assign({
       sha: pr.head.sha,
-      state: signedOff ? 'success' : 'failure',
-      target_url: 'https://developercertificate.org/',
-      context: 'DCO',
-      description: 'git commit --signoff'
-    }));
+      context: 'DCO'
+    }, signedOff ? defaults.success : defaults.failure);
+
+    return github.repos.createStatus(context.repo(params));
   }
 };
