@@ -32,7 +32,6 @@ Git even has a `-s` command line option to append this automatically to your com
 
 ```
 $ git commit -s -m 'This is my commit message'
-
 ```
 
 ## Further Reading
