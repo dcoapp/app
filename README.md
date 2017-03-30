@@ -34,6 +34,10 @@ Git even has a `-s` command line option to append this automatically to your com
 $ git commit -s -m 'This is my commit message'
 ```
 
+Once [installed](#usage), this integration will check that each commit in a Pull Request includes this sign-off, and set the status to `failed` if it doesn't.
+
+![](screenshot)
+
 ## Further Reading
 
 If you want to learn more about the DCO and why it might be necessary, here are some good resources:
