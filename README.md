@@ -8,7 +8,7 @@ a GitHub Integration built with [probot](https://github.com/probot/probot) that 
 
 ## How it works
 
-The Developer Certificate of Origin (DCO) is a lightweight way to certify that contributors wrote or otherwise have the right to submit the code they are contributing to the project. Here is the full [text of the DCO](https://developercertificate.org/), reformatted for readability:
+The Developer Certificate of Origin (DCO) is a lightweight way for contributors to certify that they wrote or otherwise have the right to submit the code they are contributing to the project. Here is the full [text of the DCO](https://developercertificate.org/), reformatted for readability:
 
 > By making a contribution to this project, I certify that:
 >
@@ -20,7 +20,7 @@ The Developer Certificate of Origin (DCO) is a lightweight way to certify that c
 >
 > 4. I understand and agree that this project and the contribution are public and that a record of the contribution (including all personal information I submit with it, including my sign-off) is maintained indefinitely and may be redistributed consistent with this project or the open source license(s) involved.
 
-Contributors certify that they adhere to these requirements by _signing-off_ on the commits, which involves adding a `Signed-off-by` line in the commit message.
+Contributors _sign-off_ that they adhere to these requirements by adding a `Signed-off-by` line to commit messages.
 
 ```
 This is my commit message
