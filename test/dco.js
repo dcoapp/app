@@ -14,6 +14,19 @@ describe('dco', () => {
     expect(dco(commit)).toBe(true);
   });
 
+  it('returns true for merge commit', () => {
+    const commit = {
+      message: 'mergin stuff',
+      author: {
+        name: 'Brandon Keepers',
+        email: 'bkeepers@github.com'
+      },
+      parents: ['commit 1', 'commit 2']
+    };
+
+    expect(dco(commit)).toBe(true);
+  });
+
   it('returns false if message does not have signoff', () => {
     const commit = {
       message: 'yolo',
