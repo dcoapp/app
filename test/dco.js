@@ -11,7 +11,7 @@ describe('dco', () => {
       }
     };
 
-    expect(dco(commit)).toBe(true);
+    expect(dco({commit})).toBe(true);
   });
 
   it('returns true for merge commit', () => {
@@ -20,11 +20,10 @@ describe('dco', () => {
       author: {
         name: 'Brandon Keepers',
         email: 'bkeepers@github.com'
-      },
-      parents: ['commit 1', 'commit 2']
+      }
     };
 
-    expect(dco(commit)).toBe(true);
+    expect(dco({commit, parents: [1, 2]})).toBe(true);
   });
 
   it('returns false if message does not have signoff', () => {
@@ -36,7 +35,7 @@ describe('dco', () => {
       }
     };
 
-    expect(dco(commit)).toBe(false);
+    expect(dco({commit})).toBe(false);
   });
 
   it('returns false if the signoff does not match the author', () => {
@@ -48,7 +47,7 @@ describe('dco', () => {
       }
     };
 
-    expect(dco(commit)).toBe(false);
+    expect(dco({commit})).toBe(false);
   });
 
   describe('integration tests', () => {
@@ -57,13 +56,13 @@ describe('dco', () => {
 
     it('passes for commits with signoff', () => {
       signedOff.commits.forEach(commit => {
-        expect(dco(commit)).toBe(true);
+        expect(dco({commit})).toBe(true);
       });
     });
 
     it('fails for commits without signoff', () => {
       notSignedOff.commits.forEach(commit => {
-        expect(dco(commit)).toBe(false);
+        expect(dco({commit})).toBe(false);
       });
     });
   });
