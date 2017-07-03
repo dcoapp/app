@@ -7,8 +7,8 @@ const defaults = {
   },
   failure: {
     state: 'failure',
-    description: 'All commits must have a DCO sign-off from the author',
-    target_url: 'https://developercertificate.org/'
+    description: '',
+    target_url: 'https://github.com/probot/dco#how-it-works'
   }
 };
 
@@ -16,22 +16,36 @@ module.exports = robot => {
   robot.on('pull_request.opened', check);
   robot.on('pull_request.synchronize', check);
 
-  async function check(event, context) {
-    const github = await robot.auth(event.payload.installation.id);
-    const pr = event.payload.pull_request;
+  async function check(context) {
+    const pr = context.payload.pull_request;
 
-    const compare = await github.repos.compareCommits(context.repo({
+    const compare = await context.github.repos.compareCommits(context.repo({
       base: pr.base.sha,
       head: pr.head.sha
     }));
 
-    const signedOff = compare.commits.every(data => dco(data.commit));
+    let signedOff = true;
+    compare.data.commits.forEach(commit => {
+      const res = dco(commit);
+      if (typeof res === 'string') {
+        signedOff = false;
+        if (!defaults.failure.description.includes(res)) {
+          if (res.includes(`The sign-off is missing.`)) {
+            defaults.failure.description += res;
+          } else if (res.includes(`Expected`) && !defaults.failure.description.includes(`Expected`)) {
+            // Prevents build up of several incorrect error messages
+            // Only returns the first incorrect error message
+            defaults.failure.description += res;
+          }
+        }
+      }
+    });
 
     const params = Object.assign({
       sha: pr.head.sha,
       context: 'DCO'
     }, signedOff ? defaults.success : defaults.failure);
 
-    return github.repos.createStatus(context.repo(params));
+    return context.github.repos.createStatus(context.repo(params));
   }
 };
