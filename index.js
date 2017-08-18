@@ -1,5 +1,3 @@
-const dco = require('./lib/dco');
-
 const defaults = {
   success: {
     state: 'success',
@@ -25,17 +23,25 @@ module.exports = robot => {
     }));
 
     let signedOff = true;
-    compare.data.commits.forEach(commit => {
-      const res = dco(commit);
-      if (typeof res === 'string') {
-        signedOff = false;
-        if (!defaults.failure.description.includes(res)) {
-          if (res.includes(`The sign-off is missing.`)) {
-            defaults.failure.description += res;
-          } else if (res.includes(`Expected`) && !defaults.failure.description.includes(`Expected`)) {
-            // Prevents build up of several incorrect error messages
-            // Only returns the first incorrect error message
-            defaults.failure.description += res;
+    compare.data.commits.forEach(comm => {
+      const {commit, parents} = comm;
+      const isMerge = parents && parents.length > 1;
+      const regex = /^Signed-off-by: (.*) <(.*)>$/m;
+      let match;
+
+      if (!isMerge) {
+        if ((match = regex.exec(commit.message)) === null) {
+          signedOff = false;
+          if (!defaults.failure.description.includes(`The sign-off is missing.`)) {
+            defaults.failure.description += `The sign-off is missing. `;
+          }
+        } else {
+          match = regex.exec(commit.message);
+          if (commit.author.name !== match[1] || commit.author.email !== match[2]) {
+            signedOff = false;
+            if (!defaults.failure.description.includes(`Expected`)) {
+              defaults.failure.description += `Expected "${commit.author.name} <${commit.author.email}>", but got "${match[1]} <${match[2]}>" `;
+            }
           }
         }
       }
