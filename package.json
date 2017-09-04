@@ -17,7 +17,7 @@
     "npm": ">= 4.0.0"
   },
   "devDependencies": {
-    "expect": "^1.20.2",
+    "expect": "^21.0.0",
     "mocha": "^3.2.0",
     "xo": "^0.18.0",
     "eslint-config-probot": ">=0.1.0"
