@@ -10,7 +10,7 @@
     "test": "mocha && xo --extend probot"
   },
   "dependencies": {
-    "probot": "~0.10.0"
+    "probot": "~0.11.0"
   },
   "engines": {
     "node": ">= 7.7.0",
