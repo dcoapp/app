@@ -24,7 +24,6 @@ module.exports = robot => {
       head: pr.head.sha
     }));
 
-    robot.log(compare);
     const signedOff = compare.data.commits.every(dco);
 
     const params = Object.assign({
