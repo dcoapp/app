@@ -1,8 +1,7 @@
 const getDCOStatus = require('./lib/dco.js');
 
 module.exports = robot => {
-  robot.on('pull_request.opened', check);
-  robot.on('pull_request.synchronize', check);
+  robot.on(['pull_request.opened', 'pull_request.synchronize'], check);
 
   async function check(context) {
     const pr = context.payload.pull_request;
@@ -17,7 +16,7 @@ module.exports = robot => {
     const params = Object.assign({
       sha: pr.head.sha,
       context: 'DCO'
-  }, dcoParams);
+    }, dcoParams);
 
     return context.github.repos.createStatus(context.repo(params));
   }
