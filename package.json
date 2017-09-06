@@ -21,6 +21,6 @@
     "xo": "^0.18.0"
   },
   "dependencies": {
-    "probot": "^0.8.0"
+    "probot": "^0.11.0"
   }
 }
