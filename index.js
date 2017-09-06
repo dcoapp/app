@@ -13,6 +13,8 @@ const defaults = {
 };
 
 module.exports = robot => {
+  robot.route('/dco').use(require('./lib/app')(robot));
+
   robot.on('pull_request.opened', check);
   robot.on('pull_request.synchronize', check);
 

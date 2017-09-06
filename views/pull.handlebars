@@ -1,0 +1,17 @@
+<h1>
+  <a href="{{ pr.html_url }}">
+    #{{ pr.number }} -
+    {{ pr.title }}
+  </a>
+</h1>
+
+
+<p>Commits:</p>
+<ul>
+{{#each compare.commits }}
+  <li>
+    <a href="{{ this.html_url }}">{{ this.sha }}</a>
+    {{ this.commit.message }}
+  </li>
+{{/each}}
+</ul>
