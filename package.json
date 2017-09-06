@@ -10,6 +10,7 @@
     "test": "mocha && xo --extend probot"
   },
   "dependencies": {
+    "express-handlebars": "^3.0.0",
     "probot": "~0.11.0"
   },
   "engines": {
