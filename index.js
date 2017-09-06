@@ -16,22 +16,21 @@ module.exports = robot => {
   robot.on('pull_request.opened', check);
   robot.on('pull_request.synchronize', check);
 
-  async function check(event, context) {
-    const github = await robot.auth(event.payload.installation.id);
-    const pr = event.payload.pull_request;
+  async function check(context) {
+    const pr = context.payload.pull_request;
 
-    const compare = await github.repos.compareCommits(context.repo({
+    const compare = await context.github.repos.compareCommits(context.repo({
       base: pr.base.sha,
       head: pr.head.sha
     }));
 
-    const signedOff = compare.commits.every(dco);
+    const signedOff = compare.data.commits.every(dco);
 
     const params = Object.assign({
       sha: pr.head.sha,
       context: 'DCO'
     }, signedOff ? defaults.success : defaults.failure);
 
-    return github.repos.createStatus(context.repo(params));
+    return context.github.repos.createStatus(context.repo(params));
   }
 };
