@@ -182,4 +182,17 @@ describe('dco', () => {
       target_url: 'https://github.com/probot/dco#how-it-works'
     }))
   })
+
+  it('returns success when casing in sign of message is different', () => {
+    const commit = {
+      message: 'signed off correctly\n\nsigned-off-by: hiimbex <hiimbex@disney.com>',
+      author: {
+        name: 'hiimbex',
+        email: 'hiimbex@disney.com'
+      }
+    }
+    const dcoObject = getDCOStatus([{commit, parents: []}])
+
+    expect(JSON.stringify(dcoObject)).toBe(success)
+  })
 })
