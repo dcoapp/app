@@ -7,18 +7,23 @@
   "repository": "https://github.com/probot/dco.git",
   "scripts": {
     "start": "probot run ./index.js",
-    "test": "mocha && xo --extend probot"
+    "test": "mocha && standard"
   },
   "engines": {
     "node": ">= 7.7.0",
     "npm": ">= 4.0.0"
   },
   "devDependencies": {
-    "eslint-config-probot": ">=0.1.0",
+    "eslint-plugin-import": "^2.7.0",
     "expect": "^1.20.2",
     "localtunnel": "^1.8.3",
     "mocha": "^3.2.0",
-    "xo": "^0.18.0"
+    "standard": "^10.0.3"
+  },
+  "standard": {
+    "env": [
+      "mocha"
+    ]
   },
   "dependencies": {
     "probot": "^0.11.0"
