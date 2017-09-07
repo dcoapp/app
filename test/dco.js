@@ -42,7 +42,7 @@ describe('dco', () => {
 
     expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
       state: 'failure',
-      description: 'The sign-off is missing. ',
+      description: 'The sign-off is missing.',
       target_url: 'https://github.com/probot/dco#how-it-works'
     }))
   })
@@ -164,5 +164,22 @@ describe('dco', () => {
     const dcoObject = getDCOStatus([{commit: commitA, parents: []}, {commit: commitB, parents: []}])
 
     expect(JSON.stringify(dcoObject)).toBe(success)
+  })
+
+  it('returns a 140 character description if the message is more than 140 characters', () => {
+    const commit = {
+      message: 'signed off correctly\n\nSigned-off-by: hiimbex <hiimbex@disney.com>',
+      author: {
+        name: 'bex is the best name ever and is also very long',
+        email: 'bexMyVeryLongAlsoButImportantEmail@disney.com'
+      }
+    }
+    const dcoObject = getDCOStatus([{commit, parents: []}])
+
+    expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
+      state: 'failure',
+      description: 'Expected "bex is the best name ever and is also very long <bexMyVeryLongAlsoButImportantEmail@disney.com>", but got "hiimbex <hiimbex@disney',
+      target_url: 'https://github.com/probot/dco#how-it-works'
+    }))
   })
 })
