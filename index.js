@@ -13,6 +13,28 @@ module.exports = robot => {
 
     const dcoParams = getDCOStatus(compare.data.commits)
 
+    if (!dcoParams.state == 'failure') {
+      // Find previous comment from app to update
+      let comment = await findComment(context);
+      const template = renderFailures(dcoParams);
+
+      if(comment) {
+        // Update the existing comment to reflect any new errors
+        await context.github.issues.updateComment(context.issue({
+          id: comment.data.id,
+          body: template
+        }))
+      } else {
+        // Create a comment to show the errors and how to fix them
+        comment = await context.github.issues.createComment(context.issue({
+          body: template
+        }))
+      }
+
+      // Set the status url to the url of the comment
+      dcoParams.target_url = comment.data.html_url
+    }
+
     const params = Object.assign({
       sha: pr.head.sha,
       context: 'DCO'
