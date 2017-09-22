@@ -195,4 +195,21 @@ describe('dco', () => {
 
     expect(JSON.stringify(dcoObject)).toBe(success)
   })
+
+  it('returns failure when email is invalid', () => {
+    const commit = {
+      message: 'bad email\n\nsigned-off-by: hiimbex <hiimbex@bexo>',
+      author: {
+        name: 'hiimbex',
+        email: 'hiimbex@bexo'
+      }
+    }
+    const dcoObject = getDCOStatus([{commit, parents: []}])
+
+    expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
+      state: 'failure',
+      description: 'Commit email must be a valid email.',
+      target_url: 'https://github.com/probot/dco#how-it-works'
+    }))
+  })
 })
