@@ -208,7 +208,7 @@ describe('dco', () => {
 
     expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
       state: 'failure',
-      description: 'Commit email must be a valid email.',
+      description: 'hiimbex@bexo is not a valid email address.',
       target_url: 'https://github.com/probot/dco#how-it-works'
     }))
   })
