@@ -4,11 +4,3 @@ node_js:
 - 7.7.1
 notifications:
   disabled: true
-before_install:
-- npm install -g npm@5
-- npm install -g greenkeeper-lockfile@1
-before_script: greenkeeper-lockfile-update
-after_script: greenkeeper-lockfile-upload
-env:
-  global:
-    - secure: "d1JngoEOymIuevVPmXu8t8Z6wUDcXfzElsStnXJFliJ0EVTEFp3TwHT2Ap4E/JqVYh585bkLqeiqKMEwmKA5Ky/xjfPX8rYClXz73Oa5xUuCchlBqLcca4Ph34vwGV7X/lmsI3+PcDVe7L1Om40R407dvoagMnuXlqzIfHyegp2xE2nfanpcwglixvjvJ+JUbMdmTAgBLBMdhionjpj3O39vTYRdk8pRMdtxZa60WADmIRRUGbXnD7C/4lJBFEwVBEzFiSobrqg/RVXEyQNydHmn7/vpsdGU1FNOb7K5tQr4GVpy/Rxda7JB5q0dAleB2xVsX+YRmk+J+J1ZxrtyQA5bgNArybxhKo3KgmYCeGEEOWfHOpm7tPpUAEb5elmlbo+tuE9otAl8YXTIy29zfypNvQVeAfgjaj63AaTLwrFMvn4T8AzJwEdqtJjo6lnyZg9+GGIlVowhzQJRP6vU5gwR/pSx5qTo1MEHMppRSDC1Hd6PlQtr4ffSePBcYIBapsrXNWxNa+rUL0Az+FUzgZFJL4jChPkZuyFPSn4lY0sRV3Fa3Zf8dwhp1SO+4ZJLmYb3eEGk7VhstetlcXZTAe0wnhroJ4lS0KqOCxGjyKdCJcQ6GgJOtZHZDmjLl+aFv9xQyLNjwdMh5su9iijtaNx2/Zi1tKNuEMcqUK+639E="
