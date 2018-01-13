@@ -26,20 +26,15 @@ module.exports = robot => {
         return members[login]
       }
 
-      let result
-      try {
-        await context.github.orgs.checkMembership({
-          org: organization,
-          username: login
-        })
-        result = true
-      } catch (err) {
-        if (err.code === 404) {
-          result = false
-        } else {
+      const result = await context.github.orgs.checkMembership({
+        org: organization,
+        username: login
+      }).catch(err => {
+        if (err.code !== 404) {
           throw err
         }
-      }
+        return false
+      })
       members[login] = result
       return result
     }
