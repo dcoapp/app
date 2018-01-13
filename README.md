@@ -8,6 +8,13 @@ a GitHub Integration built with [probot](https://github.com/probot/probot) that 
 
 [Configure the integration](https://github.com/integration/dco) for your organization or repositories. Enable [required status checks](docs/required-statuses.md) if you want to enforce the DCO on all commits.
 
+It is possible to disable the check for commits authored and [signed](https://help.github.com/articles/signing-commits-using-gpg/) by members of the organization the repository belongs to. To do this, place the following configuration file in `.github/dco.yml` on the default branch:
+
+```yaml
+require:
+  members: false
+```
+
 See [docs/deploy.md](docs/deploy.md) if you would like to run your own instance of this plugin.
 
 ## How it works
