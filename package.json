@@ -16,8 +16,8 @@
   "devDependencies": {
     "eslint-plugin-import": "^2.7.0",
     "expect": "^1.20.2",
-    "localtunnel": "^1.8.3",
     "mocha": "^3.2.0",
+    "smee-client": "^1.0.1",
     "standard": "^10.0.3"
   },
   "standard": {
@@ -27,6 +27,6 @@
   },
   "dependencies": {
     "email-validator": "^1.1.1",
-    "probot": "^4.0.0"
+    "probot": "^5.0.0"
   }
 }
