@@ -235,6 +235,19 @@ describe('dco', () => {
     }))
   })
 
+  test('returns success when committer is bot', async () => {
+    const commit = {
+      message: 'I aM rObOt I dO wHaT i PlEaSe.',
+      author: {
+        name: 'bexobot [bot]',
+        email: 'wut'
+      }
+    }
+    const dcoObject = await getDCOStatus([{commit, parents: []}], alwaysRequireSignoff)
+
+    expect(JSON.stringify(dcoObject)).toBe(success)
+  })
+
   test(
     'returns success if verified commit without sign off is from org member',
     async () => {
