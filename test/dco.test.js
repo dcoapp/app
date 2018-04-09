@@ -1,6 +1,10 @@
 const getDCOStatus = require('../lib/dco.js')
 
-const success = JSON.stringify({state: 'success', description: 'All commits have a DCO sign-off from the author'})
+const success = JSON.stringify({
+  state: 'success',
+  description: 'All commits have a DCO sign-off from the author',
+  target_url: 'https://github.com/probot/dco#how-it-works'
+})
 const alwaysRequireSignoff = async () => true
 const dontRequireSignoffFor = (allowedLogin) => async (login) => { return login !== allowedLogin }
 
@@ -13,7 +17,7 @@ describe('dco', () => {
         email: 'bkeepers@github.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit, parents: []}], alwaysRequireSignoff)
+    const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: []}], alwaysRequireSignoff)
 
     expect(JSON.stringify(dcoObject)).toBe(success)
   })
@@ -26,7 +30,7 @@ describe('dco', () => {
         email: 'bkeepers@github.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit, parents: [1, 2]}], alwaysRequireSignoff)
+    const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: [1, 2]}], alwaysRequireSignoff)
 
     expect(JSON.stringify(dcoObject)).toBe(success)
   })
@@ -39,7 +43,7 @@ describe('dco', () => {
         email: 'bkeepers@github.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit, author: {login: 'test'}, parents: []}], alwaysRequireSignoff)
+    const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: []}], alwaysRequireSignoff)
 
     expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
       state: 'failure',
@@ -58,7 +62,7 @@ describe('dco', () => {
           email: 'bex@disney.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit, parents: []}], alwaysRequireSignoff)
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
 
       expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
         state: 'failure',
@@ -78,7 +82,7 @@ describe('dco', () => {
           email: 'hiimbex@disney.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit, parents: []}], alwaysRequireSignoff)
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
 
       expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
         state: 'failure',
@@ -98,7 +102,7 @@ describe('dco', () => {
           email: 'bex@disney.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit, parents: []}], alwaysRequireSignoff)
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
 
       expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
         state: 'failure',
@@ -125,7 +129,7 @@ describe('dco', () => {
           email: 'bex@disney.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit: commitA, parents: []}, {commit: commitB, parents: []}], alwaysRequireSignoff)
+      const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: []}, {commit: commitB, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
 
       expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
         state: 'failure',
@@ -152,7 +156,7 @@ describe('dco', () => {
           email: 'bex@disney.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit: commitA, parents: []}, {commit: commitB, parents: []}], alwaysRequireSignoff)
+      const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: []}, {commit: commitB, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
 
       expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
         state: 'failure',
@@ -177,7 +181,7 @@ describe('dco', () => {
         email: 'bex@disney.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit: commitA, parents: []}, {commit: commitB, parents: []}], alwaysRequireSignoff)
+    const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: []}, {commit: commitB, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
 
     expect(JSON.stringify(dcoObject)).toBe(success)
   })
@@ -192,7 +196,7 @@ describe('dco', () => {
           email: 'bexMyVeryLongAlsoButImportantEmail@disney.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit, parents: []}], alwaysRequireSignoff)
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
 
       expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
         state: 'failure',
@@ -212,7 +216,7 @@ describe('dco', () => {
           email: 'hiimbex@disney.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit, parents: []}], alwaysRequireSignoff)
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
 
       expect(JSON.stringify(dcoObject)).toBe(success)
     }
@@ -226,7 +230,7 @@ describe('dco', () => {
         email: 'hiimbex@bexo'
       }
     }
-    const dcoObject = await getDCOStatus([{commit, parents: []}], alwaysRequireSignoff)
+    const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
 
     expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
       state: 'failure',
@@ -243,7 +247,11 @@ describe('dco', () => {
         email: 'wut'
       }
     }
-    const dcoObject = await getDCOStatus([{commit, parents: []}], alwaysRequireSignoff)
+    const author = {
+      login: 'bexobot [bot]',
+      type: 'Bot'
+    }
+    const dcoObject = await getDCOStatus([{commit, author, parents: []}], alwaysRequireSignoff)
 
     expect(JSON.stringify(dcoObject)).toBe(success)
   })
@@ -261,10 +269,7 @@ describe('dco', () => {
           verified: true
         }
       }
-      const author = {
-        login: 'lptr'
-      }
-      const dcoObject = await getDCOStatus([{commit, author, parents: []}], dontRequireSignoffFor('lptr'))
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'lptr' }, parents: []}], dontRequireSignoffFor('lptr'))
 
       expect(JSON.stringify(dcoObject)).toBe(success)
     }
@@ -283,10 +288,7 @@ describe('dco', () => {
           verified: false
         }
       }
-      const author = {
-        login: 'lptr'
-      }
-      const dcoObject = await getDCOStatus([{commit, author, parents: []}], dontRequireSignoffFor('lptr'))
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'lptr' }, parents: []}], dontRequireSignoffFor('lptr'))
 
       expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
         state: 'failure',
