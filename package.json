@@ -10,8 +10,8 @@
     "test": "jest && standard"
   },
   "engines": {
-    "node": ">= 7.7.0",
-    "npm": ">= 4.0.0"
+    "node": ">= 8.3.0",
+    "npm": ">= 5.3.0"
   },
   "devDependencies": {
     "eslint-plugin-import": "^2.7.0",
