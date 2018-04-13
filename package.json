@@ -26,6 +26,6 @@
   },
   "dependencies": {
     "email-validator": "^2.0.0",
-    "probot": "^6.0.0"
+    "probot": "^6.1.0"
   }
 }
