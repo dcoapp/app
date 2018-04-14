@@ -239,6 +239,19 @@ describe('dco', () => {
     }))
   })
 
+  test('returns success when email and name are differently cased (case-insensitivity)', async () => {
+    const commit = {
+      message: 'cAsInG iS fUn\n\nsigned-off-by: HiImBeXo <HiImBeX@bExO.cOm>',
+      author: {
+        name: 'hiimbexo',
+        email: 'hiimbex@bexo.com'
+      }
+    }
+    const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
+
+    expect(JSON.stringify(dcoObject)).toBe(success)
+  })
+
   test('returns success when committer is bot', async () => {
     const commit = {
       message: 'I aM rObOt I dO wHaT i PlEaSe.',
