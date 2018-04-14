@@ -10,12 +10,12 @@
     "test": "jest && standard"
   },
   "engines": {
-    "node": ">= 7.7.0",
-    "npm": ">= 4.0.0"
+    "node": ">= 8.3.0",
+    "npm": ">= 5.3.0"
   },
   "devDependencies": {
-    "eslint-plugin-import": "^2.7.0",
-    "jest": "^22.0.6",
+    "eslint-plugin-import": "^2.11.0",
+    "jest": "^22.4.3",
     "smee-client": "^1.0.1",
     "standard": "^11.0.0"
   },
@@ -25,7 +25,7 @@
     ]
   },
   "dependencies": {
-    "email-validator": "^1.1.1",
-    "probot": "^6.0.0"
+    "email-validator": "^2.0.3",
+    "probot": "^6.1.0"
   }
 }
