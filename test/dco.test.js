@@ -15,6 +15,10 @@ describe('dco', () => {
       author: {
         name: 'Brandon Keepers',
         email: 'bkeepers@github.com'
+      },
+      committer: {
+        name: 'Bex Warner',
+        email: 'bexmwarner@gmail.com'
       }
     }
     const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: []}], alwaysRequireSignoff)
@@ -28,6 +32,10 @@ describe('dco', () => {
       author: {
         name: 'Brandon Keepers',
         email: 'bkeepers@github.com'
+      },
+      committer: {
+        name: 'Bex Warner',
+        email: 'bexmwarner@gmail.com'
       }
     }
     const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: [1, 2]}], alwaysRequireSignoff)
@@ -41,6 +49,10 @@ describe('dco', () => {
       author: {
         name: 'Brandon Keepers',
         email: 'bkeepers@github.com'
+      },
+      committer: {
+        name: 'Bex Warner',
+        email: 'bexmwarner@gmail.com'
       }
     }
     const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: []}], alwaysRequireSignoff)
@@ -60,6 +72,10 @@ describe('dco', () => {
         author: {
           name: 'hiimbex',
           email: 'bex@disney.com'
+        },
+        committer: {
+          name: 'Bex Warner',
+          email: 'bexmwarner@gmail.com'
         }
       }
       const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
@@ -80,6 +96,10 @@ describe('dco', () => {
         author: {
           name: 'bex',
           email: 'hiimbex@disney.com'
+        },
+        committer: {
+          name: 'Bex Warner',
+          email: 'bexmwarner@gmail.com'
         }
       }
       const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
@@ -100,6 +120,10 @@ describe('dco', () => {
         author: {
           name: 'bex',
           email: 'bex@disney.com'
+        },
+        committer: {
+          name: 'Bex Warner',
+          email: 'bexmwarner@gmail.com'
         }
       }
       const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
@@ -120,6 +144,10 @@ describe('dco', () => {
         author: {
           name: 'bex',
           email: 'bex@disney.com'
+        },
+        committer: {
+          name: 'Bex Warner',
+          email: 'bexmwarner@gmail.com'
         }
       }
       const commitB = {
@@ -127,6 +155,10 @@ describe('dco', () => {
         author: {
           name: 'bex',
           email: 'bex@disney.com'
+        },
+        committer: {
+          name: 'Bex Warner',
+          email: 'bexmwarner@gmail.com'
         }
       }
       const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: []}, {commit: commitB, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
@@ -147,6 +179,10 @@ describe('dco', () => {
         author: {
           name: 'bex',
           email: 'bex@disney.com'
+        },
+        committer: {
+          name: 'Bex Warner',
+          email: 'bexmwarner@gmail.com'
         }
       }
       const commitB = {
@@ -154,6 +190,10 @@ describe('dco', () => {
         author: {
           name: 'bex',
           email: 'bex@disney.com'
+        },
+        committer: {
+          name: 'Bex Warner',
+          email: 'bexmwarner@gmail.com'
         }
       }
       const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: []}, {commit: commitB, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
@@ -172,6 +212,10 @@ describe('dco', () => {
       author: {
         name: 'bex',
         email: 'bex@disney.com'
+      },
+      committer: {
+        name: 'Bex Warner',
+        email: 'bexmwarner@gmail.com'
       }
     }
     const commitB = {
@@ -179,6 +223,10 @@ describe('dco', () => {
       author: {
         name: 'bex',
         email: 'bex@disney.com'
+      },
+      committer: {
+        name: 'Bex Warner',
+        email: 'bexmwarner@gmail.com'
       }
     }
     const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: []}, {commit: commitB, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
@@ -194,6 +242,10 @@ describe('dco', () => {
         author: {
           name: 'bex is the best name ever and is also very long',
           email: 'bexMyVeryLongAlsoButImportantEmail@disney.com'
+        },
+        committer: {
+          name: 'Bex Warner',
+          email: 'bexmwarner@gmail.com'
         }
       }
       const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
@@ -214,6 +266,10 @@ describe('dco', () => {
         author: {
           name: 'hiimbex',
           email: 'hiimbex@disney.com'
+        },
+        committer: {
+          name: 'Bex Warner',
+          email: 'bexmwarner@gmail.com'
         }
       }
       const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
@@ -228,6 +284,10 @@ describe('dco', () => {
       author: {
         name: 'hiimbex',
         email: 'hiimbex@bexo'
+      },
+      committer: {
+        name: 'Bex Warner',
+        email: 'bexmwarner@gmail.com'
       }
     }
     const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
@@ -245,6 +305,10 @@ describe('dco', () => {
       author: {
         name: 'hiimbexo',
         email: 'hiimbex@bexo.com'
+      },
+      committer: {
+        name: 'Bex Warner',
+        email: 'bexmwarner@gmail.com'
       }
     }
     const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
@@ -258,6 +322,10 @@ describe('dco', () => {
       author: {
         name: 'bexobot [bot]',
         email: 'wut'
+      },
+      committer: {
+        name: 'Bex Warner',
+        email: 'bexmwarner@gmail.com'
       }
     }
     const author = {
@@ -278,6 +346,10 @@ describe('dco', () => {
           name: 'Lorant Pinter',
           email: 'lorant.pinter@gmail.com'
         },
+        committer: {
+          name: 'Bex Warner',
+          email: 'bexmwarner@gmail.com'
+        },
         verification: {
           verified: true
         }
@@ -297,6 +369,10 @@ describe('dco', () => {
           name: 'Lorant Pinter',
           email: 'lorant.pinter@gmail.com'
         },
+        committer: {
+          name: 'Bex Warner',
+          email: 'bexmwarner@gmail.com'
+        },
         verification: {
           verified: false
         }
@@ -308,6 +384,26 @@ describe('dco', () => {
         description: 'Commit by organization member is not verified.',
         target_url: 'https://github.com/probot/dco#how-it-works'
       }))
+    }
+  )
+
+  test(
+    'returns success if commit.author is different but commit.committer matches',
+    async () => {
+      const commit = {
+        message: 'What a nice day!\n\nSigned-off-by: Bex Warner <bexmwarner@gmail.com>',
+        author: {
+          name: 'Bexo',
+          email: 'bexo@gmail.com'
+        },
+        committer: {
+          name: 'Bex Warner',
+          email: 'bexmwarner@gmail.com'
+        }
+      }
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
+
+      expect(JSON.stringify(dcoObject)).toBe(success)
     }
   )
 })
