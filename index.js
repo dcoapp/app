@@ -19,7 +19,7 @@ module.exports = robot => {
       head: pr.head.sha
     }))
 
-    const dcoParams = await getDCOStatus(compare.data.commits, requireMembers.requireMembersFunction(requireForMembers, context))
+    const dcoParams = await getDCOStatus(compare.data.commits, requireMembers(requireForMembers, context))
 
     const params = Object.assign({
       sha: pr.head.sha,
