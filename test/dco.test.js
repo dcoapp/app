@@ -406,4 +406,25 @@ describe('dco', () => {
       expect(JSON.stringify(dcoObject)).toBe(success)
     }
   )
+
+  test(
+    'returns success if author does not exist but everything else is ok',
+    async () => {
+      const commit = {
+        message: 'What a nice day!\n\nSigned-off-by: Bex Warner <bexmwarner@gmail.com>',
+        author: {
+          name: 'Bexo',
+          email: 'bexo@gmail.com'
+        },
+        committer: {
+          name: 'Bex Warner',
+          email: 'bexmwarner@gmail.com'
+        }
+      }
+      const author = null
+      const dcoObject = await getDCOStatus([{commit, author, parents: []}], alwaysRequireSignoff)
+
+      expect(JSON.stringify(dcoObject)).toBe(success)
+    }
+  )
 })
