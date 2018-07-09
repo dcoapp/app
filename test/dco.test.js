@@ -427,4 +427,29 @@ describe('dco', () => {
       expect(JSON.stringify(dcoObject)).toBe(success)
     }
   )
+
+  test(
+    'returns failure if author does not exist and there is no sign off',
+    async () => {
+      const commit = {
+        message: 'What a nice day!',
+        author: {
+          name: 'Bexo',
+          email: 'bexo@gmail.com'
+        },
+        committer: {
+          name: 'Bex Warner',
+          email: 'bexmwarner@gmail.com'
+        }
+      }
+      const author = null
+      const dcoObject = await getDCOStatus([{commit, author, parents: []}], alwaysRequireSignoff)
+
+      expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
+        state: 'failure',
+        description: 'The sign-off is missing.',
+        target_url: 'https://github.com/probot/dco#how-it-works'
+      }))
+    }
+  )
 })
