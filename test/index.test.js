@@ -13,7 +13,8 @@ describe('dco', () => {
     probot = new Application()
     probot.load(app)
 
-    //probot.auth = () => 'test'
+    // just return a test token
+    probot.app = () => 'test'
   })
 
   test('creates a failing status', async () => {
