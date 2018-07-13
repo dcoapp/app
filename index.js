@@ -37,7 +37,7 @@ module.exports = app => {
       }))
     } else {
       let summary = []
-      dcoFailed.forEach(function(commit) {
+      dcoFailed.forEach(function (commit) {
         summary.push(`Commit sha: [${commit.sha.substr(0, 7)}](${commit.url}), Author: ${commit.author}, Committer: ${commit.committer}; ${commit.message}`)
       })
       summary = summary.join('\n')
