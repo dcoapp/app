@@ -1,6 +1,6 @@
 const nock = require('nock')
-const app = require('..')
-const { Application }  = require('probot')
+const dco = require('..')
+const { Probot } = require('probot')
 const payload = require('./fixtures/pull_request.opened')
 const compare = require('./fixtures/compare')
 
@@ -10,11 +10,11 @@ describe('dco', () => {
   let probot
 
   beforeEach(() => {
-    probot = new Application()
-    probot.load(app)
+    probot = new Probot({})
+    const app = probot.load(dco)
 
     // just return a test token
-    probot.app = () => 'test'
+    app.app = () => 'test'
   })
 
   test('creates a failing status', async () => {
