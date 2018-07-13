@@ -1,8 +1,8 @@
 const getDCOStatus = require('./lib/dco.js')
 const requireMembers = require('./lib/requireMembers.js')
 
-module.exports = robot => {
-  robot.on(['pull_request.opened', 'pull_request.synchronize'], check)
+module.exports = app => {
+  app.on(['pull_request.opened', 'pull_request.synchronize'], check)
 
   async function check (context) {
     const config = await context.config('dco.yml', {

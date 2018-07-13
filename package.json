@@ -1,7 +1,7 @@
 {
-  "name": "probot-dco",
+  "name": "dco",
   "version": "1.0.0",
-  "description": "a GitHub Integration that enforces the DCO on Pull Requests",
+  "description": "a GitHub App that enforces the DCO on Pull Requests",
   "author": "Brandon Keepers",
   "license": "ISC",
   "repository": "https://github.com/probot/dco.git",
@@ -27,6 +27,6 @@
   },
   "dependencies": {
     "email-validator": "^2.0.3",
-    "probot": "^6.1.0"
+    "probot": "^7.0.0"
   }
 }
