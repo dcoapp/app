@@ -4,8 +4,9 @@ const { Probot } = require('probot')
 const payload = require('./fixtures/pull_request.opened')
 const payloadSuccess = require('./fixtures/pull_request.opened-success')
 const compare = require('./fixtures/compare')
-const compareSuccess = require('./fixtures/compare.signed-off')
+const compareSuccess = require('./fixtures/compare-success')
 const checkRun = require('./fixtures/check_run.created')
+const checkRunSuccess = require('./fixtures/check_run.created-success')
 
 nock.disableNetConnect()
 
@@ -35,7 +36,7 @@ describe('dco', () => {
 
     nock('https://api.github.com')
       .post('/repos/robotland/test/check-runs', (body) => {
-        body.completed_at = '2018-07-13T04:42:27.417Z'
+        body.completed_at = '2018-07-14T18:18:54.156Z'
         expect(body).toMatchObject(checkRun)
         return true
       })
@@ -54,18 +55,17 @@ describe('dco', () => {
       .reply(404)
 
     nock('https://api.github.com')
-      .get('/repos/octocat/Hello-World/compare/bbcd538c8e72b8c175046e27cc8f907076331401...octocat:0328041d1152db8ae77652d1618a02e57f745f17')
+      .get('/repos/octocat/Hello-World/compare/a10867b14bb761a232cd80139fbd4c0d33264240...34c5c7793cb3b279e22454cb6750c80560547b3a')
       .reply(200, compareSuccess)
 
     nock('https://api.github.com')
       .post('/repos/octocat/Hello-World/check-runs', (body) => {
-        console.log(body)
-        expect(body).toMatchObject(checkRun)
+        body.completed_at = '2018-07-14T18:18:54.156Z'
+        expect(body).toMatchObject(checkRunSuccess)
         return true
       })
       .reply(200)
 
-    console.log(payloadSuccess.action)
-    await probot.receive({event: 'pull_request', payloadSuccess})
+    await probot.receive({event: 'pull_request', payload: payloadSuccess})
   })
 })
