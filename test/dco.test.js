@@ -50,9 +50,6 @@ describe('dco', () => {
       committer: {
         name: 'Bex Warner',
         email: 'bexmwarner@gmail.com'
-      },
-      verification: {
-        verified: true
       }
     }
     const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: []}], alwaysRequireSignoff, prInfo)
@@ -431,9 +428,6 @@ describe('dco', () => {
         committer: {
           name: 'Bex Warner',
           email: 'bexmwarner@gmail.com'
-        },
-        verification: {
-          verified: false
         }
       }
       const author = null
