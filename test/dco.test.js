@@ -458,13 +458,15 @@ describe('dco', () => {
         }
       }
       const author = null
-      const dcoObject = await getDCOStatus([{commit, author, parents: []}], alwaysRequireSignoff)
+      const dcoObject = await getDCOStatus([{commit, author, parents: []}], alwaysRequireSignoff, prInfo)
 
-      expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
-        state: 'failure',
-        description: 'The sign-off is missing.',
-        target_url: 'https://github.com/probot/dco#how-it-works'
-      }))
+      expect(dcoObject).toEqual([{
+        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/undefined',
+        author: 'Bexo',
+        committer: 'Bex Warner',
+        message: 'The sign-off is missing.',
+        sha: undefined
+      }])
     }
   )
 })
