@@ -1,6 +1,7 @@
 const getDCOStatus = require('../lib/dco.js')
 
 const success = []
+const sha = '18aebfa67dde85da0f5099ad70ef647685a05205'
 const alwaysRequireSignoff = async () => true
 const dontRequireSignoffFor = (allowedLogin) => async (login) => { return login !== allowedLogin }
 const prInfo = {owner: 'hiimbex', repo: 'testing-things', number: 1}
@@ -18,7 +19,7 @@ describe('dco', () => {
         email: 'bexmwarner@gmail.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: []}], alwaysRequireSignoff, prInfo)
+    const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
     expect(dcoObject).toEqual(success)
   })
@@ -35,7 +36,7 @@ describe('dco', () => {
         email: 'bexmwarner@gmail.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: [1, 2]}], alwaysRequireSignoff, prInfo)
+    const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: [1, 2], sha}], alwaysRequireSignoff, prInfo)
 
     expect(dcoObject).toEqual(success)
   })
@@ -52,14 +53,14 @@ describe('dco', () => {
         email: 'bexmwarner@gmail.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: []}], alwaysRequireSignoff, prInfo)
+    const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
     expect(dcoObject).toEqual([{
-      url: 'https://github.com/hiimbex/testing-things/pull/1/commits/undefined',
+      url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
       author: 'Brandon Keepers',
       committer: 'Bex Warner',
       message: 'The sign-off is missing.',
-      sha: undefined
+      sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
     }])
   })
 
@@ -77,14 +78,14 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff, prInfo)
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
       expect(dcoObject).toEqual([{
-        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/undefined',
+        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
         author: 'hiimbex',
         committer: 'Bex Warner',
         message: 'Expected "hiimbex <bex@disney.com>", but got "bex <bex@disney.com>".',
-        sha: undefined
+        sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
       }])
     }
   )
@@ -103,14 +104,14 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff, prInfo)
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
       expect(dcoObject).toEqual([{
-        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/undefined',
+        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
         author: 'bex',
         committer: 'Bex Warner',
         message: 'Expected "bex <hiimbex@disney.com>", but got "bex <bex@disney.com>".',
-        sha: undefined
+        sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
       }])
     }
   )
@@ -129,14 +130,14 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff, prInfo)
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
       expect(dcoObject).toEqual([{
-        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/undefined',
+        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
         author: 'bex',
         committer: 'Bex Warner',
         message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-        sha: undefined
+        sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
       }])
     }
   )
@@ -166,14 +167,14 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: []}, {commit: commitB, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff, prInfo)
+      const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: [], sha}, {commit: commitB, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
       expect(dcoObject).toEqual([{
-        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/undefined',
+        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
         author: 'bex',
         committer: 'Bex Warner',
         message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-        sha: undefined
+        sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
       }])
     }
   )
@@ -203,14 +204,14 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: []}, {commit: commitB, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff, prInfo)
+      const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: []}, {commit: commitB, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
       expect(dcoObject).toEqual([{
-        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/undefined',
+        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
         author: 'bex',
         committer: 'Bex Warner',
         message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-        sha: undefined
+        sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
       }])
     }
   )
@@ -238,7 +239,7 @@ describe('dco', () => {
         email: 'bexmwarner@gmail.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: []}, {commit: commitB, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff, prInfo)
+    const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: []}, {commit: commitB, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
     expect(dcoObject).toEqual(success)
   })
@@ -257,7 +258,7 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff, prInfo)
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
       expect(dcoObject).toEqual(success)
     }
@@ -275,14 +276,14 @@ describe('dco', () => {
         email: 'bexmwarner@gmail.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff, prInfo)
+    const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
     expect(dcoObject).toEqual([{
-      url: 'https://github.com/hiimbex/testing-things/pull/1/commits/undefined',
+      url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
       author: 'hiimbex',
       committer: 'Bex Warner',
       message: 'hiimbex@bexo is not a valid email address.',
-      sha: undefined
+      sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
     }])
   })
 
@@ -298,7 +299,7 @@ describe('dco', () => {
         email: 'bexmwarner@gmail.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff, prInfo)
+    const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
     expect(dcoObject).toEqual(success)
   })
@@ -319,7 +320,7 @@ describe('dco', () => {
       login: 'bexobot [bot]',
       type: 'Bot'
     }
-    const dcoObject = await getDCOStatus([{commit, author, parents: []}], alwaysRequireSignoff, prInfo)
+    const dcoObject = await getDCOStatus([{commit, author, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
     expect(dcoObject).toEqual(success)
   })
@@ -341,7 +342,7 @@ describe('dco', () => {
           verified: true
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'lptr' }, parents: []}], dontRequireSignoffFor('lptr'), prInfo)
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'lptr' }, parents: [], sha}], dontRequireSignoffFor('lptr'), prInfo)
 
       expect(dcoObject).toEqual(success)
     }
@@ -364,14 +365,14 @@ describe('dco', () => {
           verified: false
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'lptr' }, parents: []}], dontRequireSignoffFor('lptr'), prInfo)
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'lptr' }, parents: [], sha}], dontRequireSignoffFor('lptr'), prInfo)
 
       expect(dcoObject).toEqual([{
-        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/undefined',
+        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
         author: 'Lorant Pinter',
         committer: 'Bex Warner',
         message: 'Commit by organization member is not verified.',
-        sha: undefined
+        sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
       }])
     }
   )
@@ -390,7 +391,7 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff, prInfo)
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
       expect(dcoObject).toEqual(success)
     }
@@ -411,7 +412,7 @@ describe('dco', () => {
         }
       }
       const author = null
-      const dcoObject = await getDCOStatus([{commit, author, parents: []}], alwaysRequireSignoff, prInfo)
+      const dcoObject = await getDCOStatus([{commit, author, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
       expect(dcoObject).toEqual(success)
     }
@@ -431,14 +432,14 @@ describe('dco', () => {
         }
       }
       const author = null
-      const dcoObject = await getDCOStatus([{commit, author, parents: []}], alwaysRequireSignoff, prInfo)
+      const dcoObject = await getDCOStatus([{commit, author, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
       expect(dcoObject).toEqual([{
-        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/undefined',
+        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
         author: 'Bexo',
         committer: 'Bex Warner',
         message: 'The sign-off is missing.',
-        sha: undefined
+        sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
       }])
     }
   )
@@ -458,14 +459,14 @@ describe('dco', () => {
         }
       }
       const author = null
-      const dcoObject = await getDCOStatus([{commit, author, parents: []}], alwaysRequireSignoff, prInfo)
+      const dcoObject = await getDCOStatus([{commit, author, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
       expect(dcoObject).toEqual([{
-        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/undefined',
+        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
         author: 'Bexo',
         committer: 'Bex Warner',
         message: 'The sign-off is missing.',
-        sha: undefined
+        sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
       }])
     }
   )
