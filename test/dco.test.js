@@ -4,7 +4,7 @@ const success = []
 const sha = '18aebfa67dde85da0f5099ad70ef647685a05205'
 const alwaysRequireSignoff = async () => true
 const dontRequireSignoffFor = (allowedLogin) => async (login) => { return login !== allowedLogin }
-const prInfo = {owner: 'hiimbex', repo: 'testing-things', number: 1}
+const prInfo = 'https://github.com/hiimbex/testing-things/pull/1'
 
 describe('dco', () => {
   test('returns true if message contains signoff', async () => {

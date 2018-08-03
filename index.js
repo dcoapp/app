@@ -20,7 +20,7 @@ module.exports = app => {
     }))
 
     const commits = compare.data.commits
-    const dcoFailed = await getDCOStatus(commits, requireMembers(requireForMembers, context), context.issue())
+    const dcoFailed = await getDCOStatus(commits, requireMembers(requireForMembers, context), context.payload.pull_request.html_url)
 
     if (!dcoFailed.length) {
       return context.github.checks.create(context.repo({
