@@ -35,20 +35,20 @@ module.exports = app => {
           summary: 'All commits are signed off!'
         }
       }))
-      .catch(function checkFails(error) {
-        if (error.code === 403) {
-          console.log('resource not accessible, creating status instead')
-          // create status
-          const params = {
-            sha: pr.head.sha,
-            context: 'DCO',
-            state: 'success',
-            description: 'All commits are signed off!',
-            target_url: 'https://github.com/probot/dco#how-it-works'
+        .catch(function checkFails (error) {
+          if (error.code === 403) {
+            console.log('resource not accessible, creating status instead')
+            // create status
+            const params = {
+              sha: pr.head.sha,
+              context: 'DCO',
+              state: 'success',
+              description: 'All commits are signed off!',
+              target_url: 'https://github.com/probot/dco#how-it-works'
+            }
+            return context.github.repos.createStatus(context.repo(params))
           }
-          return context.github.repos.createStatus(context.repo(params))
-        }
-      })
+        })
     } else {
       let summary = []
       dcoFailed.forEach(function (commit) {
@@ -75,7 +75,7 @@ module.exports = app => {
           identifier: `override`
         }]
       }))
-        .catch(function checkFails(error) {
+        .catch(function checkFails (error) {
           if (error.code === 403) {
             console.log('resource not accessible, creating status instead')
             // create status
