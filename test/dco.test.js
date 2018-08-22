@@ -1,12 +1,10 @@
 const getDCOStatus = require('../lib/dco.js')
 
-const success = JSON.stringify({
-  state: 'success',
-  description: 'All commits have a DCO sign-off from the author',
-  target_url: 'https://github.com/probot/dco#how-it-works'
-})
+const success = []
+const sha = '18aebfa67dde85da0f5099ad70ef647685a05205'
 const alwaysRequireSignoff = async () => true
 const dontRequireSignoffFor = (allowedLogin) => async (login) => { return login !== allowedLogin }
+const prInfo = 'https://github.com/hiimbex/testing-things/pull/1'
 
 describe('dco', () => {
   test('returns true if message contains signoff', async () => {
@@ -21,9 +19,9 @@ describe('dco', () => {
         email: 'bexmwarner@gmail.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: []}], alwaysRequireSignoff)
+    const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
-    expect(JSON.stringify(dcoObject)).toBe(success)
+    expect(dcoObject).toEqual(success)
   })
 
   test('returns true for merge commit', async () => {
@@ -38,9 +36,9 @@ describe('dco', () => {
         email: 'bexmwarner@gmail.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: [1, 2]}], alwaysRequireSignoff)
+    const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: [1, 2], sha}], alwaysRequireSignoff, prInfo)
 
-    expect(JSON.stringify(dcoObject)).toBe(success)
+    expect(dcoObject).toEqual(success)
   })
 
   test('returns error message if message does not have signoff', async () => {
@@ -55,13 +53,15 @@ describe('dco', () => {
         email: 'bexmwarner@gmail.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: []}], alwaysRequireSignoff)
+    const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
-    expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
-      state: 'failure',
-      description: 'The sign-off is missing.',
-      target_url: 'https://github.com/probot/dco#how-it-works'
-    }))
+    expect(dcoObject).toEqual([{
+      url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+      author: 'Brandon Keepers',
+      committer: 'Bex Warner',
+      message: 'The sign-off is missing.',
+      sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+    }])
   })
 
   test(
@@ -78,13 +78,15 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
-      expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
-        state: 'failure',
-        description: 'Expected "hiimbex <bex@disney.com>", but got "bex <bex@disney.com>".',
-        target_url: 'https://github.com/probot/dco#how-it-works'
-      }))
+      expect(dcoObject).toEqual([{
+        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+        author: 'hiimbex',
+        committer: 'Bex Warner',
+        message: 'Expected "hiimbex <bex@disney.com>", but got "bex <bex@disney.com>".',
+        sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+      }])
     }
   )
 
@@ -102,13 +104,15 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
-      expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
-        state: 'failure',
-        description: 'Expected "bex <hiimbex@disney.com>", but got "bex <bex@disney.com>".',
-        target_url: 'https://github.com/probot/dco#how-it-works'
-      }))
+      expect(dcoObject).toEqual([{
+        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+        author: 'bex',
+        committer: 'Bex Warner',
+        message: 'Expected "bex <hiimbex@disney.com>", but got "bex <bex@disney.com>".',
+        sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+      }])
     }
   )
 
@@ -126,13 +130,15 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
-      expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
-        state: 'failure',
-        description: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-        target_url: 'https://github.com/probot/dco#how-it-works'
-      }))
+      expect(dcoObject).toEqual([{
+        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+        author: 'bex',
+        committer: 'Bex Warner',
+        message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+        sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+      }])
     }
   )
 
@@ -161,13 +167,15 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: []}, {commit: commitB, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
+      const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: [], sha}, {commit: commitB, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
-      expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
-        state: 'failure',
-        description: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-        target_url: 'https://github.com/probot/dco#how-it-works'
-      }))
+      expect(dcoObject).toEqual([{
+        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+        author: 'bex',
+        committer: 'Bex Warner',
+        message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+        sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+      }])
     }
   )
 
@@ -196,13 +204,15 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: []}, {commit: commitB, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
+      const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: []}, {commit: commitB, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
-      expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
-        state: 'failure',
-        description: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-        target_url: 'https://github.com/probot/dco#how-it-works'
-      }))
+      expect(dcoObject).toEqual([{
+        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+        author: 'bex',
+        committer: 'Bex Warner',
+        message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+        sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+      }])
     }
   )
 
@@ -229,34 +239,10 @@ describe('dco', () => {
         email: 'bexmwarner@gmail.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: []}, {commit: commitB, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
+    const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: []}, {commit: commitB, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
-    expect(JSON.stringify(dcoObject)).toBe(success)
+    expect(dcoObject).toEqual(success)
   })
-
-  test(
-    'returns a 140 character description if the message is more than 140 characters',
-    async () => {
-      const commit = {
-        message: 'signed off correctly\n\nSigned-off-by: hiimbex <hiimbex@disney.com>',
-        author: {
-          name: 'bex is the best name ever and is also very long',
-          email: 'bexMyVeryLongAlsoButImportantEmail@disney.com'
-        },
-        committer: {
-          name: 'Bex Warner',
-          email: 'bexmwarner@gmail.com'
-        }
-      }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
-
-      expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
-        state: 'failure',
-        description: 'Expected "bex is the best name ever and is also very long <bexMyVeryLongAlsoButImportantEmail@disney.com>", but got "hiimbex <hiimbex@disney',
-        target_url: 'https://github.com/probot/dco#how-it-works'
-      }))
-    }
-  )
 
   test(
     'returns success when casing in sign of message is different',
@@ -272,9 +258,9 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
-      expect(JSON.stringify(dcoObject)).toBe(success)
+      expect(dcoObject).toEqual(success)
     }
   )
 
@@ -290,13 +276,15 @@ describe('dco', () => {
         email: 'bexmwarner@gmail.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
+    const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
-    expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
-      state: 'failure',
-      description: 'hiimbex@bexo is not a valid email address.',
-      target_url: 'https://github.com/probot/dco#how-it-works'
-    }))
+    expect(dcoObject).toEqual([{
+      url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+      author: 'hiimbex',
+      committer: 'Bex Warner',
+      message: 'hiimbex@bexo is not a valid email address.',
+      sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+    }])
   })
 
   test('returns success when email and name are differently cased (case-insensitivity)', async () => {
@@ -311,9 +299,9 @@ describe('dco', () => {
         email: 'bexmwarner@gmail.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
+    const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
-    expect(JSON.stringify(dcoObject)).toBe(success)
+    expect(dcoObject).toEqual(success)
   })
 
   test('returns success when committer is bot', async () => {
@@ -332,9 +320,9 @@ describe('dco', () => {
       login: 'bexobot [bot]',
       type: 'Bot'
     }
-    const dcoObject = await getDCOStatus([{commit, author, parents: []}], alwaysRequireSignoff)
+    const dcoObject = await getDCOStatus([{commit, author, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
-    expect(JSON.stringify(dcoObject)).toBe(success)
+    expect(dcoObject).toEqual(success)
   })
 
   test(
@@ -354,9 +342,9 @@ describe('dco', () => {
           verified: true
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'lptr' }, parents: []}], dontRequireSignoffFor('lptr'))
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'lptr' }, parents: [], sha}], dontRequireSignoffFor('lptr'), prInfo)
 
-      expect(JSON.stringify(dcoObject)).toBe(success)
+      expect(dcoObject).toEqual(success)
     }
   )
 
@@ -377,13 +365,15 @@ describe('dco', () => {
           verified: false
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'lptr' }, parents: []}], dontRequireSignoffFor('lptr'))
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'lptr' }, parents: [], sha}], dontRequireSignoffFor('lptr'), prInfo)
 
-      expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
-        state: 'failure',
-        description: 'Commit by organization member is not verified.',
-        target_url: 'https://github.com/probot/dco#how-it-works'
-      }))
+      expect(dcoObject).toEqual([{
+        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+        author: 'Lorant Pinter',
+        committer: 'Bex Warner',
+        message: 'Commit by organization member is not verified.',
+        sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+      }])
     }
   )
 
@@ -401,9 +391,9 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: []}], alwaysRequireSignoff)
+      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
-      expect(JSON.stringify(dcoObject)).toBe(success)
+      expect(dcoObject).toEqual(success)
     }
   )
 
@@ -422,9 +412,35 @@ describe('dco', () => {
         }
       }
       const author = null
-      const dcoObject = await getDCOStatus([{commit, author, parents: []}], alwaysRequireSignoff)
+      const dcoObject = await getDCOStatus([{commit, author, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
-      expect(JSON.stringify(dcoObject)).toBe(success)
+      expect(dcoObject).toEqual(success)
+    }
+  )
+
+  test('returns failure if author does not exist and there is no sign off',
+    async () => {
+      const commit = {
+        message: 'What a nice day!',
+        author: {
+          name: 'Bexo',
+          email: 'bexo@gmail.com'
+        },
+        committer: {
+          name: 'Bex Warner',
+          email: 'bexmwarner@gmail.com'
+        }
+      }
+      const author = null
+      const dcoObject = await getDCOStatus([{commit, author, parents: [], sha}], alwaysRequireSignoff, prInfo)
+
+      expect(dcoObject).toEqual([{
+        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+        author: 'Bexo',
+        committer: 'Bex Warner',
+        message: 'The sign-off is missing.',
+        sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+      }])
     }
   )
 
@@ -443,13 +459,15 @@ describe('dco', () => {
         }
       }
       const author = null
-      const dcoObject = await getDCOStatus([{commit, author, parents: []}], alwaysRequireSignoff)
+      const dcoObject = await getDCOStatus([{commit, author, parents: [], sha}], alwaysRequireSignoff, prInfo)
 
-      expect(JSON.stringify(dcoObject)).toBe(JSON.stringify({
-        state: 'failure',
-        description: 'The sign-off is missing.',
-        target_url: 'https://github.com/probot/dco#how-it-works'
-      }))
+      expect(dcoObject).toEqual([{
+        url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+        author: 'Bexo',
+        committer: 'Bex Warner',
+        message: 'The sign-off is missing.',
+        sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+      }])
     }
   )
 })
