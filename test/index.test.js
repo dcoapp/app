@@ -24,7 +24,7 @@ describe('dco', () => {
   test('creates a failing check', async () => {
     nock('https://api.github.com')
       .post('/installations/13055/access_tokens')
-      .reply(200, {token: 'test'})
+      .reply(200, { token: 'test' })
 
     nock('https://api.github.com')
       .get('/repos/robotland/test/contents/.github/dco.yml')
@@ -42,13 +42,13 @@ describe('dco', () => {
       })
       .reply(200)
 
-    await probot.receive({event: 'pull_request', payload})
+    await probot.receive({ event: 'pull_request', payload })
   })
 
   test('creates a passing check', async () => {
     nock('https://api.github.com')
       .post('/installations/13055/access_tokens')
-      .reply(200, {token: 'test'})
+      .reply(200, { token: 'test' })
 
     nock('https://api.github.com')
       .get('/repos/octocat/Hello-World/contents/.github/dco.yml')
@@ -66,6 +66,6 @@ describe('dco', () => {
       })
       .reply(200)
 
-    await probot.receive({event: 'pull_request', payload: payloadSuccess})
+    await probot.receive({ event: 'pull_request', payload: payloadSuccess })
   })
 })
