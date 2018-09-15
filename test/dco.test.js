@@ -19,7 +19,7 @@ describe('dco', () => {
         email: 'bexmwarner@gmail.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
+    const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha }], alwaysRequireSignoff, prInfo)
 
     expect(dcoObject).toEqual(success)
   })
@@ -36,7 +36,7 @@ describe('dco', () => {
         email: 'bexmwarner@gmail.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: [1, 2], sha}], alwaysRequireSignoff, prInfo)
+    const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [1, 2], sha }], alwaysRequireSignoff, prInfo)
 
     expect(dcoObject).toEqual(success)
   })
@@ -53,7 +53,7 @@ describe('dco', () => {
         email: 'bexmwarner@gmail.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit, author: { login: 'bkeepers' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
+    const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha }], alwaysRequireSignoff, prInfo)
 
     expect(dcoObject).toEqual([{
       url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -78,7 +78,7 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
+      const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha }], alwaysRequireSignoff, prInfo)
 
       expect(dcoObject).toEqual([{
         url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -104,7 +104,7 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
+      const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha }], alwaysRequireSignoff, prInfo)
 
       expect(dcoObject).toEqual([{
         url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -130,7 +130,7 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
+      const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha }], alwaysRequireSignoff, prInfo)
 
       expect(dcoObject).toEqual([{
         url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -167,7 +167,7 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: [], sha}, {commit: commitB, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
+      const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha }], alwaysRequireSignoff, prInfo)
 
       expect(dcoObject).toEqual([{
         url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -204,7 +204,7 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: []}, {commit: commitB, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
+      const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha }], alwaysRequireSignoff, prInfo)
 
       expect(dcoObject).toEqual([{
         url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -239,7 +239,7 @@ describe('dco', () => {
         email: 'bexmwarner@gmail.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit: commitA, author: { login: 'hiimbex' }, parents: []}, {commit: commitB, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
+    const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha }], alwaysRequireSignoff, prInfo)
 
     expect(dcoObject).toEqual(success)
   })
@@ -258,7 +258,7 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
+      const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha }], alwaysRequireSignoff, prInfo)
 
       expect(dcoObject).toEqual(success)
     }
@@ -276,7 +276,7 @@ describe('dco', () => {
         email: 'bexmwarner@gmail.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
+    const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha }], alwaysRequireSignoff, prInfo)
 
     expect(dcoObject).toEqual([{
       url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -299,7 +299,7 @@ describe('dco', () => {
         email: 'bexmwarner@gmail.com'
       }
     }
-    const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
+    const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha }], alwaysRequireSignoff, prInfo)
 
     expect(dcoObject).toEqual(success)
   })
@@ -320,7 +320,7 @@ describe('dco', () => {
       login: 'bexobot [bot]',
       type: 'Bot'
     }
-    const dcoObject = await getDCOStatus([{commit, author, parents: [], sha}], alwaysRequireSignoff, prInfo)
+    const dcoObject = await getDCOStatus([{ commit, author, parents: [], sha }], alwaysRequireSignoff, prInfo)
 
     expect(dcoObject).toEqual(success)
   })
@@ -342,7 +342,7 @@ describe('dco', () => {
           verified: true
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'lptr' }, parents: [], sha}], dontRequireSignoffFor('lptr'), prInfo)
+      const dcoObject = await getDCOStatus([{ commit, author: { login: 'lptr' }, parents: [], sha }], dontRequireSignoffFor('lptr'), prInfo)
 
       expect(dcoObject).toEqual(success)
     }
@@ -365,7 +365,7 @@ describe('dco', () => {
           verified: false
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'lptr' }, parents: [], sha}], dontRequireSignoffFor('lptr'), prInfo)
+      const dcoObject = await getDCOStatus([{ commit, author: { login: 'lptr' }, parents: [], sha }], dontRequireSignoffFor('lptr'), prInfo)
 
       expect(dcoObject).toEqual([{
         url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -391,7 +391,7 @@ describe('dco', () => {
           email: 'bexmwarner@gmail.com'
         }
       }
-      const dcoObject = await getDCOStatus([{commit, author: { login: 'hiimbex' }, parents: [], sha}], alwaysRequireSignoff, prInfo)
+      const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha }], alwaysRequireSignoff, prInfo)
 
       expect(dcoObject).toEqual(success)
     }
@@ -412,7 +412,7 @@ describe('dco', () => {
         }
       }
       const author = null
-      const dcoObject = await getDCOStatus([{commit, author, parents: [], sha}], alwaysRequireSignoff, prInfo)
+      const dcoObject = await getDCOStatus([{ commit, author, parents: [], sha }], alwaysRequireSignoff, prInfo)
 
       expect(dcoObject).toEqual(success)
     }
@@ -432,7 +432,7 @@ describe('dco', () => {
         }
       }
       const author = null
-      const dcoObject = await getDCOStatus([{commit, author, parents: [], sha}], alwaysRequireSignoff, prInfo)
+      const dcoObject = await getDCOStatus([{ commit, author, parents: [], sha }], alwaysRequireSignoff, prInfo)
 
       expect(dcoObject).toEqual([{
         url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -459,7 +459,7 @@ describe('dco', () => {
         }
       }
       const author = null
-      const dcoObject = await getDCOStatus([{commit, author, parents: [], sha}], alwaysRequireSignoff, prInfo)
+      const dcoObject = await getDCOStatus([{ commit, author, parents: [], sha }], alwaysRequireSignoff, prInfo)
 
       expect(dcoObject).toEqual([{
         url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
