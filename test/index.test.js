@@ -23,7 +23,7 @@ describe('dco', () => {
 
   test('creates a failing check', async () => {
     nock('https://api.github.com')
-      .post('/installations/13055/access_tokens')
+      .post('/app/installations/13055/access_tokens')
       .reply(200, { token: 'test' })
 
     nock('https://api.github.com')
@@ -47,7 +47,7 @@ describe('dco', () => {
 
   test('creates a passing check', async () => {
     nock('https://api.github.com')
-      .post('/installations/13055/access_tokens')
+      .post('/app/installations/13055/access_tokens')
       .reply(200, { token: 'test' })
 
     nock('https://api.github.com')
