@@ -24,7 +24,7 @@ describe('dco', () => {
     expect(dcoObject).toEqual(success)
   })
 
-  test('returns true if message contains multiple signoffs', async () => {
+  test('returns true if message contains multiple signoffs including valid', async () => {
     const commit = {
       message: 'Hello world\n\n' +
         'Signed-off-by: Unknown <tester@github.com>\n' +
