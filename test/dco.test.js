@@ -24,6 +24,50 @@ describe('dco', () => {
     expect(dcoObject).toEqual(success)
   })
 
+  test('returns true if message contains multiple signoffs', async () => {
+    const commit = {
+      message: 'Hello world\n\n' +
+        'Signed-off-by: Unknown <tester@github.com>\n' +
+        'Signed-off-by: Brandon Keepers <bkeepers@github.com>',
+      author: {
+        name: 'Brandon Keepers',
+        email: 'bkeepers@github.com'
+      },
+      committer: {
+        name: 'Bex Warner',
+        email: 'bexmwarner@gmail.com'
+      }
+    }
+    const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha }], alwaysRequireSignoff, prInfo)
+
+    expect(dcoObject).toEqual(success)
+  })
+
+  test('returns false if message does not contain valid signoff in multiple signoffs', async () => {
+    const commit = {
+      message: 'Hello world\n\n' +
+        'Signed-off-by: Tester1 <tester1@github.com>\n' +
+        'Signed-off-by: Tester2 <tester2@github.com>',
+      author: {
+        name: 'Author Name',
+        email: 'author@email.com'
+      },
+      committer: {
+        name: 'Committer Name',
+        email: 'committer@email.com'
+      }
+    }
+    const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha }], alwaysRequireSignoff, prInfo)
+
+    expect(dcoObject).toEqual([{
+      'author': 'Author Name',
+      'committer': 'Committer Name',
+      'message': 'Can not find "Author Name <author@email.com>", in ["Tester1 <tester1@github.com>", "Tester2 <tester2@github.com>"].',
+      'sha': '18aebfa67dde85da0f5099ad70ef647685a05205',
+      'url': 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205'
+    }])
+  })
+
   test('returns true for merge commit', async () => {
     const commit = {
       message: 'mergin stuff',
