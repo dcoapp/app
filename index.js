@@ -2,6 +2,7 @@ const getDCOStatus = require('./lib/dco.js')
 const requireMembers = require('./lib/requireMembers.js')
 
 module.exports = app => {
+  const timeStart = new Date()
   app.on(['pull_request.opened', 'pull_request.synchronize', 'check_run.rerequested'], check)
 
   async function check (context) {
@@ -28,6 +29,7 @@ module.exports = app => {
         head_branch: pr.head.ref,
         head_sha: pr.head.sha,
         status: 'completed',
+        started_at: timeStart,
         conclusion: 'success',
         completed_at: new Date(),
         output: {
@@ -63,6 +65,7 @@ module.exports = app => {
         head_branch: pr.head.ref,
         head_sha: pr.head.sha,
         status: 'completed',
+        started_at: timeStart,
         conclusion: 'action_required',
         completed_at: new Date(),
         output: {
@@ -101,6 +104,7 @@ module.exports = app => {
       head_branch: context.payload.check_run.check_suite.head_branch,
       head_sha: context.payload.check_run.head_sha,
       status: 'completed',
+      started_at: timeStart,
       conclusion: 'success',
       completed_at: new Date(),
       output: {
