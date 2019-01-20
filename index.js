@@ -2,10 +2,11 @@ const getDCOStatus = require('./lib/dco.js')
 const requireMembers = require('./lib/requireMembers.js')
 
 module.exports = app => {
-  const timeStart = new Date()
   app.on(['pull_request.opened', 'pull_request.synchronize', 'check_run.rerequested'], check)
 
   async function check (context) {
+    const timeStart = new Date()
+
     const config = await context.config('dco.yml', {
       require: {
         members: true
@@ -99,6 +100,8 @@ module.exports = app => {
   // This option is only presented to users with Write Access to the repo
   app.on('check_run.requested_action', setStatusPass)
   async function setStatusPass (context) {
+    const timeStart = new Date()
+
     return context.github.checks.create(context.repo({
       name: 'DCO',
       head_branch: context.payload.check_run.check_suite.head_branch,
