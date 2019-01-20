@@ -120,5 +120,5 @@ function handleOneCommit (pr, dcoFailed) {
 }
 
 function handleMultipleCommits (pr, commitLength, dcoFailed) {
-  return `You only have ${dcoFailed.length} commits incorrectly signed off! To fix, head to your local branch and run: \n\`\`\`bash\ngit rebase HEAD~${commitLength} --signoff\n\`\`\`\n Now your commits will have your sign off. Next run \n\`\`\`bash\ngit push --force origin ${pr.head.ref}\n\`\`\``
+  return `You have ${dcoFailed.length} commits incorrectly signed off. To fix, head to your local branch and run: \n\`\`\`bash\ngit rebase HEAD~${commitLength} --signoff\n\`\`\`\n Now your commits will have your sign off. Next run \n\`\`\`bash\ngit push --force origin ${pr.head.ref}\n\`\`\``
 }
