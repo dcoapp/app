@@ -7,7 +7,7 @@
   "completed_at": "2018-07-14T18:18:54.156Z",
   "output": {
     "title": "DCO",
-    "summary": "You only have one commit incorrectly signed off! To fix, head to your local branch and run: \n```bash\ngit commit --amend --signoff\n```\nNow your commits will have your sign off. Next run \n```bash\ngit push --force origin dco-test\n```\n\nCommit sha: [e76ed60](https://github.com/robotland/test/pull/113/commits/e76ed6025cec8879c75454a6efd6081d46de4c94), Author: Brandon Keepers, Committer: GitHub; The sign-off is missing."
+    "summary": "You only have one commit incorrectly signed off! To fix, head to your local branch and run: \n```bash\ngit commit --amend --signoff\n```\nNow your commits will have your sign off. Next run \n```bash\ngit push --force-with-lease origin dco-test\n```\n\nCommit sha: [e76ed60](https://github.com/robotland/test/pull/113/commits/e76ed6025cec8879c75454a6efd6081d46de4c94), Author: Brandon Keepers, Committer: GitHub; The sign-off is missing."
   },
   "actions": [ {
     "label": "Set DCO to pass",

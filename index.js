@@ -119,9 +119,9 @@ module.exports = app => {
 }
 
 function handleOneCommit (pr, dcoFailed) {
-  return `You only have one commit incorrectly signed off! To fix, head to your local branch and run: \n\`\`\`bash\ngit commit --amend --signoff\n\`\`\`\nNow your commits will have your sign off. Next run \n\`\`\`bash\ngit push --force origin ${pr.head.ref}\n\`\`\``
+  return `You only have one commit incorrectly signed off! To fix, head to your local branch and run: \n\`\`\`bash\ngit commit --amend --signoff\n\`\`\`\nNow your commits will have your sign off. Next run \n\`\`\`bash\ngit push --force-with-lease origin ${pr.head.ref}\n\`\`\``
 }
 
 function handleMultipleCommits (pr, commitLength, dcoFailed) {
-  return `You have ${dcoFailed.length} commits incorrectly signed off. To fix, head to your local branch and run: \n\`\`\`bash\ngit rebase HEAD~${commitLength} --signoff\n\`\`\`\n Now your commits will have your sign off. Next run \n\`\`\`bash\ngit push --force origin ${pr.head.ref}\n\`\`\``
+  return `You have ${dcoFailed.length} commits incorrectly signed off. To fix, head to your local branch and run: \n\`\`\`bash\ngit rebase HEAD~${commitLength} --signoff\n\`\`\`\n Now your commits will have your sign off. Next run \n\`\`\`bash\ngit push --force-with-lease origin ${pr.head.ref}\n\`\`\``
 }
