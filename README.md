@@ -6,7 +6,7 @@ a GitHub Integration built with [probot](https://github.com/probot/probot) that 
 
 ## Usage
 
-[Configure the integration](https://github.com/integration/dco) for your organization or repositories. Enable [required status checks](docs/required-statuses.md) if you want to enforce the DCO on all commits.
+[Configure the integration](https://github.com/apps/dco) for your organization or repositories. Enable [required status checks](docs/required-statuses.md) if you want to enforce the DCO on all commits.
 
 See [docs/deploy.md](docs/deploy.md) if you would like to run your own instance of this plugin.
 
