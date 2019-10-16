@@ -11,6 +11,7 @@ module.exports = app => {
       require: {
         members: true
       }
+      enable_pass: true
     })
     const requireForMembers = config.require.members
 
@@ -61,24 +62,41 @@ module.exports = app => {
       if (dcoFailed.length === 1) summary = handleOneCommit(pr, dcoFailed) + `\n\n${summary}`
       else summary = handleMultipleCommits(pr, commits.length, dcoFailed) + `\n\n${summary}`
 
-      context.github.checks.create(context.repo({
-        name: 'DCO',
-        head_branch: pr.head.ref,
-        head_sha: pr.head.sha,
-        status: 'completed',
-        started_at: timeStart,
-        conclusion: 'action_required',
-        completed_at: new Date(),
-        output: {
-          title: 'DCO',
-          summary
-        },
-        actions: [{
-          label: 'Set DCO to pass',
-          description: 'would set status to passing',
-          identifier: `override`
-        }]
-      }))
+      if ( config.enable_pass ) {
+        context.github.checks.create(context.repo({
+          name: 'DCO',
+          head_branch: pr.head.ref,
+          head_sha: pr.head.sha,
+          status: 'completed',
+          started_at: timeStart,
+          conclusion: 'action_required',
+          completed_at: new Date(),
+          output: {
+            title: 'DCO',
+            summary
+          },
+          actions: [{
+            label: 'Set DCO to pass',
+            description: 'would set status to passing',
+            identifier: `override`
+          }]
+        }))
+      }
+      else {
+        context.github.checks.create(context.repo({
+          name: 'DCO',
+          head_branch: pr.head.ref,
+          head_sha: pr.head.sha,
+          status: 'completed',
+          started_at: timeStart,
+          conclusion: 'action_required',
+          completed_at: new Date(),
+          output: {
+            title: 'DCO',
+            summary
+          }
+        }))
+      }
         .catch(function checkFails (error) {
           if (error.code === 403) {
             console.log('resource not accessible, creating status instead')
@@ -97,24 +115,26 @@ module.exports = app => {
     }
   }
 
-  // This option is only presented to users with Write Access to the repo
-  app.on('check_run.requested_action', setStatusPass)
-  async function setStatusPass (context) {
-    const timeStart = new Date()
+  // This option is only presented to users with Write Access to the repo and config.enable_pass set to true
+  if ( config.enable_pass ) {
+    app.on('check_run.requested_action', setStatusPass)
+    async function setStatusPass (context) {
+      const timeStart = new Date()
 
-    return context.github.checks.create(context.repo({
-      name: 'DCO',
-      head_branch: context.payload.check_run.check_suite.head_branch,
-      head_sha: context.payload.check_run.head_sha,
-      status: 'completed',
-      started_at: timeStart,
-      conclusion: 'success',
-      completed_at: new Date(),
-      output: {
-        title: 'DCO',
-        summary: 'Commit sign-off was manually approved.'
-      }
-    }))
+      return context.github.checks.create(context.repo({
+        name: 'DCO',
+        head_branch: context.payload.check_run.check_suite.head_branch,
+        head_sha: context.payload.check_run.head_sha,
+        status: 'completed',
+        started_at: timeStart,
+        conclusion: 'success',
+        completed_at: new Date(),
+        output: {
+          title: 'DCO',
+          summary: 'Commit sign-off was manually approved.'
+        }
+      }))
+    }
   }
 }
 
