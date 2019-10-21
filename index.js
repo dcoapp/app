@@ -81,6 +81,21 @@ module.exports = app => {
             identifier: `override`
           }]
         }))
+          .catch(function checkFails (error) {
+            if (error.code === 403) {
+              console.log('resource not accessible, creating status instead')
+              // create status
+              const description = dcoFailed[(dcoFailed.length - 1)].message.substring(0, 140)
+              const params = {
+                sha: pr.head.sha,
+                context: 'DCO',
+                state: 'failure',
+                description,
+                target_url: 'https://github.com/probot/dco#how-it-works'
+              }
+              return context.github.repos.createStatus(context.repo(params))
+            }
+          })
       }
       else {
         context.github.checks.create(context.repo({
@@ -96,22 +111,23 @@ module.exports = app => {
             summary
           }
         }))
-      }
-        .catch(function checkFails (error) {
-          if (error.code === 403) {
-            console.log('resource not accessible, creating status instead')
-            // create status
-            const description = dcoFailed[(dcoFailed.length - 1)].message.substring(0, 140)
-            const params = {
-              sha: pr.head.sha,
-              context: 'DCO',
-              state: 'failure',
-              description,
-              target_url: 'https://github.com/probot/dco#how-it-works'
+          .catch(function checkFails (error) {
+            if (error.code === 403) {
+              console.log('resource not accessible, creating status instead')
+              // create status
+              const description = dcoFailed[(dcoFailed.length - 1)].message.substring(0, 140)
+              const params = {
+                sha: pr.head.sha,
+                context: 'DCO',
+                state: 'failure',
+                description,
+                target_url: 'https://github.com/probot/dco#how-it-works'
+              }
+              return context.github.repos.createStatus(context.repo(params))
             }
-            return context.github.repos.createStatus(context.repo(params))
-          }
-        })
+          })
+      }
+
     }
   }
 
