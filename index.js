@@ -134,7 +134,7 @@ module.exports = app => {
   }
 
   // This option is only presented to users with Write Access to the repo and config.enable_pass set to true
-  if ( config.enable_pass ) {
+  if ( enablePass ) {
     app.on('check_run.requested_action', setStatusPass)
     async function setStatusPass (context) {
       const timeStart = new Date()
