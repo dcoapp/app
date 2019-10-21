@@ -128,16 +128,15 @@ module.exports = app => {
             }
           })
       }
-
     }
   }
 
   // This option is only presented to users with Write Access to the repo and config.enable_pass set to true
-  if (enablePass) {
-    app.on('check_run.requested_action', setStatusPass)
-    async function setStatusPass (context) {
-      const timeStart = new Date()
+  app.on('check_run.requested_action', setStatusPass)
+  async function setStatusPass (context) {
+    const timeStart = new Date()
 
+    if (enablePass) {
       return context.github.checks.create(context.repo({
         name: 'DCO',
         head_branch: context.payload.check_run.check_suite.head_branch,
