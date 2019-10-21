@@ -10,7 +10,7 @@ module.exports = app => {
     const config = await context.config('dco.yml', {
       require: {
         members: true
-      }
+      },
       enable_pass: true
     })
     const requireForMembers = config.require.members
