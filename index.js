@@ -1,19 +1,21 @@
 const getDCOStatus = require('./lib/dco.js')
 const requireMembers = require('./lib/requireMembers.js')
+var enablePass = true
 
 module.exports = app => {
   app.on(['pull_request.opened', 'pull_request.synchronize', 'check_run.rerequested'], check)
 
+  const config = await context.config('dco.yml', {
+    require: {
+      members: true
+    },
+    enable_pass: true
+  })
+  const requireForMembers = config.require.members
+  const enablePass = config.enable_pass
+
   async function check (context) {
     const timeStart = new Date()
-
-    const config = await context.config('dco.yml', {
-      require: {
-        members: true
-      },
-      enable_pass: true
-    })
-    const requireForMembers = config.require.members
 
     const pr = context.payload.pull_request
 
@@ -132,7 +134,7 @@ module.exports = app => {
   }
 
   // This option is only presented to users with Write Access to the repo and config.enable_pass set to true
-  if ( config.enable_pass ) {
+  if ( enablePass ) {
     app.on('check_run.requested_action', setStatusPass)
     async function setStatusPass (context) {
       const timeStart = new Date()
