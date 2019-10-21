@@ -5,17 +5,17 @@ var enablePass = true
 module.exports = app => {
   app.on(['pull_request.opened', 'pull_request.synchronize', 'check_run.rerequested'], check)
 
-  const config = await context.config('dco.yml', {
-    require: {
-      members: true
-    },
-    enable_pass: true
-  })
-  const requireForMembers = config.require.members
-  const enablePass = config.enable_pass
-
   async function check (context) {
     const timeStart = new Date()
+
+    const config = await context.config('dco.yml', {
+      require: {
+        members: true
+      },
+      enable_pass: true
+    })
+    const requireForMembers = config.require.members
+    var enablePass = config.enable_pass
 
     const pr = context.payload.pull_request
 
@@ -134,7 +134,7 @@ module.exports = app => {
   }
 
   // This option is only presented to users with Write Access to the repo and config.enable_pass set to true
-  if ( enablePass ) {
+  if ( config.enable_pass ) {
     app.on('check_run.requested_action', setStatusPass)
     async function setStatusPass (context) {
       const timeStart = new Date()
@@ -162,4 +162,8 @@ function handleOneCommit (pr, dcoFailed) {
 
 function handleMultipleCommits (pr, commitLength, dcoFailed) {
   return `You have ${dcoFailed.length} commits incorrectly signed off. To fix, head to your local branch and run: \n\`\`\`bash\ngit rebase HEAD~${commitLength} --signoff\n\`\`\`\n Now your commits will have your sign off. Next run \n\`\`\`bash\ngit push --force-with-lease origin ${pr.head.ref}\n\`\`\``
+}
+
+function loadConfigGlobal() {
+
 }
