@@ -64,7 +64,7 @@ module.exports = app => {
       if (dcoFailed.length === 1) summary = handleOneCommit(pr, dcoFailed) + `\n\n${summary}`
       else summary = handleMultipleCommits(pr, commits.length, dcoFailed) + `\n\n${summary}`
 
-      if ( config.enable_pass ) {
+      if (enablePass) {
         context.github.checks.create(context.repo({
           name: 'DCO',
           head_branch: pr.head.ref,
@@ -98,8 +98,7 @@ module.exports = app => {
               return context.github.repos.createStatus(context.repo(params))
             }
           })
-      }
-      else {
+      } else {
         context.github.checks.create(context.repo({
           name: 'DCO',
           head_branch: pr.head.ref,
@@ -134,7 +133,7 @@ module.exports = app => {
   }
 
   // This option is only presented to users with Write Access to the repo and config.enable_pass set to true
-  if ( enablePass ) {
+  if (enablePass) {
     app.on('check_run.requested_action', setStatusPass)
     async function setStatusPass (context) {
       const timeStart = new Date()
@@ -162,8 +161,4 @@ function handleOneCommit (pr, dcoFailed) {
 
 function handleMultipleCommits (pr, commitLength, dcoFailed) {
   return `You have ${dcoFailed.length} commits incorrectly signed off. To fix, head to your local branch and run: \n\`\`\`bash\ngit rebase HEAD~${commitLength} --signoff\n\`\`\`\n Now your commits will have your sign off. Next run \n\`\`\`bash\ngit push --force-with-lease origin ${pr.head.ref}\n\`\`\``
-}
-
-function loadConfigGlobal() {
-
 }
