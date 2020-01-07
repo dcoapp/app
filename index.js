@@ -135,6 +135,14 @@ module.exports = app => {
   app.on('check_run.requested_action', setStatusPass)
   async function setStatusPass (context) {
     const timeStart = new Date()
+    const config = await context.config('dco.yml', {
+      require: {
+        members: true
+      },
+      enable_pass: true
+    })
+    const requireForMembers = config.require.members
+    var enablePass = config.enable_pass
 
     if (enablePass) {
       return context.github.checks.create(context.repo({
