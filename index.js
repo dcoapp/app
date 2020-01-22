@@ -1,6 +1,5 @@
 const getDCOStatus = require('./lib/dco.js')
 const requireMembers = require('./lib/requireMembers.js')
-var enablePass = true
 
 module.exports = app => {
   app.on(['pull_request.opened', 'pull_request.synchronize', 'check_run.rerequested'], check)
@@ -141,7 +140,6 @@ module.exports = app => {
       },
       enable_pass: true
     })
-    const requireForMembers = config.require.members
     var enablePass = config.enable_pass
 
     if (enablePass) {
