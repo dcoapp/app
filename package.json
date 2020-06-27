@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "email-validator": "^2.0.3",
-    "probot": "^7.3.1"
+    "probot": "^9.11.5"
   },
   "jest": {
     "testEnvironment": "node"
