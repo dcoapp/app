@@ -103,7 +103,7 @@ module.exports = (app) => {
                 {
                   label: 'Set DCO to pass',
                   description: 'would set status to passing',
-                  identifier: `override`
+                  identifier: 'override'
                 }
               ]
             })

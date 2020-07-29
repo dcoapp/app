@@ -60,11 +60,11 @@ describe('dco', () => {
     const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha }], alwaysRequireSignoff, prInfo)
 
     expect(dcoObject).toEqual([{
-      'author': 'Author Name',
-      'committer': 'Committer Name',
-      'message': 'Can not find "Author Name <author@email.com>", in ["Tester1 <tester1@github.com>", "Tester2 <tester2@github.com>"].',
-      'sha': '18aebfa67dde85da0f5099ad70ef647685a05205',
-      'url': 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205'
+      author: 'Author Name',
+      committer: 'Committer Name',
+      message: 'Can not find "Author Name <author@email.com>", in ["Tester1 <tester1@github.com>", "Tester2 <tester2@github.com>"].',
+      sha: '18aebfa67dde85da0f5099ad70ef647685a05205',
+      url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205'
     }])
   })
 
