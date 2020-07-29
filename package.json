@@ -13,21 +13,21 @@
     "node": ">=10.7.0",
     "npm": ">=5.3.0"
   },
+  "dependencies": {
+    "email-validator": "^2.0.3",
+    "probot": "^10.0.0-beta.9"
+  },
   "devDependencies": {
-    "eslint-plugin-import": "^2.11.0",
-    "jest": "^23.6.0",
-    "nock": "^10.0.1",
+    "eslint-plugin-import": "^2.22.0",
+    "jest": "^26.1.0",
+    "nock": "^13.0.3",
     "smee-client": "^1.0.1",
-    "standard": "^12.0.1"
+    "standard": "^14.3.4"
   },
   "standard": {
     "env": [
       "jest"
     ]
-  },
-  "dependencies": {
-    "email-validator": "^2.0.3",
-    "probot": "^9.11.5"
   },
   "jest": {
     "testEnvironment": "node"
