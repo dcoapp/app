@@ -7,7 +7,8 @@
   "repository": "https://github.com/probot/dco.git",
   "scripts": {
     "start": "probot run ./index.js",
-    "test": "jest && standard"
+    "test": "jest --coverage",
+    "posttest": "standard"
   },
   "engines": {
     "node": ">=10.7.0",
