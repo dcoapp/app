@@ -1,5 +1,6 @@
+*.pem
+.DS_Store
+.env
+coverage
 node_modules
 npm-debug.log
-*.pem
-.env
-.DS_Store
