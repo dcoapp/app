@@ -1,0 +1,83 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`dco creates a error status if app has no access to checks 1`] = `
+Object {
+  "context": "DCO",
+  "description": "The sign-off is missing.",
+  "state": "failure",
+  "target_url": "https://github.com/probot/dco#how-it-works",
+}
+`;
+
+exports[`dco creates a failing check 1`] = `
+Object {
+  "actions": Array [
+    Object {
+      "description": "would set status to passing",
+      "identifier": "override",
+      "label": "Set DCO to pass",
+    },
+  ],
+  "completed_at": "2018-07-14T18:18:54.156Z",
+  "conclusion": "action_required",
+  "head_branch": "dco-test",
+  "head_sha": "e76ed6025cec8879c75454a6efd6081d46de4c94",
+  "name": "DCO",
+  "output": Object {
+    "summary": "You only have one commit incorrectly signed off! To fix, first ensure you have a local copy of your branch by [checking out the pull request locally via command line](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/checking-out-pull-requests-locally). Next, head to your local branch and run: 
+\`\`\`bash
+git commit --amend --signoff
+\`\`\`
+Now your commits will have your sign off. Next run 
+\`\`\`bash
+git push --force-with-lease origin dco-test
+\`\`\`
+
+Commit sha: [e76ed60](https://github.com/robotland/test/pull/113/commits/e76ed6025cec8879c75454a6efd6081d46de4c94), Author: Brandon Keepers, Committer: GitHub; The sign-off is missing.",
+    "title": "DCO",
+  },
+  "started_at": "2018-07-14T18:18:54.156Z",
+  "status": "completed",
+}
+`;
+
+exports[`dco creates a passing check 1`] = `
+Object {
+  "actions": Array [
+    Object {
+      "description": "would set status to passing",
+      "identifier": "override",
+      "label": "Set DCO to pass",
+    },
+  ],
+  "completed_at": "2018-07-14T18:18:54.156Z",
+  "conclusion": "action_required",
+  "head_branch": "changes",
+  "head_sha": "34c5c7793cb3b279e22454cb6750c80560547b3a",
+  "name": "DCO",
+  "output": Object {
+    "summary": "You only have one commit incorrectly signed off! To fix, first ensure you have a local copy of your branch by [checking out the pull request locally via command line](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/checking-out-pull-requests-locally). Next, head to your local branch and run: 
+\`\`\`bash
+git commit --amend --signoff
+\`\`\`
+Now your commits will have your sign off. Next run 
+\`\`\`bash
+git push --force-with-lease origin changes
+\`\`\`
+
+Commit sha: [6dcb09b](https://github.com/octocat/Hello-World/pull/1/commits/6dcb09b5b57875f334f61aebed695e2e4193db5e), Author: Monalisa Octocat, Committer: Monalisa Octocat; The sign-off is missing.",
+    "title": "DCO",
+  },
+  "started_at": "2018-07-14T18:18:54.156Z",
+  "status": "completed",
+}
+`;
+
+exports[`dco creates a passing status if app has no access to checks 1`] = `
+Object {
+  "context": "DCO",
+  "description": "The sign-off is missing.",
+  "state": "failure",
+  "target_url": "https://github.com/probot/dco#how-it-works",
+}
+`;
