@@ -21,7 +21,7 @@ module.exports = (app) => {
       enable_pass: true
     })
     const requireForMembers = config.require.members
-    var enablePass = config.enable_pass
+    const enablePass = config.enable_pass
 
     const pr = context.payload.pull_request
 
@@ -89,60 +89,46 @@ module.exports = (app) => {
       }
 
       if (enablePass) {
-        context.github.checks.create(context.repo({
-          name: 'DCO',
-          head_branch: pr.head.ref,
-          head_sha: pr.head.sha,
-          status: 'completed',
-          started_at: timeStart,
-          conclusion: 'action_required',
-          completed_at: new Date(),
-          output: {
-            title: 'DCO',
-            summary
-          },
-          actions: [{
-            label: 'Set DCO to pass',
-            description: 'would set status to passing',
-            identifier: `override`
-          }]
-        }))
-          .catch(function checkFails (error) {
-            if (error.code === 403) {
-              console.log('resource not accessible, creating status instead')
-              // create status
-              const description = dcoFailed[(dcoFailed.length - 1)].message.substring(0, 140)
-              const params = {
-                sha: pr.head.sha,
-                context: 'DCO',
-                state: 'failure',
-                description,
-                target_url: 'https://github.com/probot/dco#how-it-works'
-              }
-              context.github.repos.createCommitStatus(context.repo(params))
-            }
-          })
+        await context.github.checks
+          .create(
+            context.repo({
+              name: 'DCO',
+              head_branch: pr.head.ref,
+              head_sha: pr.head.sha,
+              status: 'completed',
+              started_at: timeStart,
+              conclusion: 'action_required',
+              completed_at: new Date(),
+              output: {
+                title: 'DCO',
+                summary
+              },
+              actions: [
+                {
+                  label: 'Set DCO to pass',
+                  description: 'would set status to passing',
+                  identifier: 'override'
+                }
+              ]
+            })
+          )
       } else {
-        context.github.checks.create(context.repo({
-          name: 'DCO',
-          head_branch: pr.head.ref,
-          head_sha: pr.head.sha,
-          status: 'completed',
-          started_at: timeStart,
-          conclusion: 'action_required',
-          completed_at: new Date(),
-          output: {
-            title: 'DCO',
-            summary
-          },
-          actions: [{
-            label: 'Set DCO to pass',
-            description: 'would set status to passing',
-            identifier: `override`
-          }]
-        }))
-          
-        throw error
+        await context.github.checks
+          .create(
+            context.repo({
+              name: 'DCO',
+              head_branch: pr.head.ref,
+              head_sha: pr.head.sha,
+              status: 'completed',
+              started_at: timeStart,
+              conclusion: 'action_required',
+              completed_at: new Date(),
+              output: {
+                title: 'DCO',
+                summary
+              }
+            })
+          )
       }
       .catch(function checkFails (error) {
         if (error.code === 403) {
@@ -159,6 +145,8 @@ module.exports = (app) => {
           return context.github.repos.createCommitStatus(context.repo(params))
         }
       })
+      
+      throw error
     }
   }
 
