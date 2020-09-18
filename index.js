@@ -119,7 +119,7 @@ module.exports = (app) => {
                 description,
                 target_url: 'https://github.com/probot/dco#how-it-works'
               }
-              return context.github.repos.createStatus(context.repo(params))
+              context.github.repos.createCommitStatus(context.repo(params))
             }
           })
       } else {
@@ -134,24 +134,31 @@ module.exports = (app) => {
           output: {
             title: 'DCO',
             summary
-          }
+          },
+          actions: [{
+            label: 'Set DCO to pass',
+            description: 'would set status to passing',
+            identifier: `override`
+          }]
         }))
-          .catch(function checkFails (error) {
-            if (error.code === 403) {
-              console.log('resource not accessible, creating status instead')
-              // create status
-              const description = dcoFailed[(dcoFailed.length - 1)].message.substring(0, 140)
-              const params = {
-                sha: pr.head.sha,
-                context: 'DCO',
-                state: 'failure',
-                description,
-                target_url: 'https://github.com/probot/dco#how-it-works'
-              }
-              return context.github.repos.createStatus(context.repo(params))
-            }
-          })
+          
+        throw error
       }
+      .catch(function checkFails (error) {
+        if (error.code === 403) {
+          console.log('resource not accessible, creating status instead')
+          // create status
+          const description = dcoFailed[(dcoFailed.length - 1)].message.substring(0, 140)
+          const params = {
+            sha: pr.head.sha,
+            context: 'DCO',
+            state: 'failure',
+            description,
+            target_url: 'https://github.com/probot/dco#how-it-works'
+          }
+          return context.github.repos.createCommitStatus(context.repo(params))
+        }
+      })
     }
   }
 
