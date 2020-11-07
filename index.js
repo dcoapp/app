@@ -183,7 +183,8 @@ module.exports = (app) => {
           title: 'DCO',
           summary: 'Commit sign-off was manually approved.'
         }
-      }))
+      })
+     }
     }
   }
 }
