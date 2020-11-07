@@ -185,8 +185,8 @@ module.exports = (app) => {
           summary: 'Commit sign-off was manually approved.'
         }
       })
-     }
     )
+    }
   }
 }
 
