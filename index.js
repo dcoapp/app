@@ -168,7 +168,7 @@ module.exports = (app) => {
       },
       enable_pass: true
     })
-    var enablePass = config.enable_pass
+    const enablePass = config.enable_pass
 
     if (enablePass) {
     await context.github.checks.create(
