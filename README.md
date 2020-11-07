@@ -21,6 +21,15 @@ require:
 
 When this setting is present on a repository that belongs to a GitHub user (instead of an organization), only the repository owner is allowed to push commits without sign-off.
 
+### Disable ability for users with write access to bypass checks
+
+The option to bypass checks can be disabled by placing the following configuration file in `.github/dco.yml` on the default branch:
+
+```yaml
+require:
+  enablePass: false
+```
+
 ## How it works
 
 The Developer Certificate of Origin (DCO) is a lightweight way for contributors to certify that they wrote or otherwise have the right to submit the code they are contributing to the project. Here is the full [text of the DCO](https://developercertificate.org/), reformatted for readability:
