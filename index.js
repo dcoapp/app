@@ -90,30 +90,6 @@ module.exports = (app) => {
 
       if (enablePass) {
         await context.github.checks
-          .create(
-            context.repo({
-              name: 'DCO',
-              head_branch: pr.head.ref,
-              head_sha: pr.head.sha,
-              status: 'completed',
-              started_at: timeStart,
-              conclusion: 'action_required',
-              completed_at: new Date(),
-              output: {
-                title: 'DCO',
-                summary
-              },
-              actions: [
-                {
-                  label: 'Set DCO to pass',
-                  description: 'would set status to passing',
-                  identifier: 'override'
-                }
-              ]
-            })
-          )
-      } else {
-        await context.github.checks
         .create(
           context.repo({
             name: 'DCO',
