@@ -171,7 +171,7 @@ module.exports = (app) => {
     var enablePass = config.enable_pass
 
     if (enablePass) {
-await context.github.checks.create(
+    await context.github.checks.create(
       context.repo({
         name: 'DCO',
         head_branch: context.payload.check_run.check_suite.head_branch,
