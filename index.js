@@ -114,39 +114,47 @@ module.exports = (app) => {
           )
       } else {
         await context.github.checks
-          .create(
-            context.repo({
-              name: 'DCO',
-              head_branch: pr.head.ref,
-              head_sha: pr.head.sha,
-              status: 'completed',
-              started_at: timeStart,
-              conclusion: 'action_required',
-              completed_at: new Date(),
-              output: {
-                title: 'DCO',
-                summary
+        .create(
+          context.repo({
+            name: 'DCO',
+            head_branch: pr.head.ref,
+            head_sha: pr.head.sha,
+            status: 'completed',
+            started_at: timeStart,
+            conclusion: 'action_required',
+            completed_at: new Date(),
+            output: {
+              title: 'DCO',
+              summary
+            },
+            actions: [
+              {
+                label: 'Set DCO to pass',
+                description: 'would set status to passing',
+                identifier: 'override'
               }
-            })
-          )
-      }
-      .catch(function checkFails (error) {
-        if (error.code === 403) {
-          console.log('resource not accessible, creating status instead')
-          // create status
-          const description = dcoFailed[(dcoFailed.length - 1)].message.substring(0, 140)
-          const params = {
-            sha: pr.head.sha,
-            context: 'DCO',
-            state: 'failure',
-            description,
-            target_url: 'https://github.com/probot/dco#how-it-works'
+            ]
+          })
+        )
+        .catch(function checkFails (error) {
+          if (error.status === 403) {
+            context.log.info('resource not accessible, creating status instead')
+            // create status
+            const description = dcoFailed[dcoFailed.length - 1].message.substring(0, 140)
+            const params = {
+              sha: pr.head.sha,
+              context: 'DCO',
+              state: 'failure',
+              description,
+              target_url: 'https://github.com/probot/dco#how-it-works'
+            }
+            return context.github.repos.createCommitStatus(context.repo(params))
           }
-          return context.github.repos.createCommitStatus(context.repo(params))
-        }
-      })
+
+          throw error
+        })
       
-      throw error
+      }
     }
   }
 
