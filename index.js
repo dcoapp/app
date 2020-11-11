@@ -162,6 +162,17 @@ module.exports = (app) => {
         })
       )
     }
+    else {
+      await context.github.checks.create(
+        context.repo({
+          sha: context.payload.check_run.head_sha,
+          context: 'DCO',
+          state: 'failure',
+          description,
+          target_url: 'https://github.com/probot/dco#how-it-works'
+        })
+      )
+    }
   }
 }
 
