@@ -1,7 +1,10 @@
 const getDCOStatus = require('./lib/dco.js')
 const requireMembers = require('./lib/requireMembers.js')
 
-module.exports = (app) => {
+/**
+ * @param { {app: import('probot').Probot}} app
+ */
+module.exports = ({ app }) => {
   app.on(
     [
       'pull_request.opened',
@@ -23,7 +26,7 @@ module.exports = (app) => {
 
     const pr = context.payload.pull_request
 
-    const compare = await context.github.repos.compareCommits(
+    const compare = await context.octokit.repos.compareCommits(
       context.repo({
         base: pr.base.sha,
         head: pr.head.sha
@@ -38,7 +41,7 @@ module.exports = (app) => {
     )
 
     if (!dcoFailed.length) {
-      await context.github.checks
+      await context.octokit.checks
         .create(
           context.repo({
             name: 'DCO',
@@ -56,7 +59,9 @@ module.exports = (app) => {
         )
         .catch(function checkFails (error) {
           if (error.status === 403) {
-            context.log.info('resource not accessible, creating status instead')
+            context.log.info(
+              'resource not accessible, creating status instead'
+            )
             // create status
             const params = {
               sha: pr.head.sha,
@@ -65,7 +70,9 @@ module.exports = (app) => {
               description: 'All commits are signed off!',
               target_url: 'https://github.com/probot/dco#how-it-works'
             }
-            return context.github.repos.createCommitStatus(context.repo(params))
+            return context.octokit.repos.createCommitStatus(
+              context.repo(params)
+            )
           }
 
           throw error
@@ -80,13 +87,15 @@ module.exports = (app) => {
         )
       })
       summary = summary.join('\n')
-      if (dcoFailed.length === 1) { summary = handleOneCommit(pr, dcoFailed) + `\n\n${summary}` } else {
+      if (dcoFailed.length === 1) {
+        summary = handleOneCommit(pr, dcoFailed) + `\n\n${summary}`
+      } else {
         summary =
           handleMultipleCommits(pr, commits.length, dcoFailed) +
           `\n\n${summary}`
       }
 
-      await context.github.checks
+      await context.octokit.checks
         .create(
           context.repo({
             name: 'DCO',
@@ -111,9 +120,13 @@ module.exports = (app) => {
         )
         .catch(function checkFails (error) {
           if (error.status === 403) {
-            context.log.info('resource not accessible, creating status instead')
+            context.log.info(
+              'resource not accessible, creating status instead'
+            )
             // create status
-            const description = dcoFailed[dcoFailed.length - 1].message.substring(0, 140)
+            const description = dcoFailed[
+              dcoFailed.length - 1
+            ].message.substring(0, 140)
             const params = {
               sha: pr.head.sha,
               context: 'DCO',
@@ -121,7 +134,9 @@ module.exports = (app) => {
               description,
               target_url: 'https://github.com/probot/dco#how-it-works'
             }
-            return context.github.repos.createCommitStatus(context.repo(params))
+            return context.octokit.repos.createCommitStatus(
+              context.repo(params)
+            )
           }
 
           throw error
@@ -134,7 +149,7 @@ module.exports = (app) => {
   async function setStatusPass (context) {
     const timeStart = new Date()
 
-    await context.github.checks.create(
+    await context.octokit.checks.create(
       context.repo({
         name: 'DCO',
         head_branch: context.payload.check_run.check_suite.head_branch,

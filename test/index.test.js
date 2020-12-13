@@ -15,7 +15,7 @@ describe('dco', () => {
 
   beforeEach(() => {
     probot = new Probot({
-      id: 1,
+      appId: 1,
       githubToken: 'test',
       Octokit: ProbotOctokitCore
     })
