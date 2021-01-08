@@ -4,8 +4,14 @@ If you would like to run your own instance of this plugin, see the [docs for dep
 
 This plugin requires these **Permissions & events** for the GitHub Integration:
 
+## Required Permissions
+
 - Commit statuses: **Read & Write**
 - Pull requests: **Read-only**
-  - [x] Check the box for **Pull request** events
 - Repository contents: **Read-only**
-  - [x] Check the box for **Push** events
+- Checks: **Read & Write**
+
+## Required Events
+
+- Pull request
+- Push
