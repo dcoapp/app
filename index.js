@@ -1,7 +1,10 @@
 const getDCOStatus = require('./lib/dco.js')
 const requireMembers = require('./lib/requireMembers.js')
 
-module.exports = (app) => {
+/**
+ * @param { {app: import('probot').Probot}} app
+ */
+module.exports = ({ app }) => {
   app.on(
     [
       'pull_request.opened',
@@ -25,7 +28,7 @@ module.exports = (app) => {
 
     const pr = context.payload.pull_request
 
-    const compare = await context.github.repos.compareCommits(
+    const compare = await context.octokit.repos.compareCommits(
       context.repo({
         base: pr.base.sha,
         head: pr.head.sha
@@ -40,7 +43,7 @@ module.exports = (app) => {
     )
 
     if (!dcoFailed.length) {
-      await context.github.checks
+      await context.octokit.checks
         .create(
           context.repo({
             name: 'DCO',
@@ -58,7 +61,9 @@ module.exports = (app) => {
         )
         .catch(function checkFails (error) {
           if (error.status === 403) {
-            context.log.info('resource not accessible, creating status instead')
+            context.log.info(
+              'resource not accessible, creating status instead'
+            )
             // create status
             const params = {
               sha: pr.head.sha,
@@ -67,7 +72,9 @@ module.exports = (app) => {
               description: 'All commits are signed off!',
               target_url: 'https://github.com/probot/dco#how-it-works'
             }
-            return context.github.repos.createCommitStatus(context.repo(params))
+            return context.octokit.repos.createCommitStatus(
+              context.repo(params)
+            )
           }
 
           throw error
@@ -82,14 +89,16 @@ module.exports = (app) => {
         )
       })
       summary = summary.join('\n')
-      if (dcoFailed.length === 1) { summary = handleOneCommit(pr, dcoFailed) + `\n\n${summary}` } else {
+      if (dcoFailed.length === 1) {
+        summary = handleOneCommit(pr, dcoFailed) + `\n\n${summary}`
+      } else {
         summary =
           handleMultipleCommits(pr, commits.length, dcoFailed) +
           `\n\n${summary}`
       }
 
       if (enablePass) {
-        await context.github.checks
+        await context.octokit.checks
           .create(
             context.repo({
               name: 'DCO',
@@ -114,9 +123,13 @@ module.exports = (app) => {
           )
           .catch(function checkFails (error) {
             if (error.status === 403) {
-              context.log.info('resource not accessible, creating status instead')
+              context.log.info(
+                'resource not accessible, creating status instead'
+              )
               // create status
-              const description = dcoFailed[dcoFailed.length - 1].message.substring(0, 140)
+              const description = dcoFailed[
+                dcoFailed.length - 1
+              ].message.substring(0, 140)
               const params = {
                 sha: pr.head.sha,
                 context: 'DCO',
@@ -124,7 +137,9 @@ module.exports = (app) => {
                 description,
                 target_url: 'https://github.com/probot/dco#how-it-works'
               }
-              return context.github.repos.createCommitStatus(context.repo(params))
+              return context.octokit.repos.createCommitStatus(
+                context.repo(params)
+              )
             }
 
             throw error
@@ -146,7 +161,7 @@ module.exports = (app) => {
     const enablePass = config.enable_pass
 
     if (enablePass) {
-      await context.github.checks.create(
+      await context.octokit.checks.create(
         context.repo({
           name: 'DCO',
           head_branch: context.payload.check_run.check_suite.head_branch,
@@ -163,7 +178,7 @@ module.exports = (app) => {
       )
     }
     else {
-      await context.github.checks.create(
+      await context.octokit.checks.create(
         context.repo({
           sha: context.payload.check_run.head_sha,
           context: 'DCO',
@@ -177,7 +192,7 @@ module.exports = (app) => {
 }
 
 function handleOneCommit (pr, dcoFailed) {
-  return `You only have one commit incorrectly signed off! To fix, first ensure you have a local copy of your branch by [checking out the pull request locally via command line](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/checking-out-pull-requests-locally). Next, head to your local branch and run: \n\`\`\`bash\ngit commit --amend --signoff\n\`\`\`\nNow your commits will have your sign off. Next run \n\`\`\`bash\ngit push --force-with-lease origin ${pr.head.ref}\n\`\`\``
+  return `You only have one commit incorrectly signed off! To fix, first ensure you have a local copy of your branch by [checking out the pull request locally via command line](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/checking-out-pull-requests-locally). Next, head to your local branch and run: \n\`\`\`bash\ngit commit --amend --no-edit --signoff\n\`\`\`\nNow your commits will have your sign off. Next run \n\`\`\`bash\ngit push --force-with-lease origin ${pr.head.ref}\n\`\`\``
 }
 
 function handleMultipleCommits (pr, commitLength, dcoFailed) {
