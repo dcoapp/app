@@ -20,9 +20,14 @@ module.exports = ({ app }) => {
     const config = await context.config('dco.yml', {
       require: {
         members: true
+      },
+      allowRemediationCommits: {
+        individual: false,
+        thirdParty: false
       }
     })
     const requireForMembers = config.require.members
+    const allowRemediationCommits = config.allowRemediationCommits
 
     const pr = context.payload.pull_request
 
@@ -37,7 +42,8 @@ module.exports = ({ app }) => {
     const dcoFailed = await getDCOStatus(
       commits,
       requireMembers(requireForMembers, context),
-      context.payload.pull_request.html_url
+      context.payload.pull_request.html_url,
+      allowRemediationCommits
     )
 
     if (!dcoFailed.length) {
@@ -87,13 +93,8 @@ module.exports = ({ app }) => {
         )
       })
       summary = summary.join('\n')
-      if (dcoFailed.length === 1) {
-        summary = handleOneCommit(pr, dcoFailed) + `\n\n${summary}`
-      } else {
-        summary =
-          handleMultipleCommits(pr, commits.length, dcoFailed) +
-          `\n\n${summary}`
-      }
+
+      summary = handleCommits(pr, commits.length, dcoFailed, allowRemediationCommits) + `\n\n### Summary\n\n${summary}`
 
       await context.octokit.checks
         .create(
@@ -167,10 +168,35 @@ module.exports = ({ app }) => {
   }
 }
 
-function handleOneCommit (pr, dcoFailed) {
-  return `You only have one commit incorrectly signed off! To fix, first ensure you have a local copy of your branch by [checking out the pull request locally via command line](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/checking-out-pull-requests-locally). Next, head to your local branch and run: \n\`\`\`bash\ngit commit --amend --no-edit --signoff\n\`\`\`\nNow your commits will have your sign off. Next run \n\`\`\`bash\ngit push --force-with-lease origin ${pr.head.ref}\n\`\`\``
-}
+function handleCommits (pr, commitLength, dcoFailed, allowRemediationCommits) {
 
-function handleMultipleCommits (pr, commitLength, dcoFailed) {
-  return `You have ${dcoFailed.length} commits incorrectly signed off. To fix, first ensure you have a local copy of your branch by [checking out the pull request locally via command line](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/checking-out-pull-requests-locally). Next, head to your local branch and run: \n\`\`\`bash\ngit rebase HEAD~${commitLength} --signoff\n\`\`\`\n Now your commits will have your sign off. Next run \n\`\`\`bash\ngit push --force-with-lease origin ${pr.head.ref}\n\`\`\``
+  let returnMessage = ''
+
+  if (dcoFailed.length == 1) {
+    returnMessage = `There is one commit incorrectly signed off.  This means that the author of this commit failed to include a Signed-off-by line in the commit message.\n\n`
+  } else {
+    returnMessage = `There are ${dcoFailed.length} commits incorrectly signed off.  This means that the author(s) of these commits failed to include a Signed-off-by line in their commit message.\n\n`
+  }
+
+  returnMessage = returnMessage + `To avoid having PRs blocked in the future, always include \`Signed-off-by: Author Name <authoremail@example.com>\` in *every* commit message. You can also do this automatically by using the -s flag (i.e., \`git commit -s\`).
+
+Here is how to fix the problem so that this code can be merged.\n\n`
+
+  returnMessage = returnMessage + `\n---\n\n### Rebase the branch
+
+If you have a local git environment and meet the criteria below, one option is to rebase the branch and add your Signed-off-by lines in the new commits.  Please note that if others have already begun work based upon the commits in this branch, this solution will rewrite history and may cause serious issues for collaborators ([described in the git documentation](https://git-scm.com/book/en/v2/Git-Branching-Rebasing) under "The Perils of Rebasing").
+
+You should only do this if:
+
+* You are the only author of the commits in this branch
+* You are absolutely certain nobody else is doing any work based upon this branch
+* There are no empty commits in the branch (for example, a DCO Remediation Commit which was added using \`--allow-empty\`)
+
+To add your Signed-off-by line to every commit in this branch:
+
+1. Ensure you have a local copy of your branch by [checking out the pull request locally via command line](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/checking-out-pull-requests-locally).
+1. In your local branch, run: \`git rebase HEAD~${commitLength} --signoff\`
+1. Force push your changes to overwrite the branch: \`git push --force-with-lease origin ${pr.head.ref}\`\n\n---\n\n`
+
+  return returnMessage
 }
