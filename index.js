@@ -182,7 +182,75 @@ function handleCommits (pr, commitLength, dcoFailed, allowRemediationCommits) {
 
 Here is how to fix the problem so that this code can be merged.\n\n`
 
-  returnMessage = returnMessage + `\n---\n\n### Rebase the branch
+  let rebaseWarning = ''
+
+  if (allowRemediationCommits.individual || allowRemediationCommits.thirdparty) {
+    returnMessage = returnMessage + `---\n\n### Preferred method: Commit author adds a DCO remediation commit
+
+A *DCO Remediation Commit* contains special text in the commit message that applies a missing Signed-off-by line in a subsequent commit.  The primary benefit of this method is that the project’s history does not change, and there is no risk of breaking someone else’s work.
+
+These authors can unblock this PR by adding a new commit to this branch with the following text in their commit message:\n`
+
+    let currentAuthor = ''
+    dcoFailed.forEach(function (commit,index,dcoFailed) {
+      // If the author has changed, we need to write a new section and close any old sections
+      if (currentAuthor != commit.author + ' <' + commit.email + '>') {
+        // If currentAuthor was already defined it's the end of a section, so write the Signed-off-by
+        if (currentAuthor) {
+          returnMessage = returnMessage + `\nSigned-off-by: ${currentAuthor}\n\`\`\`\n`
+        }
+        // Update the currentAuthor and write a new section
+        currentAuthor = commit.author + ' <' + commit.email + '>'
+        returnMessage = returnMessage + `#### ${commit.author} &lt;${commit.email}&gt;\n\`\`\`\nDCO Remediation Commit for ${commit.author} <${commit.email}>\n\n`
+      }
+      // Draft the magic DCO remediation commit text for the author
+      //returnMessage = returnMessage + `I, ${commit.author} <${commit.email}> ${commit.sha}\n`
+      returnMessage = returnMessage + `I, ${currentAuthor}, hereby add my Signed-off-by to this commit: ${commit.sha}\n`
+
+      if (index === dcoFailed.length - 1) {
+        returnMessage = returnMessage + `\nSigned-off-by: ${currentAuthor}\n\`\`\`\n`
+      }
+    })
+
+    returnMessage = returnMessage + `\n\nPlease note: You should avoid adding empty commits (i.e., \`git commit -s --allow-empty\`), because these will be discarded if someone rebases the branch / repo.\n`
+
+    if (allowRemediationCommits.thirdParty) {
+
+      returnMessage = returnMessage + `\n---\n\n### Alternate method: An employer adds a DCO Remediation Commit
+
+If the contents of this commit were contributed on behalf of a third party (generally, the author’s employer), an authorized individual may add a Third-Party DCO Remediation Commit.  This may be necessary if the original author is unavailable to add their own DCO Remediation Commit to this branch.
+
+If you are about to add a Third-Party DCO Remediation Commit under DCO section (b) or (c), be sure you are authorized by your employer to take this action.  Generally speaking, maintainers and other project contributors cannot sign off on behalf of project contributors, unless there is some relationship which permits this action.  It is your responsibility to verify this.
+
+This PR can be unblocked by an authorized third party adding one or more new commits to this branch with the following text in the commit message.  Replace YOUR_COMPANY with your company name, YOUR_NAME with the name of the authorized representative, and YOUR_EMAIL with the representative’s email address.
+
+For the sake of clarity, please use a separate commit per author:\n`
+
+      currentAuthor = ''
+      dcoFailed.forEach(function (commit,index,dcoFailed) {
+        // If the author has changed, we need to write a new section and close any old sections
+        if (currentAuthor != commit.author + ' <' + commit.email + '>') {
+          // If currentAuthor was already defined it's the end of a section, so write the Signed-off-by
+          if (currentAuthor) {
+            returnMessage = returnMessage + `\nSigned-off-by: YOUR_NAME <YOUR_EMAIL>\n\`\`\`\n`
+          }
+          // Update the currentAuthor and write a new section
+          currentAuthor = commit.author + ' <' + commit.email + '>'
+          returnMessage = returnMessage + `#### On behalf of ${commit.author} &lt;${commit.email}&gt;\n\`\`\`\nThird-Party DCO Remediation Commit for ${commit.author} <${commit.email}>\n\n`
+        }
+        // Draft the magic DCO remediation commit text for the author
+        //returnMessage = returnMessage + `Retroactive-signed-off-by: ${commit.author} <${commit.email}> ${commit.sha}\n`
+        returnMessage = returnMessage + `On behalf of ${commit.author} <${commit.email}>, I, YOUR_NAME <YOUR_EMAIL>, hereby add my Signed-off-by to this commit: ${commit.sha}\n`
+        console.log(commit.sha)
+        if (index === dcoFailed.length - 1) {
+          returnMessage = returnMessage + `\nSigned-off-by: YOUR_NAME <YOUR_EMAIL>\n\`\`\`\n`
+        }
+      })
+    }
+    rebaseWarning = 'Least preferred method: '
+  }
+
+  returnMessage = returnMessage + `\n---\n\n### ` + rebaseWarning + `Rebase the branch
 
 If you have a local git environment and meet the criteria below, one option is to rebase the branch and add your Signed-off-by lines in the new commits.  Please note that if others have already begun work based upon the commits in this branch, this solution will rewrite history and may cause serious issues for collaborators ([described in the git documentation](https://git-scm.com/book/en/v2/Git-Branching-Rebasing) under "The Perils of Rebasing").
 
