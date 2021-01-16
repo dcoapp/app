@@ -6196,7 +6196,6 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
 })
 
 describe('INDIVIDUAL REMEDIATION COMMITS', () => {
-
 /*
 * The tests in this section verify Probot DCO's behavior when configured to allow individual
 * remediation commits. In order to be valid, an individual remediation commit must contain
@@ -6208,9 +6207,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
 */
 
   describe('Disabled (default)', () => {
-
     describe('Failure patterns', () => {
-
       test('First commit does not contain a sign-off; second commit contains sign-off and correct individual remediation', async () => {
         const commitA = {
           message: 'No signoff',
@@ -6234,7 +6231,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
             email: 'bexmwarner@gmail.com'
           }
         }
-        const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: false, thirdParty: false})
+        const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: false, thirdParty: false })
 
         expect(dcoObject).toEqual([{
           url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -6249,19 +6246,15 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
   })
 
   describe('Enabled via config option', () => {
-
     describe('Verify default functionality is unchanged', () => {
-
-/*
+      /*
 * The tests in this section mirror the explicit sign-off tests exactly, except individual
 * remediation is enabled. This first sequence of tests ensures that no functionality
 * changes when individual remediation commits are enabled.
 */
 
       describe('Single commit', () => {
-
         describe('Success patterns', () => {
-
           test('Single commit is correctly signed-off', async () => {
             const commit = {
               message: 'Hello world\n\nSigned-off-by: Brandon Keepers <bkeepers@github.com>',
@@ -6274,7 +6267,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
@@ -6293,7 +6286,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
@@ -6312,7 +6305,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
@@ -6329,7 +6322,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
@@ -6346,7 +6339,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
@@ -6363,14 +6356,14 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
 
           test('Single commit is correctly signed-off with trailing whitespace', async () => {
             const commit = {
-              message: 'signed off correctly\n\nSigned-off-by: hiimbex <hiimbex@disney.com>			',
+              message: 'signed off correctly\n\nSigned-off-by: hiimbex <hiimbex@disney.com>  ',
               author: {
                 name: 'hiimbex',
                 email: 'hiimbex@disney.com'
@@ -6380,7 +6373,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
@@ -6397,7 +6390,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
@@ -6414,7 +6407,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
@@ -6431,7 +6424,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
@@ -6449,7 +6442,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               }
             }
             const author = null
-            const dcoObject = await getDCOStatus([{ commit, author, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
@@ -6467,7 +6460,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               }
             }
             const author = null
-            const dcoObject = await getDCOStatus([{ commit, author, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
@@ -6484,7 +6477,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [1, 2], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [1, 2], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
@@ -6505,7 +6498,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               login: 'bexobot [bot]',
               type: 'Bot'
             }
-            const dcoObject = await getDCOStatus([{ commit, author, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
@@ -6525,14 +6518,13 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 verified: true
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'lptr' }, parents: [], sha: shaA}], dontRequireSignoffFor('lptr'), prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'lptr' }, parents: [], sha: shaA }], dontRequireSignoffFor('lptr'), prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
         })
 
         describe('Failure patterns', () => {
-
           test('Single commit does not contain a sign-off', async () => {
             const commit = {
               message: 'yolo',
@@ -6545,7 +6537,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -6570,7 +6562,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               }
             }
             const author = null
-            const dcoObject = await getDCOStatus([{ commit, author, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -6596,15 +6588,15 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'committer@email.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
-              'author': 'Author Name',
-              'email': 'author@email.com',
-              'committer': 'Committer Name',
-              'message': 'Can not find "Author Name <author@email.com>", in ["Tester1 <tester1@github.com>", "Tester2 <tester2@github.com>"].',
-              'sha': '18aebfa67dde85da0f5099ad70ef647685a05205',
-              'url': 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205'
+              author: 'Author Name',
+              email: 'author@email.com',
+              committer: 'Committer Name',
+              message: 'Can not find "Author Name <author@email.com>", in ["Tester1 <tester1@github.com>", "Tester2 <tester2@github.com>"].',
+              sha: '18aebfa67dde85da0f5099ad70ef647685a05205',
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205'
             }])
           })
 
@@ -6620,7 +6612,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -6644,7 +6636,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -6668,7 +6660,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -6692,7 +6684,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -6716,7 +6708,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -6740,7 +6732,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -6764,7 +6756,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -6788,7 +6780,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -6812,7 +6804,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -6836,7 +6828,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -6860,7 +6852,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -6884,7 +6876,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -6908,7 +6900,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -6935,7 +6927,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 verified: false
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'lptr' }, parents: [], sha: shaA}], dontRequireSignoffFor('lptr'), prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'lptr' }, parents: [], sha: shaA }], dontRequireSignoffFor('lptr'), prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -6950,9 +6942,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
       })
 
       describe('Two commits', () => {
-
         describe('Success patterns', () => {
-
           test('First commit is correctly signed-off; second commit is correctly signed-off', async () => {
             const commitA = {
               message: 'signed off correctly\n\nSigned-off-by: bex <bex@disney.com>',
@@ -6976,7 +6966,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
@@ -7004,7 +6994,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
@@ -7032,7 +7022,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
@@ -7060,14 +7050,13 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
         })
 
         describe('Failure patterns:', () => {
-
           test('First commit does not contain a sign-off; second commit is correctly signed-off', async () => {
             const commitA = {
               message: 'signed off incorrectly\n\nSigned-off-by: hiimbex <hiimbex@disney.com>',
@@ -7091,7 +7080,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -7126,7 +7115,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
@@ -7161,31 +7150,29 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
-              },{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: 'd5f3e2be498459554b6465224b7b6f7c0682295e'
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+            }, {
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: 'd5f3e2be498459554b6465224b7b6f7c0682295e'
             }])
           })
         })
       })
 
       describe('Three commits', () => {
-
         describe('Success patterns', () => {
-
           test('First commit is correctly signed-off; second commit is correctly signed-off; third commit is correctly signed-off', async () => {
             const commitA = {
               message: 'signed off correctly\n\nSigned-off-by: bex <bex@disney.com>',
@@ -7220,7 +7207,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
@@ -7259,14 +7246,13 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual(success)
           })
         })
 
         describe('Failure patterns', () => {
-
           test('First commit is incorrectly signed-off; second commit is correctly signed-off; third commit is correctly signed-off', async () => {
             const commitA = {
               message: 'signed off incorrectly\n\nSigned-off-by: hiimbex <hiimbex@disney.com>',
@@ -7301,7 +7287,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -7347,7 +7333,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
@@ -7393,7 +7379,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/966587f0902920ed656950b0766e1073f8a532c0',
@@ -7439,22 +7425,22 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
-              },{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: 'd5f3e2be498459554b6465224b7b6f7c0682295e'
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+            }, {
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: 'd5f3e2be498459554b6465224b7b6f7c0682295e'
             }])
           })
 
@@ -7492,22 +7478,22 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: 'd5f3e2be498459554b6465224b7b6f7c0682295e'
-              },{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/966587f0902920ed656950b0766e1073f8a532c0',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: '966587f0902920ed656950b0766e1073f8a532c0'
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: 'd5f3e2be498459554b6465224b7b6f7c0682295e'
+            }, {
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/966587f0902920ed656950b0766e1073f8a532c0',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: '966587f0902920ed656950b0766e1073f8a532c0'
             }])
           })
 
@@ -7545,22 +7531,22 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
-              },{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/966587f0902920ed656950b0766e1073f8a532c0',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: '966587f0902920ed656950b0766e1073f8a532c0'
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+            }, {
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/966587f0902920ed656950b0766e1073f8a532c0',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: '966587f0902920ed656950b0766e1073f8a532c0'
             }])
           })
 
@@ -7598,29 +7584,29 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
             expect(dcoObject).toEqual([{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
-              },{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: 'd5f3e2be498459554b6465224b7b6f7c0682295e'
-              },{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/966587f0902920ed656950b0766e1073f8a532c0',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: '966587f0902920ed656950b0766e1073f8a532c0'
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+            }, {
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: 'd5f3e2be498459554b6465224b7b6f7c0682295e'
+            }, {
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/966587f0902920ed656950b0766e1073f8a532c0',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: '966587f0902920ed656950b0766e1073f8a532c0'
             }])
           })
         })
@@ -7628,13 +7614,11 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
     })
 
     describe('Verify individual remediations', () => {
-
-/*
+      /*
 * The tests in this section verify the behavior of individual remediation.
 */
 
       describe('Success patterns', () => {
-
         test('First commit does not contain a sign-off; second commit has individual remediation and sign-off', async () => {
           const commitA = {
             message: 'No signoff',
@@ -7658,7 +7642,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual(success)
         })
@@ -7686,7 +7670,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual(success)
         })
@@ -7714,7 +7698,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual(success)
         })
@@ -7742,7 +7726,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual(success)
         })
@@ -7770,7 +7754,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual(success)
         })
@@ -7809,7 +7793,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual(success)
         })
@@ -7848,14 +7832,13 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual(success)
         })
       })
 
-      describe("Failure patterns", () => {
-
+      describe('Failure patterns', () => {
         test('First commit has no sign-off; second commit has remediation text but no sign-off', async () => {
           const commitA = {
             message: 'No signoff',
@@ -7879,7 +7862,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
@@ -7914,7 +7897,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -7949,7 +7932,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -7984,7 +7967,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8019,7 +8002,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8054,7 +8037,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8089,7 +8072,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8124,7 +8107,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8136,7 +8119,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
           }])
         })
 
-        test('First commit has no sign-off; second commit has correct sign-off but remediation from a different author email',async () => {
+        test('First commit has no sign-off; second commit has correct sign-off but remediation from a different author email', async () => {
           const commitA = {
             message: 'No signoff',
             author: {
@@ -8159,7 +8142,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8194,7 +8177,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8229,7 +8212,7 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8246,7 +8229,6 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
 })
 
 describe('THIRD PARTY REMEDIATION COMMITS', () => {
-
 /*
 * The tests in this section verify Probot DCO's behavior when configured to allow
 * third-party remediation commits. In order to be valid, a third-party remediation commit
@@ -8256,9 +8238,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
 */
 
   describe('Disabled (default)', () => {
-
     describe('Failure patterns', () => {
-
       test('First commit does not contain a sign-off; second commit contains sign-off and correct third-party remediation', async () => {
         const commitA = {
           message: 'No signoff',
@@ -8282,7 +8262,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
             email: 'bexmwarner@gmail.com'
           }
         }
-        const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: false, thirdParty: false})
+        const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: false, thirdParty: false })
 
         expect(dcoObject).toEqual([{
           url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8317,7 +8297,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
             email: 'bexmwarner@gmail.com'
           }
         }
-        const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+        const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
         expect(dcoObject).toEqual([{
           url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8328,24 +8308,19 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
           sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
         }])
       })
-
     })
   })
 
   describe('Enabled via config option', () => {
-
     describe('Verify default functionality is unchanged', () => {
-
-/*
+      /*
 * The tests in this section mirror the explicit sign-off tests exactly, except individual
 * remediation is enabled. This first sequence of tests ensures that no functionality
 * changes when individual remediation commits are enabled.
 */
 
       describe('Single commit', () => {
-
         describe('Success patterns', () => {
-
           test('Single commit is correctly signed-off', async () => {
             const commit = {
               message: 'Hello world\n\nSigned-off-by: Brandon Keepers <bkeepers@github.com>',
@@ -8358,7 +8333,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -8377,7 +8352,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -8396,7 +8371,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -8413,7 +8388,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -8430,7 +8405,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -8447,14 +8422,14 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
 
           test('Single commit is correctly signed-off with trailing whitespace', async () => {
             const commit = {
-              message: 'signed off correctly\n\nSigned-off-by: hiimbex <hiimbex@disney.com>			',
+              message: 'signed off correctly\n\nSigned-off-by: hiimbex <hiimbex@disney.com>  ',
               author: {
                 name: 'hiimbex',
                 email: 'hiimbex@disney.com'
@@ -8464,7 +8439,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -8481,7 +8456,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -8498,7 +8473,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -8515,7 +8490,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -8533,7 +8508,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               }
             }
             const author = null
-            const dcoObject = await getDCOStatus([{ commit, author, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -8551,7 +8526,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               }
             }
             const author = null
-            const dcoObject = await getDCOStatus([{ commit, author, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -8568,7 +8543,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [1, 2], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [1, 2], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -8589,7 +8564,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               login: 'bexobot [bot]',
               type: 'Bot'
             }
-            const dcoObject = await getDCOStatus([{ commit, author, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -8609,14 +8584,13 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 verified: true
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'lptr' }, parents: [], sha: shaA}], dontRequireSignoffFor('lptr'), prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'lptr' }, parents: [], sha: shaA }], dontRequireSignoffFor('lptr'), prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
         })
 
         describe('Failure patterns', () => {
-
           test('Single commit does not contain a sign-off', async () => {
             const commit = {
               message: 'yolo',
@@ -8629,7 +8603,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8654,7 +8628,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               }
             }
             const author = null
-            const dcoObject = await getDCOStatus([{ commit, author, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8680,15 +8654,15 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'committer@email.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
-              'author': 'Author Name',
-              'email': 'author@email.com',
-              'committer': 'Committer Name',
-              'message': 'Can not find "Author Name <author@email.com>", in ["Tester1 <tester1@github.com>", "Tester2 <tester2@github.com>"].',
-              'sha': '18aebfa67dde85da0f5099ad70ef647685a05205',
-              'url': 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205'
+              author: 'Author Name',
+              email: 'author@email.com',
+              committer: 'Committer Name',
+              message: 'Can not find "Author Name <author@email.com>", in ["Tester1 <tester1@github.com>", "Tester2 <tester2@github.com>"].',
+              sha: '18aebfa67dde85da0f5099ad70ef647685a05205',
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205'
             }])
           })
 
@@ -8704,7 +8678,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8728,7 +8702,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8752,7 +8726,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8776,7 +8750,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8800,7 +8774,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'bkeepers' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8824,7 +8798,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8848,7 +8822,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8872,7 +8846,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8896,7 +8870,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8920,7 +8894,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8944,7 +8918,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8968,7 +8942,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -8992,7 +8966,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -9019,7 +8993,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 verified: false
               }
             }
-            const dcoObject = await getDCOStatus([{ commit, author: { login: 'lptr' }, parents: [], sha: shaA}], dontRequireSignoffFor('lptr'), prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit, author: { login: 'lptr' }, parents: [], sha: shaA }], dontRequireSignoffFor('lptr'), prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -9034,9 +9008,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
       })
 
       describe('Two commits', () => {
-
         describe('Success patterns', () => {
-
           test('First commit is correctly signed-off; second commit is correctly signed-off', async () => {
             const commitA = {
               message: 'signed off correctly\n\nSigned-off-by: bex <bex@disney.com>',
@@ -9060,7 +9032,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -9088,7 +9060,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -9116,7 +9088,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -9144,14 +9116,13 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
         })
 
         describe('Failure patterns:', () => {
-
           test('First commit does not contain a sign-off; second commit is correctly signed-off', async () => {
             const commitA = {
               message: 'signed off incorrectly\n\nSigned-off-by: hiimbex <hiimbex@disney.com>',
@@ -9175,7 +9146,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -9210,7 +9181,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [] }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
@@ -9245,31 +9216,29 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
-              },{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: 'd5f3e2be498459554b6465224b7b6f7c0682295e'
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+            }, {
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: 'd5f3e2be498459554b6465224b7b6f7c0682295e'
             }])
           })
         })
       })
 
       describe('Three commits', () => {
-
         describe('Success patterns', () => {
-
           test('First commit is correctly signed-off; second commit is correctly signed-off; third commit is correctly signed-off', async () => {
             const commitA = {
               message: 'signed off correctly\n\nSigned-off-by: bex <bex@disney.com>',
@@ -9304,7 +9273,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -9343,14 +9312,13 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
         })
 
         describe('Failure patterns', () => {
-
           test('First commit is incorrectly signed-off; second commit is correctly signed-off; third commit is correctly signed-off', async () => {
             const commitA = {
               message: 'signed off incorrectly\n\nSigned-off-by: hiimbex <hiimbex@disney.com>',
@@ -9385,7 +9353,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -9431,7 +9399,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
@@ -9477,7 +9445,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
               url: 'https://github.com/hiimbex/testing-things/pull/1/commits/966587f0902920ed656950b0766e1073f8a532c0',
@@ -9523,22 +9491,22 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
-              },{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: 'd5f3e2be498459554b6465224b7b6f7c0682295e'
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+            }, {
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: 'd5f3e2be498459554b6465224b7b6f7c0682295e'
             }])
           })
 
@@ -9576,22 +9544,22 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: 'd5f3e2be498459554b6465224b7b6f7c0682295e'
-              },{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/966587f0902920ed656950b0766e1073f8a532c0',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: '966587f0902920ed656950b0766e1073f8a532c0'
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: 'd5f3e2be498459554b6465224b7b6f7c0682295e'
+            }, {
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/966587f0902920ed656950b0766e1073f8a532c0',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: '966587f0902920ed656950b0766e1073f8a532c0'
             }])
           })
 
@@ -9629,22 +9597,22 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
-              },{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/966587f0902920ed656950b0766e1073f8a532c0',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: '966587f0902920ed656950b0766e1073f8a532c0'
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+            }, {
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/966587f0902920ed656950b0766e1073f8a532c0',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: '966587f0902920ed656950b0766e1073f8a532c0'
             }])
           })
 
@@ -9682,29 +9650,29 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
-              },{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: 'd5f3e2be498459554b6465224b7b6f7c0682295e'
-              },{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/966587f0902920ed656950b0766e1073f8a532c0',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
-                sha: '966587f0902920ed656950b0766e1073f8a532c0'
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+            }, {
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: 'd5f3e2be498459554b6465224b7b6f7c0682295e'
+            }, {
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/966587f0902920ed656950b0766e1073f8a532c0',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'Expected "bex <bex@disney.com>", but got "hiimbex <hiimbex@disney.com>".',
+              sha: '966587f0902920ed656950b0766e1073f8a532c0'
             }])
           })
         })
@@ -9712,13 +9680,11 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
     })
 
     describe('Verify individual remediation with third-party remediations enabled', () => {
-
-/*
+      /*
 * The tests in this section verify the behavior of third-party remediation.
 */
 
       describe('Success patterns', () => {
-
         test('First commit does not contain a sign-off; second commit has individual remediation and sign-off', async () => {
           const commitA = {
             message: 'No signoff',
@@ -9742,7 +9708,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual(success)
         })
@@ -9770,7 +9736,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual(success)
         })
@@ -9798,7 +9764,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual(success)
         })
@@ -9826,7 +9792,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual(success)
         })
@@ -9854,7 +9820,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual(success)
         })
@@ -9893,7 +9859,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual(success)
         })
@@ -9932,14 +9898,13 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual(success)
         })
       })
 
-      describe("Failure patterns", () => {
-
+      describe('Failure patterns', () => {
         test('First commit has no sign-off; second commit has remediation text but no sign-off', async () => {
           const commitA = {
             message: 'No signoff',
@@ -9963,7 +9928,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
@@ -9998,7 +9963,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -10033,7 +9998,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -10068,7 +10033,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -10103,7 +10068,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -10138,7 +10103,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -10173,7 +10138,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -10208,7 +10173,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -10220,7 +10185,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
           }])
         })
 
-        test('First commit has no sign-off; second commit has correct sign-off but remediation from a different author email',async () => {
+        test('First commit has no sign-off; second commit has correct sign-off but remediation from a different author email', async () => {
           const commitA = {
             message: 'No signoff',
             author: {
@@ -10243,7 +10208,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -10278,7 +10243,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -10313,7 +10278,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
               email: 'bexmwarner@gmail.com'
             }
           }
-          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: false})
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: false })
 
           expect(dcoObject).toEqual([{
             url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
@@ -10354,7 +10319,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -10384,7 +10349,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -10414,7 +10379,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -10447,205 +10412,205 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 verified: true
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'bex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}],  dontRequireSignoffFor('hiimbex'), prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'bex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], dontRequireSignoffFor('hiimbex'), prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
 
-          test('First commit has sign-off; second commit has redundant individual remediation, has sign-off; third commit has redundant third-party remediation, has sign-off', async () => {
-            const commitA = {
-              message: 'Signed-off-by: bex <bex@disney.com>',
-              author: {
-                name: 'bex',
-                email: 'bex@disney.com'
-              },
-              committer: {
-                name: 'Bex Warner',
-                email: 'bexmwarner@gmail.com'
-              }
+        test('First commit has sign-off; second commit has redundant individual remediation, has sign-off; third commit has redundant third-party remediation, has sign-off', async () => {
+          const commitA = {
+            message: 'Signed-off-by: bex <bex@disney.com>',
+            author: {
+              name: 'bex',
+              email: 'bex@disney.com'
+            },
+            committer: {
+              name: 'Bex Warner',
+              email: 'bexmwarner@gmail.com'
             }
-            const commitB = {
-              message: 'I, bex <bex@disney.com>, hereby add my Signed-off-by to this commit: 18aebfa67dde85da0f5099ad70ef647685a05205\n\nSigned-off-by: bex <bex@disney.com>',
-              author: {
-                name: 'bex',
-                email: 'bex@disney.com'
-              },
-              committer: {
-                name: 'Bex Warner',
-                email: 'bexmwarner@gmail.com'
-              }
+          }
+          const commitB = {
+            message: 'I, bex <bex@disney.com>, hereby add my Signed-off-by to this commit: 18aebfa67dde85da0f5099ad70ef647685a05205\n\nSigned-off-by: bex <bex@disney.com>',
+            author: {
+              name: 'bex',
+              email: 'bex@disney.com'
+            },
+            committer: {
+              name: 'Bex Warner',
+              email: 'bexmwarner@gmail.com'
             }
-            const commitC = {
-              message: 'On behalf of bex <bex@disney.com>, I, hiimbex <hiimbex@disney.com>, hereby add my Signed-off-by to this commit: d5f3e2be498459554b6465224b7b6f7c0682295e\n\nSigned-off-by: Bex Warner <bexmwarner@gmail.com>',
-              author: {
-                name: 'hiimbex',
-                email: 'hiimbex@disney.com'
-              },
-              committer: {
-                name: 'Bex Warner',
-                email: 'bexmwarner@gmail.com'
-              }
+          }
+          const commitC = {
+            message: 'On behalf of bex <bex@disney.com>, I, hiimbex <hiimbex@disney.com>, hereby add my Signed-off-by to this commit: d5f3e2be498459554b6465224b7b6f7c0682295e\n\nSigned-off-by: Bex Warner <bexmwarner@gmail.com>',
+            author: {
+              name: 'hiimbex',
+              email: 'hiimbex@disney.com'
+            },
+            committer: {
+              name: 'Bex Warner',
+              email: 'bexmwarner@gmail.com'
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+          }
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
-            expect(dcoObject).toEqual(success)
-          })
+          expect(dcoObject).toEqual(success)
+        })
 
-          test('First commit has no sign-off; second commit has individual remediation, has sign-off; third commit has redundant third-party remediation, has sign-off', async () => {
-            const commitA = {
-              message: 'no signoff',
-              author: {
-                name: 'bex',
-                email: 'bex@disney.com'
-              },
-              committer: {
-                name: 'Bex Warner',
-                email: 'bexmwarner@gmail.com'
-              }
+        test('First commit has no sign-off; second commit has individual remediation, has sign-off; third commit has redundant third-party remediation, has sign-off', async () => {
+          const commitA = {
+            message: 'no signoff',
+            author: {
+              name: 'bex',
+              email: 'bex@disney.com'
+            },
+            committer: {
+              name: 'Bex Warner',
+              email: 'bexmwarner@gmail.com'
             }
-            const commitB = {
-              message: 'I, bex <bex@disney.com>, hereby add my Signed-off-by to this commit: 18aebfa67dde85da0f5099ad70ef647685a05205\n\nSigned-off-by: bex <bex@disney.com>',
-              author: {
-                name: 'bex',
-                email: 'bex@disney.com'
-              },
-              committer: {
-                name: 'Bex Warner',
-                email: 'bexmwarner@gmail.com'
-              }
+          }
+          const commitB = {
+            message: 'I, bex <bex@disney.com>, hereby add my Signed-off-by to this commit: 18aebfa67dde85da0f5099ad70ef647685a05205\n\nSigned-off-by: bex <bex@disney.com>',
+            author: {
+              name: 'bex',
+              email: 'bex@disney.com'
+            },
+            committer: {
+              name: 'Bex Warner',
+              email: 'bexmwarner@gmail.com'
             }
-            const commitC = {
-              message: 'On behalf of bex <bex@disney.com>, I, hiimbex <hiimbex@disney.com>, hereby add my Signed-off-by to this commit: d5f3e2be498459554b6465224b7b6f7c0682295e\n\nSigned-off-by: Bex Warner <bexmwarner@gmail.com>',
-              author: {
-                name: 'hiimbex',
-                email: 'hiimbex@disney.com'
-              },
-              committer: {
-                name: 'Bex Warner',
-                email: 'bexmwarner@gmail.com'
-              }
+          }
+          const commitC = {
+            message: 'On behalf of bex <bex@disney.com>, I, hiimbex <hiimbex@disney.com>, hereby add my Signed-off-by to this commit: d5f3e2be498459554b6465224b7b6f7c0682295e\n\nSigned-off-by: Bex Warner <bexmwarner@gmail.com>',
+            author: {
+              name: 'hiimbex',
+              email: 'hiimbex@disney.com'
+            },
+            committer: {
+              name: 'Bex Warner',
+              email: 'bexmwarner@gmail.com'
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+          }
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
-            expect(dcoObject).toEqual(success)
-          })
+          expect(dcoObject).toEqual(success)
+        })
 
-          test('First commit has no sign-off; second commit has individual remediation, no sign-off; third commit has third-party remediation, has sign-off', async () => {
-            const commitA = {
-              message: 'no signoff',
-              author: {
-                name: 'bex',
-                email: 'bex@disney.com'
-              },
-              committer: {
-                name: 'Bex Warner',
-                email: 'bexmwarner@gmail.com'
-              }
+        test('First commit has no sign-off; second commit has individual remediation, no sign-off; third commit has third-party remediation, has sign-off', async () => {
+          const commitA = {
+            message: 'no signoff',
+            author: {
+              name: 'bex',
+              email: 'bex@disney.com'
+            },
+            committer: {
+              name: 'Bex Warner',
+              email: 'bexmwarner@gmail.com'
             }
-            const commitB = {
-              message: 'I, bex <bex@disney.com>, hereby add my Signed-off-by to this commit: 18aebfa67dde85da0f5099ad70ef647685a05205',
-              author: {
-                name: 'bex',
-                email: 'bex@disney.com'
-              },
-              committer: {
-                name: 'Bex Warner',
-                email: 'bexmwarner@gmail.com'
-              }
+          }
+          const commitB = {
+            message: 'I, bex <bex@disney.com>, hereby add my Signed-off-by to this commit: 18aebfa67dde85da0f5099ad70ef647685a05205',
+            author: {
+              name: 'bex',
+              email: 'bex@disney.com'
+            },
+            committer: {
+              name: 'Bex Warner',
+              email: 'bexmwarner@gmail.com'
             }
-            const commitC = {
-              message: 'On behalf of bex <bex@disney.com>, I, hiimbex <hiimbex@disney.com>, hereby add my Signed-off-by to this commit: d5f3e2be498459554b6465224b7b6f7c0682295e\n\nSigned-off-by: Bex Warner <bexmwarner@gmail.com>',
-              author: {
-                name: 'hiimbex',
-                email: 'hiimbex@disney.com'
-              },
-              committer: {
-                name: 'Bex Warner',
-                email: 'bexmwarner@gmail.com'
-              }
+          }
+          const commitC = {
+            message: 'On behalf of bex <bex@disney.com>, I, hiimbex <hiimbex@disney.com>, hereby add my Signed-off-by to this commit: d5f3e2be498459554b6465224b7b6f7c0682295e\n\nSigned-off-by: Bex Warner <bexmwarner@gmail.com>',
+            author: {
+              name: 'hiimbex',
+              email: 'hiimbex@disney.com'
+            },
+            committer: {
+              name: 'Bex Warner',
+              email: 'bexmwarner@gmail.com'
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+          }
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
-            expect(dcoObject).toEqual(success)
-          })
+          expect(dcoObject).toEqual(success)
+        })
 
-          test('First commit has no sign-off; second commit has third-party remediation, no sign-off; third commit has individual remediation of second commit, has sign-off', async () => {
-            const commitA = {
-              message: 'no signoff',
-              author: {
-                name: 'bex',
-                email: 'bex@disney.com'
-              },
-              committer: {
-                name: 'Bex Warner',
-                email: 'bexmwarner@gmail.com'
-              }
+        test('First commit has no sign-off; second commit has third-party remediation, no sign-off; third commit has individual remediation of second commit, has sign-off', async () => {
+          const commitA = {
+            message: 'no signoff',
+            author: {
+              name: 'bex',
+              email: 'bex@disney.com'
+            },
+            committer: {
+              name: 'Bex Warner',
+              email: 'bexmwarner@gmail.com'
             }
-            const commitB = {
-              message: 'On behalf of bex <bex@disney.com>, I, hiimbex <hiimbex@disney.com>, hereby add my Signed-off-by to this commit: 18aebfa67dde85da0f5099ad70ef647685a05205',
-              author: {
-                name: 'hiimbex',
-                email: 'hiimbex@disney.com'
-              },
-              committer: {
-                name: 'Bex Warner',
-                email: 'bexmwarner@gmail.com'
-              }
+          }
+          const commitB = {
+            message: 'On behalf of bex <bex@disney.com>, I, hiimbex <hiimbex@disney.com>, hereby add my Signed-off-by to this commit: 18aebfa67dde85da0f5099ad70ef647685a05205',
+            author: {
+              name: 'hiimbex',
+              email: 'hiimbex@disney.com'
+            },
+            committer: {
+              name: 'Bex Warner',
+              email: 'bexmwarner@gmail.com'
             }
-            const commitC = {
-              message: 'I, hiimbex <hiimbex@disney.com>, hereby add my Signed-off-by to this commit: d5f3e2be498459554b6465224b7b6f7c0682295e\n\nSigned-off-by: hiimbex <hiimbex@disney.com>',
-              author: {
-                name: 'hiimbex',
-                email: 'hiimbex@disney.com'
-              },
-              committer: {
-                name: 'Bex Warner',
-                email: 'bexmwarner@gmail.com'
-              }
+          }
+          const commitC = {
+            message: 'I, hiimbex <hiimbex@disney.com>, hereby add my Signed-off-by to this commit: d5f3e2be498459554b6465224b7b6f7c0682295e\n\nSigned-off-by: hiimbex <hiimbex@disney.com>',
+            author: {
+              name: 'hiimbex',
+              email: 'hiimbex@disney.com'
+            },
+            committer: {
+              name: 'Bex Warner',
+              email: 'bexmwarner@gmail.com'
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+          }
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
-            expect(dcoObject).toEqual(success)
-          })
+          expect(dcoObject).toEqual(success)
+        })
 
-          test('First commit has no sign-off; second commit has third-party remediation, no sign-off; third commit has third-party remediation of second commit, has sign-off', async () => {
-            const commitA = {
-              message: 'no signoff',
-              author: {
-                name: 'bex',
-                email: 'bex@disney.com'
-              },
-              committer: {
-                name: 'Bex Warner',
-                email: 'bexmwarner@gmail.com'
-              }
+        test('First commit has no sign-off; second commit has third-party remediation, no sign-off; third commit has third-party remediation of second commit, has sign-off', async () => {
+          const commitA = {
+            message: 'no signoff',
+            author: {
+              name: 'bex',
+              email: 'bex@disney.com'
+            },
+            committer: {
+              name: 'Bex Warner',
+              email: 'bexmwarner@gmail.com'
             }
-            const commitB = {
-              message: 'On behalf of bex <bex@disney.com>, I, hiimbex <hiimbex@disney.com>, hereby add my Signed-off-by to this commit: 18aebfa67dde85da0f5099ad70ef647685a05205',
-              author: {
-                name: 'hiimbex',
-                email: 'hiimbex@disney.com'
-              },
-              committer: {
-                name: 'Bex Warner',
-                email: 'bexmwarner@gmail.com'
-              }
+          }
+          const commitB = {
+            message: 'On behalf of bex <bex@disney.com>, I, hiimbex <hiimbex@disney.com>, hereby add my Signed-off-by to this commit: 18aebfa67dde85da0f5099ad70ef647685a05205',
+            author: {
+              name: 'hiimbex',
+              email: 'hiimbex@disney.com'
+            },
+            committer: {
+              name: 'Bex Warner',
+              email: 'bexmwarner@gmail.com'
             }
-            const commitC = {
-              message: 'On behalf of hiimbex <hiimbex@disney.com>, I, Bex Warner <bexmwarner@gmail.com>, hereby add my Signed-off-by to this commit: d5f3e2be498459554b6465224b7b6f7c0682295e\n\nSigned-off-by: Bex Warner <bexmwarner@gmail.com>',
-              author: {
-                name: 'Bex Warner',
-                email: 'bexmwarner@gmail.com'
-              },
-              committer: {
-                name: 'Bex Warner',
-                email: 'bexmwarner@gmail.com'
-              }
+          }
+          const commitC = {
+            message: 'On behalf of hiimbex <hiimbex@disney.com>, I, Bex Warner <bexmwarner@gmail.com>, hereby add my Signed-off-by to this commit: d5f3e2be498459554b6465224b7b6f7c0682295e\n\nSigned-off-by: Bex Warner <bexmwarner@gmail.com>',
+            author: {
+              name: 'Bex Warner',
+              email: 'bexmwarner@gmail.com'
+            },
+            committer: {
+              name: 'Bex Warner',
+              email: 'bexmwarner@gmail.com'
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+          }
+          const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
-            expect(dcoObject).toEqual(success)
-          })
+          expect(dcoObject).toEqual(success)
+        })
 
         test(
           'First commit has no sign-off; second commit has correct 3rd party remediation text for first commit, no sign-off; third commit from committer has correct 3rd party remediation text for second commit, has sign-off',
@@ -10683,7 +10648,7 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual(success)
           })
@@ -10715,15 +10680,15 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: false, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: false, thirdParty: true })
 
             expect(dcoObject).toEqual([{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'The sign-off is missing.',
-                sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'The sign-off is missing.',
+              sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
             }])
           })
 
@@ -10752,15 +10717,15 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'The sign-off is missing.',
-                sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'The sign-off is missing.',
+              sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
             }])
           })
 
@@ -10789,15 +10754,15 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'The sign-off is missing.',
-                sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'The sign-off is missing.',
+              sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
             }])
           })
 
@@ -10826,15 +10791,15 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'The sign-off is missing.',
-                sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'The sign-off is missing.',
+              sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
             }])
           })
 
@@ -10863,15 +10828,15 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'The sign-off is missing.',
-                sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'The sign-off is missing.',
+              sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
             }])
           })
 
@@ -10900,15 +10865,15 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'The sign-off is missing.',
-                sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'The sign-off is missing.',
+              sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
             }])
           })
 
@@ -10937,15 +10902,15 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
-                url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
-                author: 'bex',
-                email: 'bex@disney.com',
-                committer: 'Bex Warner',
-                message: 'The sign-off is missing.',
-                sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/18aebfa67dde85da0f5099ad70ef647685a05205',
+              author: 'bex',
+              email: 'bex@disney.com',
+              committer: 'Bex Warner',
+              message: 'The sign-off is missing.',
+              sha: '18aebfa67dde85da0f5099ad70ef647685a05205'
             }])
           })
 
@@ -10974,15 +10939,15 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
-                url:  'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
-                author: 'hiimbex',
-                email: 'hiimbex@disney.com',
-                committer: 'Bex Warner',
-                message: 'The sign-off is missing.',
-                sha: 'd5f3e2be498459554b6465224b7b6f7c0682295e'
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/d5f3e2be498459554b6465224b7b6f7c0682295e',
+              author: 'hiimbex',
+              email: 'hiimbex@disney.com',
+              committer: 'Bex Warner',
+              message: 'The sign-off is missing.',
+              sha: 'd5f3e2be498459554b6465224b7b6f7c0682295e'
             }])
           })
 
@@ -11022,18 +10987,17 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
                 email: 'bexmwarner@gmail.com'
               }
             }
-            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA}, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB}, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC}], alwaysRequireSignoff, prInfo, {individual: true, thirdParty: true})
+            const dcoObject = await getDCOStatus([{ commit: commitA, author: { login: 'hiimbex' }, parents: [], sha: shaA }, { commit: commitB, author: { login: 'hiimbex' }, parents: [], sha: shaB }, { commit: commitC, author: { login: 'hiimbex' }, parents: [], sha: shaC }], alwaysRequireSignoff, prInfo, { individual: true, thirdParty: true })
 
             expect(dcoObject).toEqual([{
-                url:  'https://github.com/hiimbex/testing-things/pull/1/commits/966587f0902920ed656950b0766e1073f8a532c0',
-                author: 'Not Bex',
-                email: 'notbex@gmail.com',
-                committer: 'Bex Warner',
-                message: 'The sign-off is missing.',
-                sha: '966587f0902920ed656950b0766e1073f8a532c0'
+              url: 'https://github.com/hiimbex/testing-things/pull/1/commits/966587f0902920ed656950b0766e1073f8a532c0',
+              author: 'Not Bex',
+              email: 'notbex@gmail.com',
+              committer: 'Bex Warner',
+              message: 'The sign-off is missing.',
+              sha: '966587f0902920ed656950b0766e1073f8a532c0'
             }])
           })
-
       })
     })
   })
