@@ -6,8 +6,8 @@
 * If you are adding a new feature, please note that you might need to repeat your test a few times
 * to verify that functionality is unchanged when various config options are enabled.
 *
-* Usage (from root directory): ./node_modules/jest/bin/jest.js
-* To see a list of tests: ./node_modules/jest/bin/jest.js --verbose
+* Usage (from root directory): npx jest
+* To see a list of tests: npx jest --verbose
 */
 
 const getDCOStatus = require('../lib/dco.js')
