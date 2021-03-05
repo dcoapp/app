@@ -4,7 +4,7 @@
   "description": "a GitHub App that enforces the DCO on Pull Requests",
   "author": "Brandon Keepers",
   "license": "ISC",
-  "repository": "https://github.com/probot/dco.git",
+  "repository": "github:probot/dco",
   "scripts": {
     "start": "probot run ./index.js",
     "test": "jest --coverage",
