@@ -119,4 +119,196 @@ describe('dco', () => {
 
     expect(mock.activeMocks()).toStrictEqual([])
   })
+
+  describe('with custom configuration', () => {
+    describe('require.members: false', () => {
+      test('commit author is org member but commit is not verified', async () => {
+        const mock = nock('https://api.github.com')
+          .get('/repos/robotland/test/contents/.github%2Fdco.yml')
+          // has config
+          .reply(
+            200,
+            `
+require:
+  members: false`
+          )
+
+          .get('/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94')
+          .reply(200, compare)
+
+          .get('/orgs/robotland/members/bkeepers')
+          .reply(204)
+
+          .post('/repos/robotland/test/check-runs', (body) => {
+            body.started_at = '2018-07-14T18:18:54.156Z'
+            body.completed_at = '2018-07-14T18:18:54.156Z'
+            expect(body).toMatchSnapshot()
+            return true
+          })
+          .reply(200)
+
+        await probot.receive({ name: 'pull_request', payload })
+
+        expect(mock.activeMocks()).toStrictEqual([])
+      })
+
+      test('commit author is org member and commit is verified', async () => {
+        const mock = nock('https://api.github.com')
+          .get('/repos/robotland/test/contents/.github%2Fdco.yml')
+        // has config
+          .reply(
+            200,
+          `
+require:
+  members: false`
+          )
+
+          .get('/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94')
+          // override verification status to true from fixtures, without mutating the fixtures
+          .reply(200, { ...compare, commits: compare.commits.map(commit => ({ ...commit, commit: { ...commit.commit, verification: { verified: true } } })) })
+
+          .get('/orgs/robotland/members/bkeepers')
+          .reply(204)
+
+          .post('/repos/robotland/test/check-runs', (body) => {
+            body.started_at = '2018-07-14T18:18:54.156Z'
+            body.completed_at = '2018-07-14T18:18:54.156Z'
+            expect(body).toMatchSnapshot()
+            return true
+          })
+          .reply(200)
+
+        await probot.receive({ name: 'pull_request', payload })
+
+        expect(mock.activeMocks()).toStrictEqual([])
+      })
+
+      test('commit author is not an org member', async () => {
+        const mock = nock('https://api.github.com')
+          .get('/repos/robotland/test/contents/.github%2Fdco.yml')
+        // has config
+          .reply(
+            200,
+          `
+require:
+  members: false`
+          )
+
+          .get('/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94')
+          .reply(200, compare)
+
+          .get('/orgs/robotland/members/bkeepers')
+          .reply(404)
+
+          .post('/repos/robotland/test/check-runs', (body) => {
+            body.started_at = '2018-07-14T18:18:54.156Z'
+            body.completed_at = '2018-07-14T18:18:54.156Z'
+            expect(body).toMatchSnapshot()
+            return true
+          })
+          .reply(200)
+
+        await probot.receive({ name: 'pull_request', payload })
+
+        expect(mock.activeMocks()).toStrictEqual([])
+      })
+
+      test('Org membership status is cached in case of multiple commits with same author', async () => {
+        const mock = nock('https://api.github.com')
+          .get('/repos/robotland/test/contents/.github%2Fdco.yml')
+          // has config
+          .reply(
+            200,
+            `
+require:
+  members: false`
+          )
+
+          .get('/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94')
+          // duplicate commit without mutating the fixtures
+          .reply(200, { ...compare, commits: [compare.commits[0], compare.commits[0]] })
+
+          .get('/orgs/robotland/members/bkeepers')
+          .reply(204)
+
+          .post('/repos/robotland/test/check-runs', (body) => {
+            body.started_at = '2018-07-14T18:18:54.156Z'
+            body.completed_at = '2018-07-14T18:18:54.156Z'
+            expect(body).toMatchSnapshot()
+            return true
+          })
+          .reply(200)
+
+        await probot.receive({ name: 'pull_request', payload })
+
+        expect(mock.activeMocks()).toStrictEqual([])
+      })
+
+      test('Repository does not belong to an organization or the author', async () => {
+        const mock = nock('https://api.github.com')
+          .get('/repos/robotland/test/contents/.github%2Fdco.yml')
+          // has config
+          .reply(
+            200,
+            `
+require:
+  members: false`
+          )
+
+          .get('/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94')
+          .reply(200, compare)
+
+          .post('/repos/robotland/test/check-runs', (body) => {
+            body.started_at = '2018-07-14T18:18:54.156Z'
+            body.completed_at = '2018-07-14T18:18:54.156Z'
+            expect(body).toMatchSnapshot()
+            return true
+          })
+          .reply(200)
+
+        const { organization, ...payloadWithoutOrganization } = payload
+        await probot.receive({ name: 'pull_request', payload: payloadWithoutOrganization })
+
+        expect(mock.activeMocks()).toStrictEqual([])
+      })
+
+      test('Repository belongs to author', async () => {
+        const mock = nock('https://api.github.com')
+          .get('/repos/bkeepers/test/contents/.github%2Fdco.yml')
+          // has config
+          .reply(
+            200,
+            `
+require:
+  members: false`
+          )
+
+          .get('/repos/bkeepers/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94')
+          .reply(200, compare)
+
+          .post('/repos/bkeepers/test/check-runs', (body) => {
+            body.started_at = '2018-07-14T18:18:54.156Z'
+            body.completed_at = '2018-07-14T18:18:54.156Z'
+            expect(body).toMatchSnapshot()
+            return true
+          })
+          .reply(200)
+
+        const { organization, ...payloadWithoutOrganization } = payload
+        const payloadWithChangedRepositoryOwner = {
+          ...payloadWithoutOrganization,
+          repository: {
+            ...payload.repository,
+            owner: {
+              ...payload.repository.owner,
+              login: 'bkeepers'
+            }
+          }
+        }
+        await probot.receive({ name: 'pull_request', payload: payloadWithChangedRepositoryOwner })
+
+        expect(mock.activeMocks()).toStrictEqual([])
+      })
+    })
+  })
 })
