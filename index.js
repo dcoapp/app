@@ -2,9 +2,9 @@ const getDCOStatus = require('./lib/dco.js')
 const requireMembers = require('./lib/requireMembers.js')
 
 /**
- * @param { {app: import('probot').Probot}} app
+ * @param {import('probot').Probot} app
  */
-module.exports = ({ app }) => {
+module.exports = (app) => {
   app.on(
     [
       'pull_request.opened',
