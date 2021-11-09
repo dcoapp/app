@@ -13,7 +13,7 @@ jobs:
         id: stats
         with:
           id: ${{ secrets.DCO_APP_ID }}
-          private_key: ${{ secrets.DCO_PRIVATE_KEY }}
+          private_key: ${{ secrets.DCO_APP_PRIVATE_KEY }}
       - run: "echo installations: '${{ steps.stats.outputs.installations }}'"
       - run: "echo suspended: '${{ steps.stats.outputs.suspended_installations }}'"
       - run: "echo repositories: '${{ steps.stats.outputs.repositories }}'"
