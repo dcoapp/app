@@ -1,5 +1,21 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`dco check_run.requested_action event creates a passing check 1`] = `
+Object {
+  "completed_at": "2018-07-14T18:18:54.156Z",
+  "conclusion": "success",
+  "head_branch": "<head_branch>",
+  "head_sha": "<head_sha>",
+  "name": "DCO",
+  "output": Object {
+    "summary": "Commit sign-off was manually approved.",
+    "title": "DCO",
+  },
+  "started_at": "2018-07-14T18:18:54.156Z",
+  "status": "completed",
+}
+`;
+
 exports[`dco creates a error status if app has no access to checks 1`] = `
 Object {
   "context": "DCO",
@@ -85,6 +101,22 @@ Object {
   "description": "All commits are signed off!",
   "state": "success",
   "target_url": "https://github.com/probot/dco#how-it-works",
+}
+`;
+
+exports[`dco pull_request event creates a passing check 1`] = `
+Object {
+  "completed_at": "2018-07-14T18:18:54.156Z",
+  "conclusion": "success",
+  "head_branch": "changes",
+  "head_sha": "34c5c7793cb3b279e22454cb6750c80560547b3a",
+  "name": "DCO",
+  "output": Object {
+    "summary": "All commits are signed off!",
+    "title": "DCO",
+  },
+  "started_at": "2018-07-14T18:18:54.156Z",
+  "status": "completed",
 }
 `;
 

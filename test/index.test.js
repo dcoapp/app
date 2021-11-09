@@ -313,4 +313,39 @@ describe('dco', () => {
       })
     })
   })
+
+  describe('check_run.requested_action event', () => {
+    test('creates a passing check', async () => {
+      const mock = nock('https://api.github.com')
+        .post('/repos/octocat/Hello-World/check-runs', (body) => {
+          body.started_at = '2018-07-14T18:18:54.156Z'
+          body.completed_at = '2018-07-14T18:18:54.156Z'
+          expect(body).toMatchSnapshot()
+
+          return true
+        })
+        .reply(200)
+
+      await probot.receive({
+        name: 'check_run',
+        payload: {
+          action: 'requested_action',
+          check_run: {
+            head_sha: '<head_sha>',
+            check_suite: {
+              head_branch: '<head_branch>'
+            }
+          },
+          repository: {
+            owner: {
+              login: 'octocat'
+            },
+            name: 'Hello-World'
+          }
+        }
+      })
+
+      expect(mock.activeMocks()).toStrictEqual([])
+    })
+  })
 })
