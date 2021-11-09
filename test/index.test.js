@@ -415,6 +415,37 @@ allowRemediationCommits:
 
         expect(mock.activeMocks()).toStrictEqual([])
       })
+
+      test('multiple commits with same author: creates a failing check with remidiation instructions', async () => {
+        const mock = nock('https://api.github.com')
+          .get('/repos/robotland/test/contents/.github%2Fdco.yml')
+          // has config
+          .reply(
+            200,
+            `
+allowRemediationCommits:
+  thirdParty: true`
+          )
+
+          .get('/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94')
+          // add 2nd commit without mutating the fixtures
+          .reply(200, {
+            ...compare,
+            commits: [compare.commits[0], compare.commits[0]]
+          })
+
+          .post('/repos/robotland/test/check-runs', (body) => {
+            body.started_at = '2018-07-14T18:18:54.156Z'
+            body.completed_at = '2018-07-14T18:18:54.156Z'
+            expect(body).toMatchSnapshot()
+            return true
+          })
+          .reply(200)
+
+        await probot.receive({ name: 'pull_request', payload })
+
+        expect(mock.activeMocks()).toStrictEqual([])
+      })
     })
   })
 
