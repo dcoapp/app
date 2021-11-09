@@ -203,6 +203,23 @@ describe('EXPLICIT DCO SIGN-OFFS', () => {
         expect(dcoObject).toEqual(success)
       })
 
+      test('Single commit has valid sign-off from committer, author has no email', async () => {
+        const commit = {
+          message: 'What a nice day!\n\nSigned-off-by: Bex Warner <bexmwarner@gmail.com>',
+          author: {
+            name: 'Bexo',
+            email: ''
+          },
+          committer: {
+            name: 'Bex Warner',
+            email: 'bexmwarner@gmail.com'
+          }
+        }
+        const dcoObject = await getDCOStatus([{ commit, author: { login: 'hiimbex' }, parents: [], sha: shaA }], alwaysRequireSignoff, prInfo, { individual: false, thirdParty: false })
+
+        expect(dcoObject).toEqual(success)
+      })
+
       test('Single commit is correctly signed-off by committer, author does not exist', async () => {
         const commit = {
           message: 'What a nice day!\n\nSigned-off-by: Bex Warner <bexmwarner@gmail.com>',
