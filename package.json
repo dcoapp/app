@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "email-validator": "^2.0.3",
-    "probot": "^11.4.1"
+    "probot": "^12.1.1"
   },
   "devDependencies": {
     "jest": "^27.3.1",
