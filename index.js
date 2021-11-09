@@ -181,7 +181,7 @@ Here is how to fix the problem so that this code can be merged.\n\n`
 
   let rebaseWarning = ''
 
-  if (allowRemediationCommits.individual || allowRemediationCommits.thirdparty) {
+  if (allowRemediationCommits.individual || allowRemediationCommits.thirdParty) {
     returnMessage = returnMessage + `---\n\n### Preferred method: Commit author adds a DCO remediation commit
 
 A *DCO Remediation Commit* contains special text in the commit message that applies a missing Signed-off-by line in a subsequent commit.  The primary benefit of this method is that the project’s history does not change, and there is no risk of breaking someone else’s work.
