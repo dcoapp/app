@@ -1,7 +1,5 @@
 # Probot: DCO
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/probot/dco.svg)](https://greenkeeper.io/)
-
 a GitHub Integration built with [probot](https://github.com/probot/probot) that enforces the [Developer Certificate of Origin](https://developercertificate.org/) (DCO) on Pull Requests. It requires all commit messages to contain the `Signed-off-by` line with an email address that matches the commit author.
 
 ## Usage
