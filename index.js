@@ -237,7 +237,7 @@ For the sake of clarity, please use a separate commit per author:\n`
         // Draft the magic DCO remediation commit text for the author
         // returnMessage = returnMessage + `Retroactive-signed-off-by: ${commit.author} <${commit.email}> ${commit.sha}\n`
         returnMessage = returnMessage + `On behalf of ${commit.author} <${commit.email}>, I, YOUR_NAME <YOUR_EMAIL>, hereby add my Signed-off-by to this commit: ${commit.sha}\n`
-        console.log(commit.sha)
+
         if (index === dcoFailed.length - 1) {
           returnMessage = returnMessage + '\nSigned-off-by: YOUR_NAME <YOUR_EMAIL>\n```\n'
         }
