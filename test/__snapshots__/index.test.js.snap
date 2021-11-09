@@ -65,51 +65,13 @@ Commit sha: [e76ed60](https://github.com/robotland/test/pull/113/commits/e76ed60
 
 exports[`dco creates a passing check 1`] = `
 Object {
-  "actions": Array [
-    Object {
-      "description": "would set status to passing",
-      "identifier": "override",
-      "label": "Set DCO to pass",
-    },
-  ],
   "completed_at": "2018-07-14T18:18:54.156Z",
-  "conclusion": "action_required",
+  "conclusion": "success",
   "head_branch": "changes",
   "head_sha": "34c5c7793cb3b279e22454cb6750c80560547b3a",
   "name": "DCO",
   "output": Object {
-    "summary": "There is one commit incorrectly signed off.  This means that the author of this commit failed to include a Signed-off-by line in the commit message.
-
-To avoid having PRs blocked in the future, always include \`Signed-off-by: Author Name <authoremail@example.com>\` in *every* commit message. You can also do this automatically by using the -s flag (i.e., \`git commit -s\`).
-
-Here is how to fix the problem so that this code can be merged.
-
-
----
-
-### Rebase the branch
-
-If you have a local git environment and meet the criteria below, one option is to rebase the branch and add your Signed-off-by lines in the new commits.  Please note that if others have already begun work based upon the commits in this branch, this solution will rewrite history and may cause serious issues for collaborators ([described in the git documentation](https://git-scm.com/book/en/v2/Git-Branching-Rebasing) under \\"The Perils of Rebasing\\").
-
-You should only do this if:
-
-* You are the only author of the commits in this branch
-* You are absolutely certain nobody else is doing any work based upon this branch
-* There are no empty commits in the branch (for example, a DCO Remediation Commit which was added using \`--allow-empty\`)
-
-To add your Signed-off-by line to every commit in this branch:
-
-1. Ensure you have a local copy of your branch by [checking out the pull request locally via command line](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/checking-out-pull-requests-locally).
-1. In your local branch, run: \`git rebase HEAD~1 --signoff\`
-1. Force push your changes to overwrite the branch: \`git push --force-with-lease origin changes\`
-
----
-
-
-
-### Summary
-
-Commit sha: [6dcb09b](https://github.com/octocat/Hello-World/pull/1/commits/6dcb09b5b57875f334f61aebed695e2e4193db5e), Author: Monalisa Octocat, Committer: Monalisa Octocat; The sign-off is missing.",
+    "summary": "All commits are signed off!",
     "title": "DCO",
   },
   "started_at": "2018-07-14T18:18:54.156Z",
@@ -120,8 +82,8 @@ Commit sha: [6dcb09b](https://github.com/octocat/Hello-World/pull/1/commits/6dcb
 exports[`dco creates a passing status if app has no access to checks 1`] = `
 Object {
   "context": "DCO",
-  "description": "The sign-off is missing.",
-  "state": "failure",
+  "description": "All commits are signed off!",
+  "state": "success",
   "target_url": "https://github.com/probot/dco#how-it-works",
 }
 `;
