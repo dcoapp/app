@@ -16,7 +16,7 @@ Object {
 }
 `;
 
-exports[`dco creates a error status if app has no access to checks 1`] = `
+exports[`dco pull_request event creates a error status if app has no access to checks 1`] = `
 Object {
   "context": "DCO",
   "description": "The sign-off is missing.",
@@ -25,7 +25,7 @@ Object {
 }
 `;
 
-exports[`dco creates a failing check 1`] = `
+exports[`dco pull_request event creates a failing check 1`] = `
 Object {
   "actions": Array [
     Object {
@@ -79,31 +79,6 @@ Commit sha: [e76ed60](https://github.com/robotland/test/pull/113/commits/e76ed60
 }
 `;
 
-exports[`dco creates a passing check 1`] = `
-Object {
-  "completed_at": "2018-07-14T18:18:54.156Z",
-  "conclusion": "success",
-  "head_branch": "changes",
-  "head_sha": "34c5c7793cb3b279e22454cb6750c80560547b3a",
-  "name": "DCO",
-  "output": Object {
-    "summary": "All commits are signed off!",
-    "title": "DCO",
-  },
-  "started_at": "2018-07-14T18:18:54.156Z",
-  "status": "completed",
-}
-`;
-
-exports[`dco creates a passing status if app has no access to checks 1`] = `
-Object {
-  "context": "DCO",
-  "description": "All commits are signed off!",
-  "state": "success",
-  "target_url": "https://github.com/probot/dco#how-it-works",
-}
-`;
-
 exports[`dco pull_request event creates a passing check 1`] = `
 Object {
   "completed_at": "2018-07-14T18:18:54.156Z",
@@ -120,7 +95,16 @@ Object {
 }
 `;
 
-exports[`dco with custom configuration require.members: false Org membership status is cached in case of multiple commits with same author 1`] = `
+exports[`dco pull_request event creates a passing status if app has no access to checks 1`] = `
+Object {
+  "context": "DCO",
+  "description": "All commits are signed off!",
+  "state": "success",
+  "target_url": "https://github.com/probot/dco#how-it-works",
+}
+`;
+
+exports[`dco pull_request event with custom configuration require.members: false Org membership status is cached in case of multiple commits with same author 1`] = `
 Object {
   "actions": Array [
     Object {
@@ -175,7 +159,7 @@ Commit sha: [e76ed60](https://github.com/robotland/test/pull/113/commits/e76ed60
 }
 `;
 
-exports[`dco with custom configuration require.members: false Repository belongs to author 1`] = `
+exports[`dco pull_request event with custom configuration require.members: false Repository belongs to author 1`] = `
 Object {
   "actions": Array [
     Object {
@@ -229,7 +213,7 @@ Commit sha: [e76ed60](https://github.com/robotland/test/pull/113/commits/e76ed60
 }
 `;
 
-exports[`dco with custom configuration require.members: false Repository does not belong to an organization or the author 1`] = `
+exports[`dco pull_request event with custom configuration require.members: false Repository does not belong to an organization or the author 1`] = `
 Object {
   "actions": Array [
     Object {
@@ -283,7 +267,7 @@ Commit sha: [e76ed60](https://github.com/robotland/test/pull/113/commits/e76ed60
 }
 `;
 
-exports[`dco with custom configuration require.members: false commit author is not an org member 1`] = `
+exports[`dco pull_request event with custom configuration require.members: false commit author is not an org member 1`] = `
 Object {
   "actions": Array [
     Object {
@@ -337,7 +321,7 @@ Commit sha: [e76ed60](https://github.com/robotland/test/pull/113/commits/e76ed60
 }
 `;
 
-exports[`dco with custom configuration require.members: false commit author is org member and commit is verified 1`] = `
+exports[`dco pull_request event with custom configuration require.members: false commit author is org member and commit is verified 1`] = `
 Object {
   "completed_at": "2018-07-14T18:18:54.156Z",
   "conclusion": "success",
@@ -353,7 +337,7 @@ Object {
 }
 `;
 
-exports[`dco with custom configuration require.members: false commit author is org member but commit is not verified 1`] = `
+exports[`dco pull_request event with custom configuration require.members: false commit author is org member but commit is not verified 1`] = `
 Object {
   "actions": Array [
     Object {
