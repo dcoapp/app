@@ -16,12 +16,11 @@
   },
   "dependencies": {
     "email-validator": "^2.0.3",
-    "probot": "^11.0.0-beta.3"
+    "probot": "^12.1.1"
   },
   "devDependencies": {
-    "eslint-plugin-import": "^2.22.0",
-    "jest": "^26.1.0",
-    "nock": "^13.0.3",
+    "jest": "^27.3.1",
+    "nock": "^13.2.0",
     "smee-client": "^1.0.1",
     "standard": "^14.3.4"
   },
@@ -31,6 +30,14 @@
     ]
   },
   "jest": {
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "coverageThreshold": {
+      "global": {
+        "statements": 100,
+        "branches": 100,
+        "functions": 100,
+        "lines": 100
+      }
+    }
   }
 }

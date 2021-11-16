@@ -2,9 +2,9 @@ const getDCOStatus = require("./lib/dco.js");
 const requireMembers = require("./lib/requireMembers.js");
 
 /**
- * @param { {app: import('probot').Probot}} app
+ * @param {import('probot').Probot} app
  */
-module.exports = ({ app }) => {
+module.exports = (app) => {
   app.on(
     [
       "pull_request.opened",
@@ -19,12 +19,6 @@ module.exports = ({ app }) => {
 
     const config = await context.config("dco.yml", {
       require: {
-<<<<<<< HEAD
-        members: true,
-      },
-    });
-    const requireForMembers = config.require.members;
-=======
         members: true
       },
       allowRemediationCommits: {
@@ -34,7 +28,6 @@ module.exports = ({ app }) => {
     })
     const requireForMembers = config.require.members
     const allowRemediationCommits = config.allowRemediationCommits
->>>>>>> 9f42879 (Add support for remediation commits (#147))
 
     const pr = context.payload.pull_request;
 
@@ -49,14 +42,9 @@ module.exports = ({ app }) => {
     const dcoFailed = await getDCOStatus(
       commits,
       requireMembers(requireForMembers, context),
-<<<<<<< HEAD
-      context.payload.pull_request.html_url
-    );
-=======
       context.payload.pull_request.html_url,
       allowRemediationCommits
     )
->>>>>>> 9f42879 (Add support for remediation commits (#147))
 
     if (!dcoFailed.length) {
       await context.octokit.checks
@@ -75,26 +63,25 @@ module.exports = ({ app }) => {
             },
           })
         )
-        .catch(function checkFails(error) {
-          if (error.status === 403) {
-            context.log.info(
-              "resource not accessible, creating status instead"
-            );
-            // create status
-            const params = {
-              sha: pr.head.sha,
-              context: "DCO",
-              state: "success",
-              description: "All commits are signed off!",
-              target_url: "https://github.com/dcoapp/app#how-it-works",
-            };
-            return context.octokit.repos.createCommitStatus(
-              context.repo(params)
-            );
-          }
+        .catch(function checkFails (error) {
+          /* istanbul ignore next - unexpected error */
+          if (error.status !== 403) throw error
 
-          throw error;
-        });
+          context.log.info(
+            'resource not accessible, creating status instead'
+          )
+          // create status
+          const params = {
+            sha: pr.head.sha,
+            context: 'DCO',
+            state: 'success',
+            description: 'All commits are signed off!',
+            target_url: 'https://github.com/probot/dco#how-it-works'
+          }
+          return context.octokit.repos.createCommitStatus(
+            context.repo(params)
+          )
+        })
     } else {
       let summary = [];
       dcoFailed.forEach(function (commit) {
@@ -131,29 +118,28 @@ module.exports = ({ app }) => {
             ],
           })
         )
-        .catch(function checkFails(error) {
-          if (error.status === 403) {
-            context.log.info(
-              "resource not accessible, creating status instead"
-            );
-            // create status
-            const description = dcoFailed[
-              dcoFailed.length - 1
-            ].message.substring(0, 140);
-            const params = {
-              sha: pr.head.sha,
-              context: "DCO",
-              state: "failure",
-              description,
-              target_url: "https://github.com/dcoapp/app#how-it-works",
-            };
-            return context.octokit.repos.createCommitStatus(
-              context.repo(params)
-            );
-          }
+        .catch(function checkFails (error) {
+          /* istanbul ignore next - unexpected error */
+          if (error.status !== 403) throw error
 
-          throw error;
-        });
+          context.log.info(
+            'resource not accessible, creating status instead'
+          )
+          // create status
+          const description = dcoFailed[
+            dcoFailed.length - 1
+          ].message.substring(0, 140)
+          const params = {
+            sha: pr.head.sha,
+            context: 'DCO',
+            state: 'failure',
+            description,
+            target_url: 'https://github.com/probot/dco#how-it-works'
+          }
+          return context.octokit.repos.createCommitStatus(
+            context.repo(params)
+          )
+        })
     }
   }
 
@@ -195,7 +181,7 @@ Here is how to fix the problem so that this code can be merged.\n\n`
 
   let rebaseWarning = ''
 
-  if (allowRemediationCommits.individual || allowRemediationCommits.thirdparty) {
+  if (allowRemediationCommits.individual || allowRemediationCommits.thirdParty) {
     returnMessage = returnMessage + `---\n\n### Preferred method: Commit author adds a DCO remediation commit
 
 A *DCO Remediation Commit* contains special text in the commit message that applies a missing Signed-off-by line in a subsequent commit.  The primary benefit of this method is that the project’s history does not change, and there is no risk of breaking someone else’s work.
@@ -251,7 +237,7 @@ For the sake of clarity, please use a separate commit per author:\n`
         // Draft the magic DCO remediation commit text for the author
         // returnMessage = returnMessage + `Retroactive-signed-off-by: ${commit.author} <${commit.email}> ${commit.sha}\n`
         returnMessage = returnMessage + `On behalf of ${commit.author} <${commit.email}>, I, YOUR_NAME <YOUR_EMAIL>, hereby add my Signed-off-by to this commit: ${commit.sha}\n`
-        console.log(commit.sha)
+
         if (index === dcoFailed.length - 1) {
           returnMessage = returnMessage + '\nSigned-off-by: YOUR_NAME <YOUR_EMAIL>\n```\n'
         }
