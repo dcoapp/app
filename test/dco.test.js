@@ -1457,10 +1457,10 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
   describe('Enabled via config option', () => {
     describe('Verify default functionality is unchanged', () => {
       /*
-* The tests in this section mirror the explicit sign-off tests exactly, except individual
-* remediation is enabled. This first sequence of tests ensures that no functionality
-* changes when individual remediation commits are enabled.
-*/
+      * The tests in this section mirror the explicit sign-off tests exactly, except individual
+      * remediation is enabled. This first sequence of tests ensures that no functionality
+      * changes when individual remediation commits are enabled.
+      */
 
       describe('Single commit', () => {
         describe('Success patterns', () => {
@@ -2824,8 +2824,8 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
 
     describe('Verify individual remediations', () => {
       /*
-* The tests in this section verify the behavior of individual remediation.
-*/
+      * The tests in this section verify the behavior of individual remediation.
+      */
 
       describe('Success patterns', () => {
         test('First commit does not contain a sign-off; second commit has individual remediation and sign-off', async () => {
@@ -3523,10 +3523,10 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
   describe('Enabled via config option', () => {
     describe('Verify default functionality is unchanged', () => {
       /*
-* The tests in this section mirror the explicit sign-off tests exactly, except individual
-* remediation is enabled. This first sequence of tests ensures that no functionality
-* changes when individual remediation commits are enabled.
-*/
+      * The tests in this section mirror the explicit sign-off tests exactly, except individual
+      * remediation is enabled. This first sequence of tests ensures that no functionality
+      * changes when individual remediation commits are enabled.
+      */
 
       describe('Single commit', () => {
         describe('Success patterns', () => {
@@ -4890,8 +4890,8 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
 
     describe('Verify individual remediation with third-party remediations enabled', () => {
       /*
-* The tests in this section verify the behavior of third-party remediation.
-*/
+      * The tests in this section verify the behavior of third-party remediation.
+      */
 
       describe('Success patterns', () => {
         test('First commit does not contain a sign-off; second commit has individual remediation and sign-off', async () => {
@@ -6265,10 +6265,10 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
   describe('Enabled via config option', () => {
     describe('Verify default functionality is unchanged', () => {
       /*
-* The tests in this section mirror the explicit sign-off tests exactly, except individual
-* remediation is enabled. This first sequence of tests ensures that no functionality
-* changes when individual remediation commits are enabled.
-*/
+      * The tests in this section mirror the explicit sign-off tests exactly, except individual
+      * remediation is enabled. This first sequence of tests ensures that no functionality
+      * changes when individual remediation commits are enabled.
+      */
 
       describe('Single commit', () => {
         describe('Success patterns', () => {
@@ -7632,8 +7632,8 @@ describe('INDIVIDUAL REMEDIATION COMMITS', () => {
 
     describe('Verify individual remediations', () => {
       /*
-* The tests in this section verify the behavior of individual remediation.
-*/
+      * The tests in this section verify the behavior of individual remediation.
+      */
 
       describe('Success patterns', () => {
         test('First commit does not contain a sign-off; second commit has individual remediation and sign-off', async () => {
@@ -8331,10 +8331,10 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
   describe('Enabled via config option', () => {
     describe('Verify default functionality is unchanged', () => {
       /*
-* The tests in this section mirror the explicit sign-off tests exactly, except individual
-* remediation is enabled. This first sequence of tests ensures that no functionality
-* changes when individual remediation commits are enabled.
-*/
+      * The tests in this section mirror the explicit sign-off tests exactly, except individual
+      * remediation is enabled. This first sequence of tests ensures that no functionality
+      * changes when individual remediation commits are enabled.
+      */
 
       describe('Single commit', () => {
         describe('Success patterns', () => {
@@ -9698,8 +9698,8 @@ describe('THIRD PARTY REMEDIATION COMMITS', () => {
 
     describe('Verify individual remediation with third-party remediations enabled', () => {
       /*
-* The tests in this section verify the behavior of third-party remediation.
-*/
+      * The tests in this section verify the behavior of third-party remediation.
+      */
 
       describe('Success patterns', () => {
         test('First commit does not contain a sign-off; second commit has individual remediation and sign-off', async () => {
