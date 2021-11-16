@@ -10,6 +10,35 @@ a GitHub Integration built with [probot](https://github.com/probot/probot) that 
 
 See [docs/deploy.md](docs/deploy.md) if you would like to run your own instance of this plugin.
 
+## Modes of operations
+
+### Default
+
+By default, Probot DCO enforces the presence of [valid DCO signoffs](#how-it-works) on all commits (excluding bots and merges). If a PRs contains commits that lack a valid Signed-off-by line, they are blocked until a correctly signed-off revision of the commit is pushed. This closely mirrors the upstream Linux kernel process.
+
+### Individual remediation commit support
+
+Optionally, a project can allow individual remediation commit support, where the failing commit's author can push an additional properly signed-off commit with additional text in the commit log that indicates they apply their signoff retroactively.
+
+To enable this, place the following configuration file in `.github/dco.yml` on the default branch:
+
+```yaml
+allowRemediationCommits:
+  individual: true
+```
+
+### Third-party remediation support
+
+Additionally, a project can allow third-parties to sign off on an author's behalf by pushing an additional properly signed-off commit with additional text in the commit log that indicates they sign off on behalf of the author. Third-party remediation requires individual remediation to be enabled.
+
+To enable this, place the following configuration file in `.github/dco.yml` on the default branch:
+
+```yaml
+allowRemediationCommits:
+  individual: true
+  thirdParty: true
+```
+
 ### Skipping sign-off for organization members
 
 It is possible to disable the check for commits authored and [signed](https://help.github.com/articles/signing-commits-using-gpg/) by members of the organization the repository belongs to. To do this, place the following configuration file in `.github/dco.yml` on the default branch:
