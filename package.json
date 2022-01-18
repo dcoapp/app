@@ -41,5 +41,10 @@
         "lines": 100
       }
     }
+  },
+  "release": {
+    "branches": [
+      "main"
+    ]
   }
 }
