@@ -1,6 +1,6 @@
 ISC License
 
-Copyright (c) [probot/dco contributors](https://github.com/probot/dco/graphs/contributors)
+Copyright (c) [dcoapp/app contributors](https://github.com/dcoapp/app/graphs/contributors)
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above

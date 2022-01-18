@@ -5,7 +5,7 @@ Object {
   "context": "DCO",
   "description": "The sign-off is missing.",
   "state": "failure",
-  "target_url": "https://github.com/probot/dco#how-it-works",
+  "target_url": "https://github.com/dcoapp/app#how-it-works",
 }
 `;
 
@@ -78,6 +78,6 @@ Object {
   "context": "DCO",
   "description": "The sign-off is missing.",
   "state": "failure",
-  "target_url": "https://github.com/probot/dco#how-it-works",
+  "target_url": "https://github.com/dcoapp/app#how-it-works",
 }
 `;
