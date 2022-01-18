@@ -40,18 +40,10 @@
     "merged_at": null,
     "merge_commit_sha": "414cb0069601a32b00bd122a2380cd283626a8e5",
     "assignee": null,
-    "assignees": [
-
-    ],
-    "requested_reviewers": [
-
-    ],
-    "requested_teams": [
-
-    ],
-    "labels": [
-
-    ],
+    "assignees": [],
+    "requested_reviewers": [],
+    "requested_teams": [],
+    "labels": [],
     "milestone": null,
     "commits_url": "https://api.github.com/repos/octocat/Hello-World/pulls/1/commits",
     "review_comments_url": "https://api.github.com/repos/octocat/Hello-World/pulls/1/comments",

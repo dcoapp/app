@@ -38,12 +38,8 @@
     "merged_at": null,
     "merge_commit_sha": null,
     "assignee": null,
-    "assignees": [
-
-    ],
-    "requested_reviewers": [
-
-    ],
+    "assignees": [],
+    "requested_reviewers": [],
     "milestone": null,
     "commits_url": "https://api.github.com/repos/robotland/test/pulls/113/commits",
     "review_comments_url": "https://api.github.com/repos/robotland/test/pulls/113/comments",

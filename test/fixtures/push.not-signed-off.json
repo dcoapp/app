@@ -25,15 +25,9 @@
         "email": "bkeepers@github.com",
         "username": "bkeepers"
       },
-      "added": [
-
-      ],
-      "removed": [
-
-      ],
-      "modified": [
-        "README.md"
-      ]
+      "added": [],
+      "removed": [],
+      "modified": ["README.md"]
     }
   ],
   "head_commit": {
@@ -53,15 +47,9 @@
       "email": "bkeepers@github.com",
       "username": "bkeepers"
     },
-    "added": [
-
-    ],
-    "removed": [
-
-    ],
-    "modified": [
-      "README.md"
-    ]
+    "added": [],
+    "removed": [],
+    "modified": ["README.md"]
   },
   "repository": {
     "id": 86125112,

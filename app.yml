@@ -13,32 +13,32 @@
 # The list of events the GitHub App subscribes to.
 # Uncomment the event names below to enable them.
 default_events:
-- check_run
-# - check_suite
-# - commit_comment
-# - create
-# - delete
-# - deployment
-# - deployment_status
-# - fork
-# - gollum
-# - issue_comment
-# - issues
-# - label
-# - milestone
-# - member
-# - membership
-# - org_block
-# - organization
-# - page_build
-# - project
-# - project_card
-# - project_column
-# - public
-- pull_request
-# - pull_request_review
-# - pull_request_review_comment
-- push
+  - check_run
+  # - check_suite
+  # - commit_comment
+  # - create
+  # - delete
+  # - deployment
+  # - deployment_status
+  # - fork
+  # - gollum
+  # - issue_comment
+  # - issues
+  # - label
+  # - milestone
+  # - member
+  # - membership
+  # - org_block
+  # - organization
+  # - page_build
+  # - project
+  # - project_card
+  # - project_column
+  # - public
+  - pull_request
+  # - pull_request_review
+  # - pull_request_review_comment
+  - push
 # - release
 # - repository
 # - repository_import
@@ -123,8 +123,6 @@ default_permissions:
   # Get notified of, and update, content references.
   # https://developer.github.com/v3/apps/permissions/
   # organization_administration: read
-
-
 # The name of the GitHub App. Defaults to the name specified in package.json
 # name: My Probot App
 
