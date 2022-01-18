@@ -1,5 +1,5 @@
-const getDCOStatus = require("./lib/dco.js");
-const requireMembers = require("./lib/requireMembers.js");
+const getDCOStatus = require('./lib/dco.js')
+const requireMembers = require('./lib/requireMembers.js')
 
 /**
  * @param {import('probot').Probot} app
@@ -7,17 +7,17 @@ const requireMembers = require("./lib/requireMembers.js");
 module.exports = (app) => {
   app.on(
     [
-      "pull_request.opened",
-      "pull_request.synchronize",
-      "check_run.rerequested",
+      'pull_request.opened',
+      'pull_request.synchronize',
+      'check_run.rerequested'
     ],
     check
-  );
+  )
 
-  async function check(context) {
-    const timeStart = new Date();
+  async function check (context) {
+    const timeStart = new Date()
 
-    const config = await context.config("dco.yml", {
+    const config = await context.config('dco.yml', {
       require: {
         members: true
       },
@@ -29,16 +29,16 @@ module.exports = (app) => {
     const requireForMembers = config.require.members
     const allowRemediationCommits = config.allowRemediationCommits
 
-    const pr = context.payload.pull_request;
+    const pr = context.payload.pull_request
 
     const compare = await context.octokit.repos.compareCommits(
       context.repo({
         base: pr.base.sha,
-        head: pr.head.sha,
+        head: pr.head.sha
       })
-    );
+    )
 
-    const commits = compare.data.commits;
+    const commits = compare.data.commits
     const dcoFailed = await getDCOStatus(
       commits,
       requireMembers(requireForMembers, context),
@@ -50,17 +50,17 @@ module.exports = (app) => {
       await context.octokit.checks
         .create(
           context.repo({
-            name: "DCO",
+            name: 'DCO',
             head_branch: pr.head.ref,
             head_sha: pr.head.sha,
-            status: "completed",
+            status: 'completed',
             started_at: timeStart,
-            conclusion: "success",
+            conclusion: 'success',
             completed_at: new Date(),
             output: {
-              title: "DCO",
-              summary: "All commits are signed off!",
-            },
+              title: 'DCO',
+              summary: 'All commits are signed off!'
+            }
           })
         )
         .catch(function checkFails (error) {
@@ -83,7 +83,7 @@ module.exports = (app) => {
           )
         })
     } else {
-      let summary = [];
+      let summary = []
       dcoFailed.forEach(function (commit) {
         summary.push(
           `Commit sha: [${commit.sha.substr(0, 7)}](${commit.url}), Author: ${
@@ -98,24 +98,24 @@ module.exports = (app) => {
       await context.octokit.checks
         .create(
           context.repo({
-            name: "DCO",
+            name: 'DCO',
             head_branch: pr.head.ref,
             head_sha: pr.head.sha,
-            status: "completed",
+            status: 'completed',
             started_at: timeStart,
-            conclusion: "action_required",
+            conclusion: 'action_required',
             completed_at: new Date(),
             output: {
-              title: "DCO",
-              summary,
+              title: 'DCO',
+              summary
             },
             actions: [
               {
-                label: "Set DCO to pass",
-                description: "would set status to passing",
-                identifier: "override",
-              },
-            ],
+                label: 'Set DCO to pass',
+                description: 'would set status to passing',
+                identifier: 'override'
+              }
+            ]
           })
         )
         .catch(function checkFails (error) {
@@ -144,27 +144,27 @@ module.exports = (app) => {
   }
 
   // This option is only presented to users with Write Access to the repo
-  app.on("check_run.requested_action", setStatusPass);
-  async function setStatusPass(context) {
-    const timeStart = new Date();
+  app.on('check_run.requested_action', setStatusPass)
+  async function setStatusPass (context) {
+    const timeStart = new Date()
 
     await context.octokit.checks.create(
       context.repo({
-        name: "DCO",
+        name: 'DCO',
         head_branch: context.payload.check_run.check_suite.head_branch,
         head_sha: context.payload.check_run.head_sha,
-        status: "completed",
+        status: 'completed',
         started_at: timeStart,
-        conclusion: "success",
+        conclusion: 'success',
         completed_at: new Date(),
         output: {
-          title: "DCO",
-          summary: "Commit sign-off was manually approved.",
-        },
+          title: 'DCO',
+          summary: 'Commit sign-off was manually approved.'
+        }
       })
-    );
+    )
   }
-};
+}
 
 function handleCommits (pr, commitLength, dcoFailed, allowRemediationCommits) {
   let returnMessage = ''

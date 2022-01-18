@@ -317,7 +317,7 @@ Object {
   "context": "DCO",
   "description": "The sign-off is missing.",
   "state": "failure",
-  "target_url": "https://github.com/dcoapp/app#how-it-works",
+  "target_url": "https://github.com/probot/dco#how-it-works",
 }
 `;
 
@@ -474,12 +474,6 @@ Commit sha: [e76ed60](https://github.com/robotland/test/pull/113/commits/e76ed60
 
 exports[`dco pull_request event with custom configuration require.members: false Org membership status is cached in case of multiple commits with same author 1`] = `
 Object {
-<<<<<<< HEAD
-  "context": "DCO",
-  "description": "The sign-off is missing.",
-  "state": "failure",
-  "target_url": "https://github.com/dcoapp/app#how-it-works",
-=======
   "actions": Array [
     Object {
       "description": "would set status to passing",
@@ -762,6 +756,5 @@ Commit sha: [e76ed60](https://github.com/robotland/test/pull/113/commits/e76ed60
   },
   "started_at": "2018-07-14T18:18:54.156Z",
   "status": "completed",
->>>>>>> ace11eb (feat: upgrade to Probot v12. 100% test coverage (#169))
 }
 `;
