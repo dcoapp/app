@@ -1,6 +1,8 @@
 # Probot: DCO
 
-a GitHub Integration built with [probot](https://github.com/probot/probot) that enforces the [Developer Certificate of Origin](https://developercertificate.org/) (DCO) on Pull Requests. It requires all commit messages to contain the `Signed-off-by` line with an email address that matches the commit author.
+A GitHub Integration built with [probot](https://github.com/probot/probot) that enforces the [Developer Certificate of Origin](https://developercertificate.org/) (DCO) on Pull Requests. It requires all commit messages to contain the `Signed-off-by` line with an email address that matches the commit author.
+
+✋ Wanna check your pull requests using a GitHub Actions workflow instead? See [alternatives](#alternatives) below.
 
 ## Usage
 
@@ -84,6 +86,12 @@ Once [installed](#usage), this integration will create a [check](https://develop
 Additionally, the DCO creates an override button accessible to only those with write access to the repository to create a successful check.
 
 ![DCO button](https://user-images.githubusercontent.com/13410355/42353254-3bfa266a-8074-11e8-80b4-18760c5efeee.png)
+
+## Alternatives
+
+This project is a GitHub App that you can install on one or many repositories, making it a convenient choice if you want to use it on lots of different repos, or even an entire GitHub organization full of repos.
+
+If, however, you want more control over exactly how and when your pull requests are DCO checked, consider writing your own custom Actions workflow using a GitHub Action like [tisonkun/actions-dco](https://github.com/tisonkun/actions-dco).
 
 ## Further Reading
 
