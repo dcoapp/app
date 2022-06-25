@@ -283,7 +283,14 @@ To add your Signed-off-by line to every commit in this branch:
 
 1. Ensure you have a local copy of your branch by [checking out the pull request locally via command line](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/checking-out-pull-requests-locally).
 1. In your local branch, run: \`git rebase HEAD~${commitLength} --signoff\`
-1. Force push your changes to overwrite the branch: \`git push --force-with-lease origin ${pr.head.ref}\`\n\n---\n\n`;
+1. Force push your changes to overwrite the branch: \`git push --force-with-lease origin ${pr.head.ref}\`
+
+\`\`\`shell
+git rebase HEAD~${commitLength} --signoff
+git push --force-with-lease origin ${pr.head.ref}
+\`\`\`
+
+\n\n---\n\n`;
 
   return returnMessage;
 }
