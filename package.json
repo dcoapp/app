@@ -19,7 +19,7 @@
   "dependencies": {
     "email-validator": "^2.0.3",
     "prettier": "^2.5.1",
-    "probot": "^12.1.1"
+    "probot": "^12.2.8"
   },
   "devDependencies": {
     "jest": "^27.3.1",
