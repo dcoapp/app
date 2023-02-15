@@ -46,6 +46,8 @@ default_events:
 # - team
 # - team_add
 # - watch
+  # Make DCO run in the merge queue
+  - merge_group
 
 # The set of permissions needed by the GitHub App. The format of the object uses
 # the permission name for the key (for example, issues) and the access type for
