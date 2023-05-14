@@ -9,12 +9,13 @@
   "scripts": {
     "start": "probot run ./index.js",
     "test": "jest --coverage",
-    "posttest": "npm run lint",
+    "posttest": "pnpm run lint",
     "lint": "prettier --check '{lib,test,docs}/**/*.{js,json,md}' index.js *.md package.json app.yml",
     "lint:fix": "prettier --write '{lib,test,docs}/**/*.{js,json,md}' index.js *.md package.json app.yml"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=18",
+    "pnpm": "^8"
   },
   "dependencies": {
     "email-validator": "^2.0.3",
@@ -24,6 +25,7 @@
   "devDependencies": {
     "jest": "^27.3.1",
     "nock": "^13.2.0",
+    "pnpm": "^8.4.0",
     "smee-client": "^1.0.1"
   },
   "standard": {
