@@ -18,8 +18,8 @@
   },
   "dependencies": {
     "email-validator": "^2.0.3",
-    "prettier": "^2.5.1",
-    "probot": "^12.1.1"
+    "prettier": "^3.2.5",
+    "probot": "^12.3.3"
   },
   "devDependencies": {
     "jest": "^27.3.1",
