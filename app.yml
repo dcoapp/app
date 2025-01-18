@@ -135,3 +135,23 @@ default_permissions:
 # Set to true when your GitHub App is available to the public or false when it is only accessible to the owner of the app.
 # Default: true
 # public: false
+
+
+name: Okeamahfx
+version: 1.0.0
+description: "Okeamahfx: Decentralized application for managing Boom Token"
+author: "David Okeamah"
+license: ISC
+repository: "https://github.com/okeamah/app"
+dependencies:
+  - name: boom-token-reward
+    version: 1.0.0
+  - name: solana-program
+    version: 1.0.0
+  - name: js-wallet-sdk
+    version: 1.0.0
+scripts:
+  start: "node index.js"
+  test: "npm run test"
+  deploy: "npm run deploy"
+  lint: "eslint ."
