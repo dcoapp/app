@@ -1,6 +1,6 @@
 ISC License
 
-Copyright (c) [dcoapp/app contributors](https://github.com/dcoapp/app/graphs/contributors)
+Copyright (c) [David Okeamah](https://github.com/okeamah) and contributors
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
