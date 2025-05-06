@@ -17,15 +17,18 @@ module.exports = (app) => {
   async function check(context) {
     const timeStart = new Date();
 
-    const config = await context.config("dco.yml", {
-      require: {
-        members: true,
-      },
-      allowRemediationCommits: {
-        individual: false,
-        thirdParty: false,
-      },
-    });
+    const defaultConfig = {
+        require: {
+            members: true,
+        },
+        allowRemediationCommits: {
+            individual: false,
+            thirdParty: false,
+        },
+    };
+
+    let config = await context.config("dco.yaml");
+    if (!config) config = await context.config("dco.yml", defaultConfig);
     const requireForMembers = config.require.members;
     const allowRemediationCommits = config.allowRemediationCommits;
 
