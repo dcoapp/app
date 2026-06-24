@@ -1,3 +1,7 @@
+---
+# SPDX-FileCopyrightText: 2018 - 2026 DCO App Contributors
+# SPDX-License-Identifier: ISC
+
 # This is a GitHub App Manifest. These settings will be used by default when
 # initially configuring your GitHub App.
 #
@@ -132,6 +136,7 @@ default_permissions:
 # A description of the GitHub App.
 # description: A description of my awesome app
 
-# Set to true when your GitHub App is available to the public or false when it is only accessible to the owner of the app.
+# Set to true when your GitHub App is available to the public or false when it
+# is only accessible to the owner of the app.
 # Default: true
 # public: false

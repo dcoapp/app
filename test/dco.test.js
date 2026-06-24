@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018 - 2026 DCO App Contributors
+// SPDX-License-Identifier: ISC
+
 /*
  * The tests in this file verify the functionality of Probot DCO. Because there are many ways to
  * write a signoff and many ways to misconfigure git, the goal is to flush out as many corner cases

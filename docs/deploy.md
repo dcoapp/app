@@ -1,5 +1,11 @@
+<!--
+SPDX-FileCopyrightText: 2018 - 2026 DCO App Contributors
+SPDX-License-Identifier: ISC
+-->
+
 # Deploying
 
-If you would like to run your own instance of this GitHub, see the [Deployment docs](https://probot.github.io/docs/deployment/).
+If you would like to run your own instance of this GitHub App, see the
+[Deployment docs](https://probot.github.io/docs/deployment/).
 
-All required permissions and events are configured in [`app.yml`](../app.yml).
+The [`app.yml`](../app.yml) file configures all required permissions and events.

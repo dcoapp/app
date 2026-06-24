@@ -1,17 +1,22 @@
+---
+# SPDX-FileCopyrightText: 2018 - 2026 DCO App Contributors
+# SPDX-License-Identifier: ISC
+
 name: Test
-on:
+"on":
   push:
     branches:
-      - master
+      - main
   pull_request:
     types: [opened, synchronize]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6.4.0
         with:
           node-version: "lts/*"
           cache: npm

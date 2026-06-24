@@ -1,0 +1,5 @@
+# SPDX-FileCopyrightText: 2018 - 2026 DCO App Contributors
+# SPDX-License-Identifier: ISC
+[codespell]
+ignore-words-list = mergin,pinter,thirdparty
+skip = ./package-lock.json,./test/fixtures,./test/__snapshots__,./LICENSES,./node_modules,./coverage
