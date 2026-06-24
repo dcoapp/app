@@ -14,7 +14,7 @@
     "lint:fix": "prettier --write '{lib,test,docs}/**/*.{js,json,md}' index.js *.md package.json app.yml"
   },
   "engines": {
-    "node": ">=14"
+    "node": "24.x"
   },
   "dependencies": {
     "email-validator": "^2.0.3",
