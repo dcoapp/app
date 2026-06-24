@@ -1,4 +1,8 @@
-on:
+---
+# SPDX-FileCopyrightText: 2018 - 2026 DCO App Contributors
+# SPDX-License-Identifier: ISC
+
+"on":
   schedule:
     # https://crontab.guru/once-a-day
     - cron: 0 0 * * *
@@ -8,8 +12,9 @@ name: Stats
 jobs:
   stats:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: gr2m/app-stats-action@v1.x
+      - uses: gr2m/app-stats-action@d88119878fb9601fb30d0aa5805da7671cd1e39e  # v1.2.16
         id: stats
         with:
           id: ${{ secrets.DCO_APP_ID }}
