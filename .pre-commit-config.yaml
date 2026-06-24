@@ -1,0 +1,118 @@
+---
+# SPDX-License-Identifier: ISC
+# SPDX-FileCopyrightText: 2018 - 2026 DCO App Contributors
+
+ci:
+  # pre-commit.ci sandbox prevents network calls and has no Node
+  # toolchain; disable hooks that need either.
+  skip: [jest, gha-workflow-linter]
+  autofix_commit_msg: |
+    Chore: pre-commit autofixes
+
+    Signed-off-by: pre-commit-ci[bot] <pre-commit-ci@users.noreply.github.com>
+  autoupdate_commit_msg: |
+    Chore: pre-commit autoupdate
+
+    Signed-off-by: pre-commit-ci[bot] <pre-commit-ci@users.noreply.github.com>
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: check-added-large-files
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-xml
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+      - id: no-commit-to-branch
+        args:
+          - --branch=main
+
+  - repo: https://github.com/jorisroovers/gitlint
+    rev: acc9d9de6369b76d22cb4167029d2035e8730b98  # frozen: v0.19.1
+    hooks:
+      - id: gitlint
+
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: cba56bcde1fdd01c1deb3f945e69764c291a6530  # frozen: v1.38.0
+    hooks:
+      - id: yamllint
+        types: [yaml]
+
+  - repo: https://github.com/btford/write-good
+    rev: ab66ce10136dfad5146e69e70f82a3efac8842c1  # frozen: v1.0.8
+    hooks:
+      - id: write-good
+        args: ["--no-passive", "--no-cliches"]
+        exclude: ^LICENSE\.md$
+        files: "\\.(rst|md|markdown|mdown|mkdn)$"
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: 2ccb47ff45ad361a21071a7eedda4c37e6ae8c5a  # frozen: v2.4.2
+    hooks:
+      - id: codespell
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: a4d5d37e66ebcd6b3705204a1d6dbb56dea66338  # frozen: v0.49.0
+    hooks:
+      - id: markdownlint
+        args: ["--fix"]
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: 745eface02aef23e168a8afb6b5737818efbea95  # frozen: v0.11.0.1
+    hooks:
+      - id: shellcheck
+
+  - repo: https://github.com/fsfe/reuse-tool
+    rev: 9fabf9eb815a57aac116b435e8346c200cdb8604  # frozen: v6.2.0
+    hooks:
+      - id: reuse
+
+  # Replaces: https://github.com/rhysd/actionlint
+  # Permits actionlint to run both locally and with pre-commit.ci/GitHub
+  - repo: https://github.com/Mateusz-Grzelinski/actionlint-py
+    rev: c04ed26e40637cab1aa9879c693832a9c120fb20  # frozen: v1.7.12.24
+    hooks:
+      - id: actionlint
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 8ef330cbb7204d388aa7a620f9549bcea8009663  # frozen: 0.37.3
+    hooks:
+      - id: check-github-actions
+      - id: check-github-workflows
+      - id: check-jsonschema
+        name: Check GitHub Workflows set timeout-minutes
+        args:
+          - --builtin-schema
+          - github-workflows-require-timeout
+        files: ^\.github/workflows/[^/]+$
+        types:
+          - yaml
+      - id: check-dependabot
+
+  - repo: https://github.com/lfreleng-actions/gha-workflow-linter
+    rev: bfc5489483353425f8e023902d91c3ae3584f955  # frozen: v1.2.0
+    hooks:
+      - id: gha-workflow-linter
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: ea782651a7e32f40a3d13b76c79d5a2474ee8723  # frozen: v2.5.1
+    hooks:
+      - id: prettier
+        files: ^(index\.js|app\.yml|package\.json|(lib|test|docs)/.+\.(js|json))$
+
+  # Run the test suite last so any auto-fixes from earlier hooks are
+  # exercised. Tests need the full project dependency tree, so this
+  # stays a local hook and is skipped on pre-commit.ci.
+  - repo: local
+    hooks:
+      - id: jest
+        name: jest
+        entry: npm test
+        language: system
+        pass_filenames: false
+        always_run: true

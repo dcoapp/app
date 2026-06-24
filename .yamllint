@@ -1,0 +1,15 @@
+---
+# SPDX-FileCopyrightText: 2018 - 2026 DCO App Contributors
+# SPDX-License-Identifier: ISC
+
+extends: default
+
+rules:
+  empty-lines:
+    max-end: 1
+  comments:
+    # prettier forces 1 space comment separator
+    min-spaces-from-content: 1
+    level: error
+  line-length:
+    max: 120
