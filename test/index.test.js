@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018 - 2026 DCO App Contributors
+// SPDX-License-Identifier: ISC
+
 const nock = require("nock");
 const { Probot, ProbotOctokitCore } = require("probot");
 

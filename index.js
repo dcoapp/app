@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2018 - 2026 DCO App Contributors
+// SPDX-License-Identifier: ISC
+
 const getDCOStatus = require("./lib/dco.js");
 const requireMembers = require("./lib/requireMembers.js");
 

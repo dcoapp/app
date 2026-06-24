@@ -1,0 +1,17 @@
+version = 1
+
+[[annotations]]
+path = [
+    "package.json",
+    "package-lock.json",
+    "test/__snapshots__/index.test.js.snap",
+    "test/fixtures/compare-success.json",
+    "test/fixtures/compare.json",
+    "test/fixtures/pull_request.opened-success.json",
+    "test/fixtures/pull_request.opened.json",
+    "test/fixtures/push.not-signed-off.json",
+    "test/fixtures/push.signed-off.json",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2018 - 2026 DCO App Contributors"
+SPDX-License-Identifier = "ISC"

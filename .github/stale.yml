@@ -1,2 +1,6 @@
+---
+# SPDX-FileCopyrightText: 2018 - 2026 DCO App Contributors
+# SPDX-License-Identifier: ISC
+
 # Configuration for https://github.com/probot/stale
 _extends: .github
