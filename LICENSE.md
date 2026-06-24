@@ -1,4 +1,4 @@
-ISC License
+# ISC License
 
 Copyright (c) [dcoapp/app contributors](https://github.com/dcoapp/app/graphs/contributors)
 
