@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: ISC
 
 const nock = require("nock");
-const { Probot, ProbotOctokitCore } = require("probot");
 
 const dco = require("..");
 
@@ -15,14 +14,20 @@ nock.disableNetConnect();
 
 describe("dco", () => {
   let probot;
+  let Probot;
+  let ProbotOctokit;
 
-  beforeEach(() => {
+  beforeAll(async () => {
+    ({ Probot, ProbotOctokit } = await import("probot"));
+  });
+
+  beforeEach(async () => {
     probot = new Probot({
       appId: 1,
       githubToken: "test",
-      Octokit: ProbotOctokitCore,
+      Octokit: ProbotOctokit,
     });
-    probot.load(dco);
+    await probot.load(dco);
   });
 
   describe("pull_request event", () => {

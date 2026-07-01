@@ -8,7 +8,7 @@
   "repository": "github:dcoapp/app",
   "scripts": {
     "start": "probot run ./index.js",
-    "test": "jest --coverage",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "posttest": "npm run lint",
     "lint": "prettier --check '{lib,test,docs}/**/*.{js,json,md}' index.js *.md package.json app.yml",
     "lint:fix": "prettier --write '{lib,test,docs}/**/*.{js,json,md}' index.js *.md package.json app.yml"
@@ -19,11 +19,11 @@
   "dependencies": {
     "email-validator": "^2.0.3",
     "prettier": "^2.5.1",
-    "probot": "^12.1.1"
+    "probot": "^14.3.2"
   },
   "devDependencies": {
-    "jest": "^27.3.1",
-    "nock": "^13.2.0",
+    "jest": "^30.4.2",
+    "nock": "^14.0.0",
     "smee-client": "^1.0.1"
   },
   "standard": {
@@ -40,6 +40,10 @@
         "functions": 100,
         "lines": 100
       }
+    },
+    "snapshotFormat": {
+      "escapeString": true,
+      "printBasicPrototype": true
     }
   },
   "release": {
