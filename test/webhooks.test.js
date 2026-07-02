@@ -5,13 +5,19 @@ const mockMiddleware = jest.fn((req, res, next) => ({ req, res, next }));
 const mockCreateNodeMiddleware = jest.fn();
 const mockCreateProbot = jest.fn();
 const mockProbot = {};
+const mockSentryImportError = new Error("Sentry import failed");
+const originalNftTraceSentry = process.env.__NFT_TRACE_SENTRY__;
 
 const mockProbotModuleFactory = jest.fn(() => ({
   createNodeMiddleware: mockCreateNodeMiddleware,
   createProbot: mockCreateProbot,
 }));
+const mockSentryModuleFactory = jest.fn(() => {
+  throw mockSentryImportError;
+});
 
 jest.unstable_mockModule("probot", mockProbotModuleFactory);
+jest.unstable_mockModule("@sentry/node", mockSentryModuleFactory);
 
 function loadHandler() {
   jest.resetModules();
@@ -20,11 +26,30 @@ function loadHandler() {
 
 describe("GitHub webhook serverless handler", () => {
   beforeEach(() => {
+    delete process.env.__NFT_TRACE_SENTRY__;
     mockMiddleware.mockClear();
     mockProbotModuleFactory.mockClear();
+    mockSentryModuleFactory.mockClear();
     mockCreateNodeMiddleware.mockReset();
     mockCreateProbot.mockReset();
     mockCreateProbot.mockReturnValue(mockProbot);
+  });
+
+  afterEach(() => {
+    if (originalNftTraceSentry === undefined) {
+      delete process.env.__NFT_TRACE_SENTRY__;
+    } else {
+      process.env.__NFT_TRACE_SENTRY__ = originalNftTraceSentry;
+    }
+  });
+
+  test("exposes a static Sentry import for Vercel tracing", async () => {
+    process.env.__NFT_TRACE_SENTRY__ = "1";
+
+    expect(() => loadHandler()).not.toThrow();
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(mockSentryModuleFactory).toHaveBeenCalledTimes(1);
   });
 
   test("loads Probot lazily through dynamic import", async () => {
