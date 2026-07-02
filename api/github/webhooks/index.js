@@ -1,21 +1,23 @@
 // SPDX-FileCopyrightText: 2018 - 2026 DCO App Contributors
 // SPDX-License-Identifier: ISC
 
-const { createNodeMiddleware, createProbot } = require("probot");
-
 const app = require("../../../");
 
 let middlewareReady;
 
 function getMiddleware() {
   if (!middlewareReady) {
-    middlewareReady = createNodeMiddleware(app, {
-      probot: createProbot(),
-      webhooksPath: "/api/github/webhooks",
-    }).catch((error) => {
-      middlewareReady = undefined;
-      throw error;
-    });
+    middlewareReady = import("probot")
+      .then(({ createNodeMiddleware, createProbot }) =>
+        createNodeMiddleware(app, {
+          probot: createProbot(),
+          webhooksPath: "/api/github/webhooks",
+        })
+      )
+      .catch((error) => {
+        middlewareReady = undefined;
+        throw error;
+      });
   }
 
   return middlewareReady;
