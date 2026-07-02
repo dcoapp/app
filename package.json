@@ -19,7 +19,7 @@
   "dependencies": {
     "@sentry/node": "^9.43.0",
     "email-validator": "^2.0.3",
-    "prettier": "^2.5.1",
+    "prettier": "^3.8.4",
     "probot": "^14.3.2"
   },
   "devDependencies": {
