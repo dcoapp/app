@@ -1,0 +1,104 @@
+---
+# SPDX-FileCopyrightText: 2018 - 2026 DCO App Contributors
+# SPDX-License-Identifier: ISC
+
+name: Smoke Vercel deployment
+"on": deployment_status
+
+# This is a module-load smoke test for Vercel deployments. It calls a
+# separate, credential-free health function to catch Probot ESM/module-load
+# regressions, such as ERR_REQUIRE_ESM, without GitHub App credentials that
+# fork previews lack. It does not fully validate the webhook function bundle
+# or exercise credentialed boot; see the production-only webhook TODO below.
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    if: >-
+      github.event.deployment_status.state == 'success' &&
+      (endsWith(github.event.deployment_status.target_url, '.vercel.app') ||
+      contains(github.event.deployment_status.target_url, '.vercel.app/') ||
+      endsWith(github.event.deployment_status.environment_url, '.vercel.app') ||
+      contains(github.event.deployment_status.environment_url, '.vercel.app/'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # Vercel's green build check does not invoke the serverless function.
+      # Polling this credential-free endpoint catches runtime module-load
+      # failures, such as ERR_REQUIRE_ESM, without GitHub App credentials that
+      # fork preview deployments intentionally do not receive.
+      - name: Smoke credential-free health endpoint
+        env:
+          DEPLOYMENT_ENVIRONMENT_URL: >-
+            ${{ github.event.deployment_status.environment_url }}
+          DEPLOYMENT_TARGET_URL: >-
+            ${{ github.event.deployment_status.target_url }}
+        run: |
+          set -euo pipefail
+
+          vercel_url() {
+            local url="$1"
+            local host
+
+            host="${url#*://}"
+            host="${host%%/*}"
+            host="${host%%:*}"
+            if [[ "$host" == *.vercel.app ]]; then
+              printf '%s' "$url"
+              return 0
+            fi
+
+            return 1
+          }
+
+          if deployment_url="$(vercel_url "$DEPLOYMENT_TARGET_URL")"; then
+            :
+          elif deployment_url="$(vercel_url "$DEPLOYMENT_ENVIRONMENT_URL")"; then
+            :
+          else
+            echo "::error::deployment_status did not include a Vercel URL"
+            exit 1
+          fi
+
+          deployment_url="${deployment_url%/}"
+          case "$deployment_url" in
+            https://*) ;;
+            *)
+              echo "::error::Vercel deployment URL must use HTTPS"
+              exit 1
+              ;;
+          esac
+
+          health_url="$deployment_url/api/health"
+          response_body="$PWD/health-response.json"
+
+          echo "Smoking $health_url"
+          for attempt in 1 2 3 4 5; do
+            : > "$response_body"
+            set +e
+            status_code="$(curl --silent --show-error --proto '=https' \
+              --connect-timeout 10 --max-time 30 --max-redirs 0 \
+              --max-filesize 1000000 --output "$response_body" \
+              --write-out "%{http_code}" "$health_url")"
+            curl_status=$?
+            set -e
+
+            echo "Attempt $attempt returned HTTP $status_code"
+            head -c 2000 "$response_body" || true
+            echo
+
+            if [ "$curl_status" -eq 0 ] && [ "$status_code" = "200" ]; then
+              exit 0
+            fi
+
+            sleep 10
+          done
+
+          echo "::error::Health endpoint did not return HTTP 200"
+          exit 1
+
+  # TODO: Add a production-only unsigned webhook smoke test once Vercel's exact
+  # production deployment_status environment name is confirmed. A healthy boot
+  # should return a non-5xx response for the missing webhook signature.
