@@ -17,6 +17,7 @@
     "node": "24.x"
   },
   "dependencies": {
+    "@sentry/node": "^9.43.0",
     "email-validator": "^2.0.3",
     "prettier": "^2.5.1",
     "probot": "^14.3.2"
