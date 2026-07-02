@@ -34,7 +34,7 @@ module.exports = (app) => {
 
     const pr = context.payload.pull_request;
 
-    const compare = await context.octokit.repos.compareCommits(
+    const compare = await context.octokit.rest.repos.compareCommits(
       context.repo({
         base: pr.base.sha,
         head: pr.head.sha,
@@ -50,7 +50,7 @@ module.exports = (app) => {
     );
 
     if (!dcoFailed.length) {
-      await context.octokit.checks
+      await context.octokit.rest.checks
         .create(
           context.repo({
             name: "DCO",
@@ -79,7 +79,9 @@ module.exports = (app) => {
             description: "All commits are signed off!",
             target_url: "https://github.com/probot/dco#how-it-works",
           };
-          return context.octokit.repos.createCommitStatus(context.repo(params));
+          return context.octokit.rest.repos.createCommitStatus(
+            context.repo(params)
+          );
         });
     } else {
       let summary = [];
@@ -96,7 +98,7 @@ module.exports = (app) => {
         handleCommits(pr, commits.length, dcoFailed, allowRemediationCommits) +
         `\n\n### Summary\n\n${summary}`;
 
-      await context.octokit.checks
+      await context.octokit.rest.checks
         .create(
           context.repo({
             name: "DCO",
@@ -136,7 +138,9 @@ module.exports = (app) => {
             description,
             target_url: "https://github.com/probot/dco#how-it-works",
           };
-          return context.octokit.repos.createCommitStatus(context.repo(params));
+          return context.octokit.rest.repos.createCommitStatus(
+            context.repo(params)
+          );
         });
     }
   }
@@ -146,7 +150,7 @@ module.exports = (app) => {
   async function setStatusPass(context) {
     const timeStart = new Date();
 
-    await context.octokit.checks.create(
+    await context.octokit.rest.checks.create(
       context.repo({
         name: "DCO",
         head_branch: context.payload.check_run.check_suite.head_branch,
