@@ -3,38 +3,47 @@
 # SPDX-License-Identifier: ISC
 
 name: Smoke Vercel deployment
-"on": deployment_status
+"on":
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
 
 # This is a module-load smoke test for Vercel deployments. It calls a
 # separate, credential-free health function to catch Probot ESM/module-load
 # regressions, such as ERR_REQUIRE_ESM, without GitHub App credentials that
 # fork previews lack. It does not fully validate the webhook function bundle
 # or exercise credentialed boot; see the production-only webhook TODO below.
+#
+# This workflow intentionally does not use deployment_status. Those runs are
+# created for fork head commits that do not exist in this repository, causing a
+# startup_failure before any job-level if condition can run. Instead, PR smoke
+# tests poll the Deployments API using only the read-only GITHUB_TOKEN. If no
+# preview appears, preview-smoke fails rather than going false-green without
+# testing anything. For fork PRs, maintainers must authorize the Vercel preview
+# and re-run preview-smoke; authorization does not re-fire pull_request. Until
+# then the check stays red.
 
 permissions:
   contents: read
+  deployments: read
 
 jobs:
-  smoke:
-    if: >-
-      github.event.deployment_status.state == 'success' &&
-      (endsWith(github.event.deployment_status.target_url, '.vercel.app') ||
-      contains(github.event.deployment_status.target_url, '.vercel.app/') ||
-      endsWith(github.event.deployment_status.environment_url, '.vercel.app') ||
-      contains(github.event.deployment_status.environment_url, '.vercel.app/'))
+  preview-smoke:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     steps:
-      # Vercel's green build check does not invoke the serverless function.
-      # Polling this credential-free endpoint catches runtime module-load
-      # failures, such as ERR_REQUIRE_ESM, without GitHub App credentials that
-      # fork preview deployments intentionally do not receive.
-      - name: Smoke credential-free health endpoint
+      - name: Find Vercel preview deployment
+        id: preview
         env:
-          DEPLOYMENT_ENVIRONMENT_URL: >-
-            ${{ github.event.deployment_status.environment_url }}
-          DEPLOYMENT_TARGET_URL: >-
-            ${{ github.event.deployment_status.target_url }}
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          REPOSITORY: ${{ github.repository }}
         run: |
           set -euo pipefail
 
@@ -53,17 +62,132 @@ jobs:
             return 1
           }
 
-          if deployment_url="$(vercel_url "$DEPLOYMENT_TARGET_URL")"; then
-            :
-          elif deployment_url="$(vercel_url "$DEPLOYMENT_ENVIRONMENT_URL")"; then
-            :
-          else
-            echo "::error::deployment_status did not include a Vercel URL"
+          deployment_rows() {
+            gh api "repos/$REPOSITORY/deployments?sha=$HEAD_SHA&per_page=100" \
+              --jq '.[] | [.id, (.environment // ""), (.creator.login // "")] | @tsv'
+          }
+
+          latest_status() {
+            local deployment_id="$1"
+
+            gh api "repos/$REPOSITORY/deployments/$deployment_id/statuses" \
+              --jq '.[0] // {} | [.state, (.target_url // ""), (.environment_url // "")] | @tsv'
+          }
+
+          is_vercel_deployment() {
+            local creator="$1"
+            local target_url="$2"
+            local environment_url="$3"
+
+            if [ "$creator" = "vercel[bot]" ]; then
+              return 0
+            fi
+
+            if vercel_url "$target_url" >/dev/null; then
+              return 0
+            fi
+
+            if vercel_url "$environment_url" >/dev/null; then
+              return 0
+            fi
+
+            return 1
+          }
+
+          max_attempts=20
+          sleep_seconds=30
+
+          for attempt in $(seq 1 "$max_attempts"); do
+            echo "Looking for preview deployment for $HEAD_SHA (attempt $attempt/$max_attempts)"
+
+            if ! deployments="$(deployment_rows)"; then
+              echo "::warning::could not read deployments; retrying"
+              sleep "$sleep_seconds"
+              continue
+            fi
+
+            while IFS=$'\t' read -r deployment_id environment creator; do
+              [ -n "$deployment_id" ] || continue
+
+              environment_lower="${environment,,}"
+              if [ "$environment_lower" = "production" ]; then
+                continue
+              fi
+
+              if ! status_row="$(latest_status "$deployment_id")"; then
+                echo "::warning::could not read statuses for deployment $deployment_id"
+                continue
+              fi
+
+              IFS=$'\t' read -r state target_url environment_url <<< "$status_row"
+              echo "Deployment $deployment_id ($environment) latest state: ${state:-unknown}"
+
+              if [ "$state" = "error" ] || [ "$state" = "failure" ]; then
+                if is_vercel_deployment "$creator" "$target_url" "$environment_url"; then
+                  echo "::error::Vercel preview deployment $deployment_id ended with $state"
+                  exit 1
+                fi
+
+                echo "Ignoring non-Vercel deployment $deployment_id with state $state"
+                continue
+              fi
+
+              if [ "$state" != "success" ]; then
+                continue
+              fi
+
+              if deployment_url="$(vercel_url "$target_url")"; then
+                printf 'deployment_url=%s\n' "$deployment_url" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+
+              if deployment_url="$(vercel_url "$environment_url")"; then
+                printf 'deployment_url=%s\n' "$deployment_url" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+            done <<< "$deployments"
+
+            sleep "$sleep_seconds"
+          done
+
+          echo "::error::No Vercel preview deployment found for $HEAD_SHA. For fork PRs, authorize the Vercel" \
+            "preview deployment, then re-run this job (authorizing does not re-fire the pull_request event)."
+          exit 1
+
+      # Vercel's green build check does not invoke the serverless function.
+      # Polling this credential-free endpoint catches runtime module-load
+      # failures, such as ERR_REQUIRE_ESM, without GitHub App credentials that
+      # fork preview deployments intentionally do not receive. Missing previews
+      # fail before this step to avoid a false-green check; unhealthy previews
+      # fail here.
+      - name: Smoke credential-free health endpoint
+        env:
+          DEPLOYMENT_URL: ${{ steps.preview.outputs.deployment_url }}
+        run: |
+          set -euo pipefail
+
+          vercel_url() {
+            local url="$1"
+            local host
+
+            host="${url#*://}"
+            host="${host%%/*}"
+            host="${host%%:*}"
+            if [[ "$host" == *.vercel.app ]]; then
+              printf '%s' "$url"
+              return 0
+            fi
+
+            return 1
+          }
+
+          if ! validated_url="$(vercel_url "$DEPLOYMENT_URL")"; then
+            echo "::error::Deployment URL is not a Vercel URL"
             exit 1
           fi
 
-          deployment_url="${deployment_url%/}"
-          case "$deployment_url" in
+          validated_url="${validated_url%/}"
+          case "$validated_url" in
             https://*) ;;
             *)
               echo "::error::Vercel deployment URL must use HTTPS"
@@ -71,7 +195,7 @@ jobs:
               ;;
           esac
 
-          health_url="$deployment_url/api/health"
+          health_url="$validated_url/api/health"
           response_body="$PWD/health-response.json"
 
           echo "Smoking $health_url"
@@ -86,8 +210,11 @@ jobs:
             set -e
 
             echo "Attempt $attempt returned HTTP $status_code"
+            guard="stop-$(openssl rand -hex 8 2>/dev/null || date +%s%N)"
+            echo "::stop-commands::$guard"
             head -c 2000 "$response_body" || true
             echo
+            echo "::$guard::"
 
             if [ "$curl_status" -eq 0 ] && [ "$status_code" = "200" ]; then
               exit 0
@@ -99,6 +226,192 @@ jobs:
           echo "::error::Health endpoint did not return HTTP 200"
           exit 1
 
-  # TODO: Add a production-only unsigned webhook smoke test once Vercel's exact
-  # production deployment_status environment name is confirmed. A healthy boot
-  # should return a non-5xx response for the missing webhook signature.
+  production-smoke:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Find Vercel production deployment
+        id: production
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.sha }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          vercel_url() {
+            local url="$1"
+            local host
+
+            host="${url#*://}"
+            host="${host%%/*}"
+            host="${host%%:*}"
+            if [[ "$host" == *.vercel.app ]]; then
+              printf '%s' "$url"
+              return 0
+            fi
+
+            return 1
+          }
+
+          deployment_rows() {
+            gh api "repos/$REPOSITORY/deployments?sha=$HEAD_SHA&per_page=100" \
+              --jq '.[] | [.id, (.environment // ""), (.creator.login // "")] | @tsv'
+          }
+
+          latest_status() {
+            local deployment_id="$1"
+
+            gh api "repos/$REPOSITORY/deployments/$deployment_id/statuses" \
+              --jq '.[0] // {} | [.state, (.target_url // ""), (.environment_url // "")] | @tsv'
+          }
+
+          is_vercel_deployment() {
+            local creator="$1"
+            local target_url="$2"
+            local environment_url="$3"
+
+            if [ "$creator" = "vercel[bot]" ]; then
+              return 0
+            fi
+
+            if vercel_url "$target_url" >/dev/null; then
+              return 0
+            fi
+
+            if vercel_url "$environment_url" >/dev/null; then
+              return 0
+            fi
+
+            return 1
+          }
+
+          max_attempts=20
+          sleep_seconds=30
+
+          for attempt in $(seq 1 "$max_attempts"); do
+            echo "Looking for production deployment for $HEAD_SHA (attempt $attempt/$max_attempts)"
+
+            if ! deployments="$(deployment_rows)"; then
+              echo "::warning::could not read deployments; retrying"
+              sleep "$sleep_seconds"
+              continue
+            fi
+
+            while IFS=$'\t' read -r deployment_id environment creator; do
+              [ -n "$deployment_id" ] || continue
+
+              environment_lower="${environment,,}"
+              if [ "$environment_lower" != "production" ]; then
+                continue
+              fi
+
+              if ! status_row="$(latest_status "$deployment_id")"; then
+                echo "::warning::could not read statuses for deployment $deployment_id"
+                continue
+              fi
+
+              IFS=$'\t' read -r state target_url environment_url <<< "$status_row"
+              echo "Deployment $deployment_id ($environment) latest state: ${state:-unknown}"
+
+              if [ "$state" = "error" ] || [ "$state" = "failure" ]; then
+                if is_vercel_deployment "$creator" "$target_url" "$environment_url"; then
+                  echo "::error::Vercel production deployment $deployment_id ended with $state"
+                  exit 1
+                fi
+
+                echo "Ignoring non-Vercel deployment $deployment_id with state $state"
+                continue
+              fi
+
+              if [ "$state" != "success" ]; then
+                continue
+              fi
+
+              if deployment_url="$(vercel_url "$target_url")"; then
+                printf 'deployment_url=%s\n' "$deployment_url" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+
+              if deployment_url="$(vercel_url "$environment_url")"; then
+                printf 'deployment_url=%s\n' "$deployment_url" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+            done <<< "$deployments"
+
+            sleep "$sleep_seconds"
+          done
+
+          echo "::error::No successful Vercel production deployment found for $HEAD_SHA"
+          exit 1
+
+      - name: Smoke credential-free health endpoint
+        env:
+          DEPLOYMENT_URL: ${{ steps.production.outputs.deployment_url }}
+        run: |
+          set -euo pipefail
+
+          vercel_url() {
+            local url="$1"
+            local host
+
+            host="${url#*://}"
+            host="${host%%/*}"
+            host="${host%%:*}"
+            if [[ "$host" == *.vercel.app ]]; then
+              printf '%s' "$url"
+              return 0
+            fi
+
+            return 1
+          }
+
+          if ! validated_url="$(vercel_url "$DEPLOYMENT_URL")"; then
+            echo "::error::Deployment URL is not a Vercel URL"
+            exit 1
+          fi
+
+          validated_url="${validated_url%/}"
+          case "$validated_url" in
+            https://*) ;;
+            *)
+              echo "::error::Vercel deployment URL must use HTTPS"
+              exit 1
+              ;;
+          esac
+
+          health_url="$validated_url/api/health"
+          response_body="$PWD/health-response.json"
+
+          echo "Smoking $health_url"
+          for attempt in 1 2 3 4 5; do
+            : > "$response_body"
+            set +e
+            status_code="$(curl --silent --show-error --proto '=https' \
+              --connect-timeout 10 --max-time 30 --max-redirs 0 \
+              --max-filesize 1000000 --output "$response_body" \
+              --write-out "%{http_code}" "$health_url")"
+            curl_status=$?
+            set -e
+
+            echo "Attempt $attempt returned HTTP $status_code"
+            guard="stop-$(openssl rand -hex 8 2>/dev/null || date +%s%N)"
+            echo "::stop-commands::$guard"
+            head -c 2000 "$response_body" || true
+            echo
+            echo "::$guard::"
+
+            if [ "$curl_status" -eq 0 ] && [ "$status_code" = "200" ]; then
+              exit 0
+            fi
+
+            sleep 10
+          done
+
+          echo "::error::Health endpoint did not return HTTP 200"
+          exit 1
+
+    # TODO: Add a production-only unsigned webhook smoke test once Vercel's exact
+    # production Deployments API environment shape is confirmed. A healthy boot
+    # should return a non-5xx response for the missing webhook signature.
