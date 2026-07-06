@@ -99,11 +99,12 @@ repos:
     hooks:
       - id: gha-workflow-linter
 
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: ea782651a7e32f40a3d13b76c79d5a2474ee8723  # frozen: v2.5.1
+  - repo: https://github.com/biomejs/pre-commit
+    rev: 53525e29648f6e0d6a7b0cfaa67276478d3b1906  # frozen: v2.5.2
     hooks:
-      - id: prettier
-        files: ^(index\.js|app\.yml|package\.json|(lib|test|docs)/.+\.(js|json))$
+      - id: biome-format
+        additional_dependencies: ["@biomejs/biome@2.5.2"]
+        files: ^(biome\.jsonc|index\.js|package\.json|(lib|test|docs)/.+\.(js|json))$
 
   # Run the test suite last so any auto-fixes from earlier hooks are
   # exercised. Tests need the full project dependency tree, so this

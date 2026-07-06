@@ -1,0 +1,43 @@
+// SPDX-FileCopyrightText: 2018 - 2026 DCO App Contributors
+// SPDX-License-Identifier: ISC
+
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.2/schema.json",
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      "biome.jsonc",
+      "index.js",
+      "package.json",
+      "lib/**/*.js",
+      "lib/**/*.json",
+      "test/**/*.js",
+      "test/**/*.json",
+      "docs/**/*.js",
+      "docs/**/*.json"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 80
+  },
+  "linter": {
+    "enabled": false
+  },
+  "javascript": {
+    "formatter": {
+      "enabled": true,
+      "quoteStyle": "double",
+      "semicolons": "always",
+      "trailingCommas": "es5"
+    }
+  },
+  "json": {
+    "formatter": {
+      "enabled": true,
+      "trailingCommas": "none"
+    }
+  }
+}
