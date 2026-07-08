@@ -7,6 +7,7 @@ const dco = require("..");
 
 const payload = require("./fixtures/pull_request.opened");
 const payloadSuccess = require("./fixtures/pull_request.opened-success");
+const issueCommentPayload = require("./fixtures/issue_comment.created");
 const compare = require("./fixtures/compare");
 const compareSuccess = require("./fixtures/compare-success");
 
@@ -539,6 +540,83 @@ allowRemediationCommits:
           },
         },
       });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+  });
+
+  describe("issue_comment.created event", () => {
+    test("ignores comments that are not on a pull request", async () => {
+      const payload = structuredClone(issueCommentPayload);
+      delete payload.issue.pull_request;
+
+      await probot.receive({ name: "issue_comment", payload });
+    });
+
+    test("ignores comments from bots", async () => {
+      const payload = structuredClone(issueCommentPayload);
+      payload.comment.user.type = "Bot";
+
+      await probot.receive({ name: "issue_comment", payload });
+    });
+
+    test("ignores comments on closed pull requests", async () => {
+      const payload = structuredClone(issueCommentPayload);
+      payload.issue.state = "closed";
+
+      await probot.receive({ name: "issue_comment", payload });
+    });
+
+    test("ignores comments without the exact recheck command", async () => {
+      const payload = structuredClone(issueCommentPayload);
+      payload.comment.body = "@dcoapp recheck please";
+
+      await probot.receive({ name: "issue_comment", payload });
+    });
+
+    test("creates a passing check for recheck comments", async () => {
+      const payload = structuredClone(issueCommentPayload);
+      payload.comment.body = "  @DCOApp Recheck ";
+      const pullRequest = {
+        ...payloadSuccess.pull_request,
+        closed_at: null,
+        state: "open",
+      };
+
+      const mock = nock("https://api.github.com")
+        .get("/repos/octocat/Hello-World/pulls/1")
+        .reply(200, pullRequest)
+        // no config
+        .get("/repos/octocat/Hello-World/contents/.github%2Fdco.yml")
+        .reply(404)
+        .get("/repos/octocat/.github/contents/.github%2Fdco.yml")
+        .reply(404)
+
+        .get(
+          "/repos/octocat/Hello-World/compare/a10867b14bb761a232cd80139fbd4c0d33264240...34c5c7793cb3b279e22454cb6750c80560547b3a"
+        )
+        .reply(200, compareSuccess)
+
+        .post("/repos/octocat/Hello-World/check-runs", (body) => {
+          body.started_at = "2018-07-14T18:18:54.156Z";
+          body.completed_at = "2018-07-14T18:18:54.156Z";
+          expect(body).toMatchObject({
+            conclusion: "success",
+            head_branch: "changes",
+            head_sha: "34c5c7793cb3b279e22454cb6750c80560547b3a",
+            name: "DCO",
+            output: {
+              summary: "All commits are signed off!",
+              title: "DCO",
+            },
+            status: "completed",
+          });
+
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({ name: "issue_comment", payload });
 
       expect(mock.activeMocks()).toStrictEqual([]);
     });
