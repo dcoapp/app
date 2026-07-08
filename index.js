@@ -17,7 +17,7 @@ module.exports = (app) => {
     check
   );
 
-  async function check(context) {
+  async function check(context, pr = context.payload.pull_request) {
     const timeStart = new Date();
 
     const config = await context.config("dco.yml", {
@@ -32,8 +32,6 @@ module.exports = (app) => {
     const requireForMembers = config.require.members;
     const allowRemediationCommits = config.allowRemediationCommits;
 
-    const pr = context.payload.pull_request;
-
     const compare = await context.octokit.rest.repos.compareCommits(
       context.repo({
         base: pr.base.sha,
@@ -45,7 +43,7 @@ module.exports = (app) => {
     const dcoFailed = await getDCOStatus(
       commits,
       requireMembers(requireForMembers, context),
-      context.payload.pull_request.html_url,
+      pr.html_url,
       allowRemediationCommits
     );
 
@@ -143,6 +141,20 @@ module.exports = (app) => {
           );
         });
     }
+  }
+
+  app.on("issue_comment.created", onRecheckComment);
+  async function onRecheckComment(context) {
+    const { comment, issue } = context.payload;
+    if (!issue.pull_request) return;
+    if (comment.user.type === "Bot") return;
+    if (issue.state !== "open") return;
+    if (comment.body.trim().toLowerCase() !== "@dcoapp recheck") return;
+
+    const { data: pr } = await context.octokit.rest.pulls.get(
+      context.repo({ pull_number: issue.number })
+    );
+    await check(context, pr);
   }
 
   // This option is only presented to users with Write Access to the repo
