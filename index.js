@@ -143,17 +143,28 @@ module.exports = (app) => {
     }
   }
 
-  app.on("issue_comment.created", onRecheckComment);
-  async function onRecheckComment(context) {
-    const { comment, issue } = context.payload;
-    if (!issue.pull_request) return;
-    if (comment.user.type === "Bot") return;
-    if (issue.state !== "open") return;
-    if (comment.body.trim().toLowerCase() !== "@dcoapp recheck") return;
+  function isRecheckCommand(body) {
+    if (!body) return false;
+    return body
+      .split(/\r?\n/)
+      .some((line) => line.trim().toLowerCase() === "@dcoapp recheck");
+  }
 
-    const { data: pr } = await context.octokit.rest.pulls.get(
-      context.repo({ pull_number: issue.number })
-    );
+  app.on("pull_request_review.submitted", onRecheckReview);
+  async function onRecheckReview(context) {
+    const { review, pull_request: pr } = context.payload;
+    if (review.user.type === "Bot") return;
+    if (pr.state !== "open") return;
+    if (!isRecheckCommand(review.body)) return;
+    await check(context, pr);
+  }
+
+  app.on("pull_request_review_comment.created", onRecheckReviewComment);
+  async function onRecheckReviewComment(context) {
+    const { comment, pull_request: pr } = context.payload;
+    if (comment.user.type === "Bot") return;
+    if (pr.state !== "open") return;
+    if (!isRecheckCommand(comment.body)) return;
     await check(context, pr);
   }
 

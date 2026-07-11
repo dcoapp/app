@@ -26,7 +26,7 @@ default_events:
   # - deployment_status
   # - fork
   # - gollum
-  - issue_comment
+  # - issue_comment
   # - issues
   # - label
   # - milestone
@@ -40,8 +40,8 @@ default_events:
   # - project_column
   # - public
   - pull_request
-  # - pull_request_review
-  # - pull_request_review_comment
+  - pull_request_review
+  - pull_request_review_comment
   - push
 # - release
 # - repository

@@ -9,9 +9,10 @@ path = [
     "test/__snapshots__/index.test.js.snap",
     "test/fixtures/compare-success.json",
     "test/fixtures/compare.json",
-    "test/fixtures/issue_comment.created.json",
     "test/fixtures/pull_request.opened-success.json",
     "test/fixtures/pull_request.opened.json",
+    "test/fixtures/pull_request_review.submitted.json",
+    "test/fixtures/pull_request_review_comment.created.json",
     "test/fixtures/push.not-signed-off.json",
     "test/fixtures/push.signed-off.json",
 ]

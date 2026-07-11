@@ -7,7 +7,8 @@ const dco = require("..");
 
 const payload = require("./fixtures/pull_request.opened");
 const payloadSuccess = require("./fixtures/pull_request.opened-success");
-const issueCommentPayload = require("./fixtures/issue_comment.created");
+const pullRequestReviewPayload = require("./fixtures/pull_request_review.submitted");
+const pullRequestReviewCommentPayload = require("./fixtures/pull_request_review_comment.created");
 const compare = require("./fixtures/compare");
 const compareSuccess = require("./fixtures/compare-success");
 
@@ -545,47 +546,40 @@ allowRemediationCommits:
     });
   });
 
-  describe("issue_comment.created event", () => {
-    test("ignores comments that are not on a pull request", async () => {
-      const payload = structuredClone(issueCommentPayload);
-      delete payload.issue.pull_request;
+  describe("pull_request_review.submitted event", () => {
+    test("ignores reviews from bots", async () => {
+      const payload = structuredClone(pullRequestReviewPayload);
+      payload.review.user.type = "Bot";
 
-      await probot.receive({ name: "issue_comment", payload });
+      await probot.receive({ name: "pull_request_review", payload });
     });
 
-    test("ignores comments from bots", async () => {
-      const payload = structuredClone(issueCommentPayload);
-      payload.comment.user.type = "Bot";
+    test("ignores reviews on closed pull requests", async () => {
+      const payload = structuredClone(pullRequestReviewPayload);
+      payload.pull_request.state = "closed";
 
-      await probot.receive({ name: "issue_comment", payload });
+      await probot.receive({ name: "pull_request_review", payload });
     });
 
-    test("ignores comments on closed pull requests", async () => {
-      const payload = structuredClone(issueCommentPayload);
-      payload.issue.state = "closed";
+    test("ignores reviews with empty bodies", async () => {
+      const payload = structuredClone(pullRequestReviewPayload);
+      payload.review.body = null;
 
-      await probot.receive({ name: "issue_comment", payload });
+      await probot.receive({ name: "pull_request_review", payload });
     });
 
-    test("ignores comments without the exact recheck command", async () => {
-      const payload = structuredClone(issueCommentPayload);
-      payload.comment.body = "@dcoapp recheck please";
+    test("ignores reviews without the recheck command on its own line", async () => {
+      const payload = structuredClone(pullRequestReviewPayload);
+      payload.review.body = "please @dcoapp recheck";
 
-      await probot.receive({ name: "issue_comment", payload });
+      await probot.receive({ name: "pull_request_review", payload });
     });
 
-    test("creates a passing check for recheck comments", async () => {
-      const payload = structuredClone(issueCommentPayload);
-      payload.comment.body = "  @DCOApp Recheck ";
-      const pullRequest = {
-        ...payloadSuccess.pull_request,
-        closed_at: null,
-        state: "open",
-      };
+    test("creates a passing check for recheck reviews", async () => {
+      const payload = structuredClone(pullRequestReviewPayload);
+      payload.review.body = "please run\n  @DCOApp Recheck  \nthanks";
 
       const mock = nock("https://api.github.com")
-        .get("/repos/octocat/Hello-World/pulls/1")
-        .reply(200, pullRequest)
         // no config
         .get("/repos/octocat/Hello-World/contents/.github%2Fdco.yml")
         .reply(404)
@@ -616,7 +610,120 @@ allowRemediationCommits:
         })
         .reply(200);
 
-      await probot.receive({ name: "issue_comment", payload });
+      await probot.receive({ name: "pull_request_review", payload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+  });
+
+  describe("pull_request_review_comment.created event", () => {
+    test("ignores review comments from bots", async () => {
+      const payload = structuredClone(pullRequestReviewCommentPayload);
+      payload.comment.user.type = "Bot";
+
+      await probot.receive({ name: "pull_request_review_comment", payload });
+    });
+
+    test("ignores review comments on closed pull requests", async () => {
+      const payload = structuredClone(pullRequestReviewCommentPayload);
+      payload.pull_request.state = "closed";
+
+      await probot.receive({ name: "pull_request_review_comment", payload });
+    });
+
+    test("ignores review comments with empty bodies", async () => {
+      const payload = structuredClone(pullRequestReviewCommentPayload);
+      payload.comment.body = null;
+
+      await probot.receive({ name: "pull_request_review_comment", payload });
+    });
+
+    test("ignores review comments without the recheck command on its own line", async () => {
+      const payload = structuredClone(pullRequestReviewCommentPayload);
+      payload.comment.body = "@dcoapp recheck please";
+
+      await probot.receive({ name: "pull_request_review_comment", payload });
+    });
+
+    test("creates a failing check for recheck review comments", async () => {
+      const payload = structuredClone(pullRequestReviewCommentPayload);
+      payload.comment.body = "Please rerun.\r\n@dcoapp recheck\r\nThanks!";
+
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+        .reply(404)
+        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
+        .reply(404)
+
+        .get(
+          "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94"
+        )
+        .reply(200, compare)
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          body.started_at = "2018-07-14T18:18:54.156Z";
+          body.completed_at = "2018-07-14T18:18:54.156Z";
+          expect(body).toMatchObject({
+            conclusion: "action_required",
+            head_branch: "dco-test",
+            head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
+            name: "DCO",
+            output: {
+              title: "DCO",
+            },
+            status: "completed",
+          });
+          expect(body.output.summary).toContain("The sign-off is missing.");
+
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({ name: "pull_request_review_comment", payload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("checks org membership for require.members: false review comments", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+        .reply(
+          200,
+          `
+  require:
+    members: false`
+        )
+
+        .get(
+          "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94"
+        )
+        .reply(200, compare)
+
+        .get("/orgs/robotland/members/bkeepers")
+        .reply(204)
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          body.started_at = "2018-07-14T18:18:54.156Z";
+          body.completed_at = "2018-07-14T18:18:54.156Z";
+          expect(body).toMatchObject({
+            conclusion: "action_required",
+            head_branch: "dco-test",
+            head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
+            name: "DCO",
+            output: {
+              title: "DCO",
+            },
+            status: "completed",
+          });
+
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({
+        name: "pull_request_review_comment",
+        payload: pullRequestReviewCommentPayload,
+      });
 
       expect(mock.activeMocks()).toStrictEqual([]);
     });
