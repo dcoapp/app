@@ -124,8 +124,10 @@ Once [installed](#usage), this integration will create a
 [check](https://developer.github.com/v3/checks/runs/) indicating whether
 commits in a Pull Request do not contain a valid `Signed-off-by` line.
 
-Comment `@dcoapp recheck` on an open Pull Request to re-run or create the DCO
-check, which can recover PRs stuck waiting for status after an outage.
+To re-run or create the DCO check on an open Pull Request, submit a Pull
+Request review with `@dcoapp recheck` on its own line in the review summary.
+You can also add an inline review comment with `@dcoapp recheck` on its own
+line. This can recover PRs stuck waiting for status after an outage.
 
 ![DCO success](https://user-images.githubusercontent.com/13410355/42352738-35f4e690-8071-11e8-9c8c-260e5868bfc8.png)
 ![DCO failure](https://user-images.githubusercontent.com/13410355/42352794-85fe1c9c-8071-11e8-834a-05a4aeb8cc90.png)
