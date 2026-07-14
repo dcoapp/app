@@ -13,6 +13,7 @@ path = [
     "test/fixtures/pull_request.opened.json",
     "test/fixtures/pull_request_review.submitted.json",
     "test/fixtures/pull_request_review_comment.created.json",
+    "test/fixtures/merge_group.checks_requested.json",
     "test/fixtures/push.not-signed-off.json",
     "test/fixtures/push.signed-off.json",
 ]
