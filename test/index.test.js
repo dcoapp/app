@@ -9,6 +9,7 @@ const payload = require("./fixtures/pull_request.opened");
 const payloadSuccess = require("./fixtures/pull_request.opened-success");
 const pullRequestReviewPayload = require("./fixtures/pull_request_review.submitted");
 const pullRequestReviewCommentPayload = require("./fixtures/pull_request_review_comment.created");
+const mergeGroupPayload = require("./fixtures/merge_group.checks_requested");
 const compare = require("./fixtures/compare");
 const compareSuccess = require("./fixtures/compare-success");
 
@@ -723,6 +724,97 @@ allowRemediationCommits:
       await probot.receive({
         name: "pull_request_review_comment",
         payload: pullRequestReviewCommentPayload,
+      });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+  });
+
+  describe("merge_group event", () => {
+    test("creates a failing check on merge queue entry", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/pulls/113")
+        .reply(200, payload.pull_request)
+
+        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+        .reply(404)
+        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
+        .reply(404)
+
+        .get(
+          "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94"
+        )
+        .reply(200, compare)
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          body.started_at = "2018-07-14T18:18:54.156Z";
+          body.completed_at = "2018-07-14T18:18:54.156Z";
+          expect(body).toMatchObject({
+            conclusion: "action_required",
+            head_branch:
+              "gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
+            head_sha: "abc123def456abc123def456abc123def456abc1",
+            name: "DCO",
+            status: "completed",
+          });
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("creates a passing check on merge queue entry", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/pulls/113")
+        .reply(200, payload.pull_request)
+
+        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+        .reply(404)
+        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
+        .reply(404)
+
+        .get(
+          "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94"
+        )
+        .reply(200, compareSuccess)
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          body.started_at = "2018-07-14T18:18:54.156Z";
+          body.completed_at = "2018-07-14T18:18:54.156Z";
+          expect(body).toMatchObject({
+            conclusion: "success",
+            head_branch:
+              "gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
+            head_sha: "abc123def456abc123def456abc123def456abc1",
+            name: "DCO",
+            status: "completed",
+          });
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("ignores merge_group with unrecognized head_ref format", async () => {
+      const unknownRefPayload = {
+        ...mergeGroupPayload,
+        merge_group: {
+          ...mergeGroupPayload.merge_group,
+          head_ref: "refs/heads/some-other-branch",
+        },
+      };
+
+      const mock = nock("https://api.github.com");
+
+      await probot.receive({
+        name: "merge_group",
+        payload: unknownRefPayload,
       });
 
       expect(mock.activeMocks()).toStrictEqual([]);
