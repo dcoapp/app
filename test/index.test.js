@@ -742,7 +742,7 @@ allowRemediationCommits:
         .reply(404)
 
         .get(
-          "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94"
+          "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...abc123def456abc123def456abc123def456abc1"
         )
         .reply(200, compare)
 
@@ -777,7 +777,7 @@ allowRemediationCommits:
         .reply(404)
 
         .get(
-          "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94"
+          "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...abc123def456abc123def456abc123def456abc1"
         )
         .reply(200, compareSuccess)
 

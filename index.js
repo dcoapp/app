@@ -20,7 +20,7 @@ module.exports = (app) => {
   async function check(
     context,
     pr = context.payload.pull_request,
-    { reportSha, reportRef } = {}
+    { reportSha, reportRef, baseSha, headSha } = {}
   ) {
     const timeStart = new Date();
     const sha = reportSha || pr.head.sha;
@@ -40,8 +40,8 @@ module.exports = (app) => {
 
     const compare = await context.octokit.rest.repos.compareCommits(
       context.repo({
-        base: pr.base.sha,
-        head: pr.head.sha,
+        base: baseSha || pr.base.sha,
+        head: headSha || pr.head.sha,
       })
     );
 
@@ -162,6 +162,8 @@ module.exports = (app) => {
     await check(context, pr, {
       reportSha: mergeGroup.head_sha,
       reportRef: mergeGroup.head_ref,
+      baseSha: mergeGroup.base_sha,
+      headSha: mergeGroup.head_sha,
     });
   });
 
