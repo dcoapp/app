@@ -806,7 +806,7 @@ allowRemediationCommits:
         ...mergeGroupPayload,
         merge_group: {
           ...mergeGroupPayload.merge_group,
-          head_ref: "refs/heads/some-other-branch",
+          head_ref: "some-feature-branch/pr-113-abc123",
         },
       };
 
