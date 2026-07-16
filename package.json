@@ -25,7 +25,7 @@
     "@biomejs/biome": "2.5.2",
     "jest": "^30.4.2",
     "nock": "^14.0.0",
-    "smee-client": "5.0.0"
+    "smee-client": "^5.0.0"
   },
   "standard": {
     "env": [
