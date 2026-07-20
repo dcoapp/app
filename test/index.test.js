@@ -801,6 +801,38 @@ allowRemediationCommits:
       expect(mock.activeMocks()).toStrictEqual([]);
     });
 
+    test("falls back to status API when check-runs returns 403", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/pulls/113")
+        .reply(200, payload.pull_request)
+
+        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+        .reply(404)
+        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
+        .reply(404)
+
+        .get(
+          "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...abc123def456abc123def456abc123def456abc1"
+        )
+        .reply(200, compare)
+
+        .post("/repos/robotland/test/check-runs")
+        .reply(403)
+
+        .post(
+          "/repos/robotland/test/statuses/abc123def456abc123def456abc123def456abc1",
+          (body) => {
+            expect(body).toMatchSnapshot();
+            return true;
+          }
+        )
+        .reply(201);
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
     test("ignores merge_group with unrecognized head_ref format", async () => {
       const unknownRefPayload = {
         ...mergeGroupPayload,
