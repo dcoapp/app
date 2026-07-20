@@ -833,6 +833,16 @@ allowRemediationCommits:
       expect(mock.activeMocks()).toStrictEqual([]);
     });
 
+    test("skips check when PR lookup fails", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/pulls/113")
+        .reply(404);
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
     test("ignores merge_group with unrecognized head_ref format", async () => {
       const unknownRefPayload = {
         ...mergeGroupPayload,

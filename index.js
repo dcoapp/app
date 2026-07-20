@@ -157,9 +157,17 @@ module.exports = (app) => {
     if (!match) return;
     const prNumber = parseInt(match[1], 10);
 
-    const { data: pr } = await context.octokit.rest.pulls.get(
-      context.repo({ pull_number: prNumber })
-    );
+    let pr;
+    try {
+      ({ data: pr } = await context.octokit.rest.pulls.get(
+        context.repo({ pull_number: prNumber })
+      ));
+    } catch (error) {
+      context.log.info(
+        `merge_group: could not fetch PR #${prNumber}: ${error.message}`
+      );
+      return;
+    }
 
     await check(context, pr, {
       reportSha: mergeGroup.head_sha,
