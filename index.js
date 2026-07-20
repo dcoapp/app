@@ -152,7 +152,7 @@ module.exports = (app) => {
   app.on("merge_group.checks_requested", async (context) => {
     const mergeGroup = context.payload.merge_group;
     const match = mergeGroup.head_ref.match(
-      /^gh-readonly-queue\/.+\/pr-(\d+)-/
+      /(?:^|\/)gh-readonly-queue\/.+\/pr-(\d+)-/
     );
     if (!match) return;
     const prNumber = parseInt(match[1], 10);
