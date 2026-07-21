@@ -843,13 +843,13 @@ allowRemediationCommits:
       expect(mock.activeMocks()).toStrictEqual([]);
     });
 
-    test("creates a passing check when head_ref has refs/heads/ prefix", async () => {
-      const prefixedRefPayload = {
+    test("creates a passing check when head_ref has no refs/heads/ prefix", async () => {
+      const bareRefPayload = {
         ...mergeGroupPayload,
         merge_group: {
           ...mergeGroupPayload.merge_group,
           head_ref:
-            "refs/heads/gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
+            "gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
         },
       };
 
@@ -884,7 +884,7 @@ allowRemediationCommits:
 
       await probot.receive({
         name: "merge_group",
-        payload: prefixedRefPayload,
+        payload: bareRefPayload,
       });
 
       expect(mock.activeMocks()).toStrictEqual([]);

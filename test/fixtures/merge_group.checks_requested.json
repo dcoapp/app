@@ -2,7 +2,7 @@
   "action": "checks_requested",
   "merge_group": {
     "head_sha": "abc123def456abc123def456abc123def456abc1",
-    "head_ref": "gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
+    "head_ref": "refs/heads/gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
     "base_sha": "607c64cd8e37eb2db939f99a17bee5c7d1a90a31",
     "base_ref": "refs/heads/master",
     "head_commit": {
