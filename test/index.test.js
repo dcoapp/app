@@ -873,7 +873,7 @@ allowRemediationCommits:
           expect(body).toMatchObject({
             conclusion: "success",
             head_branch:
-              "refs/heads/gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
+              "gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
             head_sha: "abc123def456abc123def456abc123def456abc1",
             name: "DCO",
             status: "completed",

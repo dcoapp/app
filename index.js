@@ -24,7 +24,7 @@ module.exports = (app) => {
   ) {
     const timeStart = new Date();
     const sha = reportSha || pr.head.sha;
-    const ref = reportRef || pr.head.ref;
+    const ref = (reportRef || pr.head.ref).replace(/^refs\/heads\//, "");
 
     const config = await context.config("dco.yml", {
       require: {
@@ -170,8 +170,11 @@ module.exports = (app) => {
     }
 
     await check(context, pr, {
+      // Report the check result on the merge group's temporary merge commit.
       reportSha: mergeGroup.head_sha,
       reportRef: mergeGroup.head_ref,
+      // Compare the full merge group range so all batched PRs are validated.
+      // headSha equals reportSha: both target the merge group head commit.
       baseSha: mergeGroup.base_sha,
       headSha: mergeGroup.head_sha,
     });
