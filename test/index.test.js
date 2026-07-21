@@ -833,7 +833,7 @@ allowRemediationCommits:
       expect(mock.activeMocks()).toStrictEqual([]);
     });
 
-    test("skips check when PR lookup fails", async () => {
+    test("skips check when PR lookup returns 404", async () => {
       const mock = nock("https://api.github.com")
         .get("/repos/robotland/test/pulls/113")
         .reply(404);
@@ -841,6 +841,27 @@ allowRemediationCommits:
       await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
 
       expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("skips check when PR lookup returns 403", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/pulls/113")
+        .reply(403);
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("rethrows non-404/403 errors from PR lookup", async () => {
+      // Use 422 (not retried by octokit) to verify non-404/403 errors propagate
+      nock("https://api.github.com")
+        .get("/repos/robotland/test/pulls/113")
+        .reply(422);
+
+      await expect(
+        probot.receive({ name: "merge_group", payload: mergeGroupPayload })
+      ).rejects.toThrow();
     });
 
     test("creates a passing check when head_ref has no refs/heads/ prefix", async () => {

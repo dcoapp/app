@@ -163,10 +163,13 @@ module.exports = (app) => {
         context.repo({ pull_number: prNumber })
       ));
     } catch (error) {
-      context.log.info(
-        `merge_group: could not fetch PR #${prNumber}: ${error.message}`
-      );
-      return;
+      if (error.status === 404 || error.status === 403) {
+        context.log.info(
+          `merge_group: could not fetch PR #${prNumber}: ${error.message}`
+        );
+        return;
+      }
+      throw error;
     }
 
     await check(context, pr, {
