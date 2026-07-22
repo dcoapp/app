@@ -26,15 +26,18 @@ module.exports = (app) => {
     const sha = reportSha || pr.head.sha;
     const ref = (reportRef || pr.head.ref).replace(/^refs\/heads\//, "");
 
-    const config = await context.config("dco.yml", {
-      require: {
-        members: true,
-      },
-      allowRemediationCommits: {
-        individual: false,
-        thirdParty: false,
-      },
-    });
+    const defaultConfig = {
+        require: {
+            members: true,
+        },
+        allowRemediationCommits: {
+            individual: false,
+            thirdParty: false,
+        },
+    };
+
+    let config = await context.config("dco.yaml");
+    if (!config) config = await context.config("dco.yml", defaultConfig);
     const requireForMembers = config.require.members;
     const allowRemediationCommits = config.allowRemediationCommits;
 
