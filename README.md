@@ -18,6 +18,8 @@ you want to enforce the DCO on all commits.
 
 See [docs/deploy.md](docs/deploy.md) if you would like to run your own
 instance of this plugin.
+See [administration](docs/administration.md) for the permissions and events an
+existing deployment must enable.
 
 ## Modes of operations
 
