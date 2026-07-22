@@ -17,8 +17,14 @@ module.exports = (app) => {
     check
   );
 
-  async function check(context, pr = context.payload.pull_request) {
+  async function check(
+    context,
+    pr = context.payload.pull_request,
+    { reportSha, reportRef, baseSha, headSha } = {}
+  ) {
     const timeStart = new Date();
+    const sha = reportSha || pr.head.sha;
+    const ref = (reportRef || pr.head.ref).replace(/^refs\/heads\//, "");
 
     const config = await context.config("dco.yml", {
       require: {
@@ -34,8 +40,8 @@ module.exports = (app) => {
 
     const compare = await context.octokit.rest.repos.compareCommits(
       context.repo({
-        base: pr.base.sha,
-        head: pr.head.sha,
+        base: baseSha || pr.base.sha,
+        head: headSha || pr.head.sha,
       })
     );
 
@@ -52,8 +58,8 @@ module.exports = (app) => {
         .create(
           context.repo({
             name: "DCO",
-            head_branch: pr.head.ref,
-            head_sha: pr.head.sha,
+            head_branch: ref,
+            head_sha: sha,
             status: "completed",
             started_at: timeStart,
             conclusion: "success",
@@ -71,7 +77,7 @@ module.exports = (app) => {
           context.log.info("resource not accessible, creating status instead");
           // create status
           const params = {
-            sha: pr.head.sha,
+            sha,
             context: "DCO",
             state: "success",
             description: "All commits are signed off!",
@@ -100,8 +106,8 @@ module.exports = (app) => {
         .create(
           context.repo({
             name: "DCO",
-            head_branch: pr.head.ref,
-            head_sha: pr.head.sha,
+            head_branch: ref,
+            head_sha: sha,
             status: "completed",
             started_at: timeStart,
             conclusion: "action_required",
@@ -130,7 +136,7 @@ module.exports = (app) => {
             140
           );
           const params = {
-            sha: pr.head.sha,
+            sha,
             context: "DCO",
             state: "failure",
             description,
@@ -142,6 +148,40 @@ module.exports = (app) => {
         });
     }
   }
+
+  app.on("merge_group.checks_requested", async (context) => {
+    const mergeGroup = context.payload.merge_group;
+    const match = mergeGroup.head_ref.match(
+      /(?:^|\/)gh-readonly-queue\/.+\/pr-(\d+)-/
+    );
+    if (!match) return;
+    const prNumber = parseInt(match[1], 10);
+
+    let pr;
+    try {
+      ({ data: pr } = await context.octokit.rest.pulls.get(
+        context.repo({ pull_number: prNumber })
+      ));
+    } catch (error) {
+      if (error.status === 404 || error.status === 403) {
+        context.log.info(
+          `merge_group: could not fetch PR #${prNumber}: ${error.message}`
+        );
+        return;
+      }
+      throw error;
+    }
+
+    await check(context, pr, {
+      // Report the check result on the merge group's temporary merge commit.
+      reportSha: mergeGroup.head_sha,
+      reportRef: mergeGroup.head_ref,
+      // Compare the full merge group range so all batched PRs are validated.
+      // headSha equals reportSha: both target the merge group head commit.
+      baseSha: mergeGroup.base_sha,
+      headSha: mergeGroup.head_sha,
+    });
+  });
 
   function isRecheckCommand(body) {
     if (!body) return false;

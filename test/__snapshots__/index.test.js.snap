@@ -16,6 +16,15 @@ Object {
 }
 `;
 
+exports[`dco merge_group event falls back to status API when check-runs returns 403 1`] = `
+Object {
+  "context": "DCO",
+  "description": "The sign-off is missing.",
+  "state": "failure",
+  "target_url": "https://github.com/probot/dco#how-it-works",
+}
+`;
+
 exports[`dco pull_request event allowRemediationCommits.thirdParty: true creates a failing check with remidiation instructions 1`] = `
 Object {
   "actions": Array [

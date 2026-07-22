@@ -1,0 +1,62 @@
+{
+  "action": "checks_requested",
+  "merge_group": {
+    "head_sha": "abc123def456abc123def456abc123def456abc1",
+    "head_ref": "refs/heads/gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
+    "base_sha": "607c64cd8e37eb2db939f99a17bee5c7d1a90a31",
+    "base_ref": "refs/heads/master",
+    "head_commit": {
+      "id": "abc123def456abc123def456abc123def456abc1",
+      "tree_id": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+      "message": "Merge pull request #113 into master",
+      "timestamp": "2017-09-22T23:21:03Z",
+      "author": {
+        "name": "GitHub",
+        "email": "noreply@github.com"
+      },
+      "committer": {
+        "name": "GitHub",
+        "email": "noreply@github.com"
+      }
+    }
+  },
+  "repository": {
+    "id": 68474533,
+    "name": "test",
+    "full_name": "robotland/test",
+    "owner": {
+      "login": "robotland",
+      "id": 11724939,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/11724939?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/robotland",
+      "html_url": "https://github.com/robotland",
+      "type": "Organization",
+      "site_admin": false
+    },
+    "private": false,
+    "html_url": "https://github.com/robotland/test",
+    "description": "a trainable robot that responds to activity on GitHub",
+    "fork": false,
+    "url": "https://api.github.com/repos/robotland/test",
+    "default_branch": "master"
+  },
+  "organization": {
+    "login": "robotland",
+    "id": 11724939,
+    "url": "https://api.github.com/orgs/robotland"
+  },
+  "sender": {
+    "login": "bkeepers",
+    "id": 173,
+    "avatar_url": "https://avatars0.githubusercontent.com/u/173?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/bkeepers",
+    "html_url": "https://github.com/bkeepers",
+    "type": "User",
+    "site_admin": true
+  },
+  "installation": {
+    "id": 13055
+  }
+}
