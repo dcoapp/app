@@ -26,67 +26,86 @@ module.exports = (app) => {
     const sha = reportSha || pr.head.sha;
     const ref = (reportRef || pr.head.ref).replace(/^refs\/heads\//, "");
 
-    const config = await context.config("dco.yml", {
-      require: {
-        members: true,
-      },
-      allowRemediationCommits: {
-        individual: false,
-        thirdParty: false,
-      },
-    });
-    const requireForMembers = config.require.members;
-    const allowRemediationCommits = config.allowRemediationCommits;
+    let commits;
+    let dcoFailed;
+    let allowRemediationCommits;
+    try {
+      const config = await context.config("dco.yml", {
+        require: {
+          members: true,
+        },
+        allowRemediationCommits: {
+          individual: false,
+          thirdParty: false,
+        },
+      });
+      const requireForMembers = config.require.members;
+      allowRemediationCommits = config.allowRemediationCommits;
 
-    const compare = await context.octokit.rest.repos.compareCommits(
-      context.repo({
-        base: baseSha || pr.base.sha,
-        head: headSha || pr.head.sha,
-      })
-    );
+      if (baseSha && headSha) {
+        const compare = await context.octokit.rest.repos.compareCommits(
+          context.repo({
+            base: baseSha,
+            head: headSha,
+          })
+        );
+        commits = compare.data.commits;
+      } else {
+        commits = await context.octokit.paginate(
+          context.octokit.rest.pulls.listCommits,
+          context.repo({ pull_number: pr.number, per_page: 100 })
+        );
+        /* istanbul ignore if -- exercised by check_run.rerequested */
+        if (pr.head.sha !== sha) {
+          context.log.info(
+            `pull request head changed from ${sha} to ${pr.head.sha}; skipping stale DCO report`
+          );
+          return;
+        }
+        if (commits.length === 0) {
+          await reportDCO(context, {
+            sha,
+            ref,
+            timeStart,
+            conclusion: "neutral",
+            summary:
+              "The DCO check could not be evaluated because GitHub returned no commits for this pull request.\n\nPlease retry by re-running the check or pushing a new commit.",
+            statusState: "error",
+            statusDescription: "No pull request commits were returned.",
+          });
+          return;
+        }
+      }
 
-    const commits = compare.data.commits;
-    const dcoFailed = await getDCOStatus(
-      commits,
-      requireMembers(requireForMembers, context),
-      pr.html_url,
-      allowRemediationCommits
-    );
+      dcoFailed = await getDCOStatus(
+        commits,
+        requireMembers(requireForMembers, context),
+        pr.html_url,
+        allowRemediationCommits
+      );
+    } catch (error) {
+      context.log.error(error, "failed to evaluate DCO check");
+      await reportDCO(context, {
+        sha,
+        ref,
+        timeStart,
+        conclusion: "failure",
+        summary: evaluationErrorSummary(error),
+        statusDescription: "DCO check could not be evaluated.",
+      });
+      return;
+    }
 
     if (!dcoFailed.length) {
-      await context.octokit.rest.checks
-        .create(
-          context.repo({
-            name: "DCO",
-            head_branch: ref,
-            head_sha: sha,
-            status: "completed",
-            started_at: timeStart,
-            conclusion: "success",
-            completed_at: new Date(),
-            output: {
-              title: "DCO",
-              summary: "All commits are signed off!",
-            },
-          })
-        )
-        .catch(function checkFails(error) {
-          /* istanbul ignore next - unexpected error */
-          if (error.status !== 403) throw error;
-
-          context.log.info("resource not accessible, creating status instead");
-          // create status
-          const params = {
-            sha,
-            context: "DCO",
-            state: "success",
-            description: "All commits are signed off!",
-            target_url: "https://github.com/probot/dco#how-it-works",
-          };
-          return context.octokit.rest.repos.createCommitStatus(
-            context.repo(params)
-          );
-        });
+      await reportDCO(context, {
+        sha,
+        ref,
+        timeStart,
+        conclusion: "success",
+        summary: "All commits are signed off!",
+        statusState: "success",
+        statusDescription: "All commits are signed off!",
+      });
     } else {
       let summary = [];
       dcoFailed.forEach(function (commit) {
@@ -102,51 +121,90 @@ module.exports = (app) => {
         handleCommits(pr, commits.length, dcoFailed, allowRemediationCommits) +
         `\n\n### Summary\n\n${summary}`;
 
-      await context.octokit.rest.checks
-        .create(
-          context.repo({
-            name: "DCO",
-            head_branch: ref,
-            head_sha: sha,
-            status: "completed",
-            started_at: timeStart,
-            conclusion: "action_required",
-            completed_at: new Date(),
-            output: {
-              title: "DCO",
-              summary,
-            },
-            actions: [
-              {
-                label: "Set DCO to pass",
-                description: "would set status to passing",
-                identifier: "override",
-              },
-            ],
-          })
-        )
-        .catch(function checkFails(error) {
-          /* istanbul ignore next - unexpected error */
-          if (error.status !== 403) throw error;
+      await reportDCO(context, {
+        sha,
+        ref,
+        timeStart,
+        conclusion: "action_required",
+        summary,
+        statusDescription: dcoFailed[dcoFailed.length - 1].message.substring(
+          0,
+          140
+        ),
+        actions: [
+          {
+            label: "Set DCO to pass",
+            description: "would set status to passing",
+            identifier: "override",
+          },
+        ],
+      });
+    }
+  }
 
-          context.log.info("resource not accessible, creating status instead");
-          // create status
-          const description = dcoFailed[dcoFailed.length - 1].message.substring(
-            0,
-            140
-          );
-          const params = {
+  async function reportDCO(
+    context,
+    {
+      sha,
+      ref,
+      timeStart,
+      conclusion,
+      summary,
+      statusState = "failure",
+      statusDescription,
+      actions,
+    }
+  ) {
+    const params = {
+      name: "DCO",
+      head_branch: ref,
+      head_sha: sha,
+      status: "completed",
+      started_at: timeStart,
+      conclusion,
+      completed_at: new Date(),
+      output: {
+        title: "DCO",
+        summary,
+      },
+    };
+    if (actions) params.actions = actions;
+
+    try {
+      await context.octokit.rest.checks.create(context.repo(params));
+    } catch (error) {
+      if (error.status !== 403) {
+        context.log.error(error, "failed to create DCO check");
+        throw error;
+      }
+
+      context.log.info("resource not accessible, creating status instead");
+      try {
+        await context.octokit.rest.repos.createCommitStatus(
+          context.repo({
             sha,
             context: "DCO",
-            state: "failure",
-            description,
+            state: statusState,
+            description: statusDescription,
             target_url: "https://github.com/probot/dco#how-it-works",
-          };
-          return context.octokit.rest.repos.createCommitStatus(
-            context.repo(params)
-          );
-        });
+          })
+        );
+      } catch (statusError) {
+        context.log.error(statusError, "failed to create DCO status");
+        throw statusError;
+      }
     }
+  }
+
+  function evaluationErrorSummary(error) {
+    const requestId =
+      error.response?.headers?.["x-github-request-id"] || "unavailable";
+    return `The DCO check could not be evaluated because an error occurred while gathering or evaluating commits.
+
+HTTP status: ${error.status || "unknown"}
+GitHub request ID: ${requestId}
+
+Please retry by re-running the check or pushing a new commit.`;
   }
 
   app.on("merge_group.checks_requested", async (context) => {

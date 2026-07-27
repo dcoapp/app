@@ -12,6 +12,11 @@ const pullRequestReviewCommentPayload = require("./fixtures/pull_request_review_
 const mergeGroupPayload = require("./fixtures/merge_group.checks_requested");
 const compare = require("./fixtures/compare");
 const compareSuccess = require("./fixtures/compare-success");
+const compareSuccessCommits = compareSuccess.commits.map((commit, index) =>
+  index === compareSuccess.commits.length - 1
+    ? { ...commit, sha: payloadSuccess.pull_request.head.sha }
+    : commit
+);
 
 nock.disableNetConnect();
 
@@ -41,10 +46,9 @@ describe("dco", () => {
         .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
         .reply(404)
 
-        .get(
-          "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94"
-        )
-        .reply(200, compare)
+        .get("/repos/robotland/test/pulls/113/commits")
+        .query({ per_page: "100" })
+        .reply(200, compare.commits)
 
         .post("/repos/robotland/test/check-runs", (body) => {
           body.started_at = "2018-07-14T18:18:54.156Z";
@@ -67,10 +71,9 @@ describe("dco", () => {
         .get("/repos/octocat/.github/contents/.github%2Fdco.yml")
         .reply(404)
 
-        .get(
-          "/repos/octocat/Hello-World/compare/a10867b14bb761a232cd80139fbd4c0d33264240...34c5c7793cb3b279e22454cb6750c80560547b3a"
-        )
-        .reply(200, compareSuccess)
+        .get("/repos/octocat/Hello-World/pulls/1/commits")
+        .query({ per_page: "100" })
+        .reply(200, compareSuccessCommits)
 
         .post("/repos/octocat/Hello-World/check-runs", (body) => {
           body.started_at = "2018-07-14T18:18:54.156Z";
@@ -93,10 +96,9 @@ describe("dco", () => {
         .get("/repos/octocat/.github/contents/.github%2Fdco.yml")
         .reply(404)
 
-        .get(
-          "/repos/octocat/Hello-World/compare/a10867b14bb761a232cd80139fbd4c0d33264240...34c5c7793cb3b279e22454cb6750c80560547b3a"
-        )
-        .reply(200, compareSuccess)
+        .get("/repos/octocat/Hello-World/pulls/1/commits")
+        .query({ per_page: "100" })
+        .reply(200, compareSuccessCommits)
 
         .post("/repos/octocat/Hello-World/check-runs")
         .reply(403)
@@ -116,6 +118,300 @@ describe("dco", () => {
       expect(mock.activeMocks()).toStrictEqual([]);
     });
 
+    test("creates a failing check when commits cannot be listed", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+        .reply(404)
+        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
+        .reply(404)
+
+        .get("/repos/robotland/test/pulls/113/commits")
+        .query({ per_page: "100" })
+        .reply(
+          422,
+          {
+            message:
+              "Server Error: Sorry, this diff is taking too long to generate.",
+            errors: [
+              {
+                resource: "Comparison",
+                field: "diff",
+                code: "not_available",
+              },
+            ],
+          },
+          {
+            "x-github-request-id": "ABC1:DEF2:123456:789ABC",
+          }
+        )
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          body.started_at = "2018-07-14T18:18:54.156Z";
+          body.completed_at = "2018-07-14T18:18:54.156Z";
+          expect(body).toMatchObject({
+            conclusion: "failure",
+            head_branch: "dco-test",
+            head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
+            name: "DCO",
+            output: {
+              title: "DCO",
+            },
+            status: "completed",
+          });
+          expect(body.output.summary).toContain(
+            "The DCO check could not be evaluated"
+          );
+          expect(body.output.summary).toContain("HTTP status: 422");
+          expect(body.output.summary).toContain(
+            "GitHub request ID: ABC1:DEF2:123456:789ABC"
+          );
+          expect(body.output.summary).not.toContain("Server Error");
+          expect(body.output.summary).toContain("re-running the check");
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({ name: "pull_request", payload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("creates a failing check when config cannot be fetched", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+        .reply(422, { message: "Invalid request" })
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          body.started_at = "2018-07-14T18:18:54.156Z";
+          body.completed_at = "2018-07-14T18:18:54.156Z";
+          expect(body).toMatchObject({
+            conclusion: "failure",
+            head_branch: "dco-test",
+            head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
+            name: "DCO",
+            output: {
+              title: "DCO",
+            },
+            status: "completed",
+          });
+          expect(body.output.summary).toContain("HTTP status: 422");
+          expect(body.output.summary).toContain(
+            "GitHub request ID: unavailable"
+          );
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({ name: "pull_request", payload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("evaluates pull requests with more than 250 commits", async () => {
+      const commits = [
+        ...Array.from({ length: 249 }, (_, index) => ({
+          ...compareSuccess.commits[0],
+          sha: String(index).padStart(40, "0"),
+        })),
+        {
+          ...compare.commits[0],
+          sha: "9999999999999999999999999999999999999999",
+        },
+      ];
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+        .reply(404)
+        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
+        .reply(404)
+
+        .get("/repos/robotland/test/pulls/113/commits")
+        .query({ per_page: "100" })
+        .reply(200, commits)
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          body.started_at = "2018-07-14T18:18:54.156Z";
+          body.completed_at = "2018-07-14T18:18:54.156Z";
+          expect(body).toMatchObject({
+            conclusion: "action_required",
+            head_branch: "dco-test",
+            head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
+            name: "DCO",
+            output: {
+              title: "DCO",
+            },
+            status: "completed",
+          });
+          expect(body.output.summary).toContain("The sign-off is missing.");
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({ name: "pull_request", payload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("creates a neutral check when no commits are returned", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+        .reply(404)
+        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
+        .reply(404)
+
+        .get("/repos/robotland/test/pulls/113/commits")
+        .query({ per_page: "100" })
+        .reply(200, [])
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          body.started_at = "2018-07-14T18:18:54.156Z";
+          body.completed_at = "2018-07-14T18:18:54.156Z";
+          expect(body).toMatchObject({
+            conclusion: "neutral",
+            head_branch: "dco-test",
+            head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
+            name: "DCO",
+            output: {
+              title: "DCO",
+            },
+            status: "completed",
+          });
+          expect(body.output.summary).toContain("returned no commits");
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({ name: "pull_request", payload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("evaluates commits from paginated pull request commits", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+        .reply(404)
+        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
+        .reply(404)
+
+        .get("/repos/robotland/test/pulls/113/commits")
+        .query({ per_page: "100" })
+        .reply(200, compareSuccess.commits, {
+          link: '<https://api.github.com/repos/robotland/test/pulls/113/commits?per_page=100&page=2>; rel="next"',
+        })
+
+        .get("/repos/robotland/test/pulls/113/commits")
+        .query({ per_page: "100", page: "2" })
+        .reply(200, compare.commits)
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          body.started_at = "2018-07-14T18:18:54.156Z";
+          body.completed_at = "2018-07-14T18:18:54.156Z";
+          expect(body).toMatchObject({
+            conclusion: "action_required",
+            head_branch: "dco-test",
+            head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
+            name: "DCO",
+            output: {
+              title: "DCO",
+            },
+            status: "completed",
+          });
+          expect(body.output.summary).toContain("The sign-off is missing.");
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({ name: "pull_request", payload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("creates a failing check when commit data cannot be evaluated", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+        .reply(404)
+        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
+        .reply(404)
+
+        .get("/repos/robotland/test/pulls/113/commits")
+        .query({ per_page: "100" })
+        .reply(200, [{ sha: "e76ed6025cec8879c75454a6efd6081d46de4c94" }])
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          body.started_at = "2018-07-14T18:18:54.156Z";
+          body.completed_at = "2018-07-14T18:18:54.156Z";
+          expect(body).toMatchObject({
+            conclusion: "failure",
+            head_branch: "dco-test",
+            head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
+            name: "DCO",
+            output: {
+              title: "DCO",
+            },
+            status: "completed",
+          });
+          expect(body.output.summary).toContain("HTTP status: unknown");
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({ name: "pull_request", payload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("rethrows when the failure check cannot be created", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+        .reply(404)
+        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
+        .reply(404)
+
+        .get("/repos/robotland/test/pulls/113/commits")
+        .query({ per_page: "100" })
+        .reply(422, {
+          message:
+            "Server Error: Sorry, this diff is taking too long to generate.",
+        })
+
+        .post("/repos/robotland/test/check-runs")
+        .reply(404);
+
+      await expect(
+        probot.receive({ name: "pull_request", payload })
+      ).rejects.toThrow();
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("rethrows when the failure status cannot be created", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+        .reply(404)
+        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
+        .reply(404)
+
+        .get("/repos/robotland/test/pulls/113/commits")
+        .query({ per_page: "100" })
+        .reply(422, {
+          message:
+            "Server Error: Sorry, this diff is taking too long to generate.",
+        })
+
+        .post("/repos/robotland/test/check-runs")
+        .reply(403)
+
+        .post(
+          "/repos/robotland/test/statuses/e76ed6025cec8879c75454a6efd6081d46de4c94"
+        )
+        .reply(403);
+
+      await expect(
+        probot.receive({ name: "pull_request", payload })
+      ).rejects.toThrow();
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
     test("creates a error status if app has no access to checks", async () => {
       const mock = nock("https://api.github.com")
         .get("/repos/robotland/test/contents/.github%2Fdco.yml")
@@ -123,10 +419,9 @@ describe("dco", () => {
         .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
         .reply(404)
 
-        .get(
-          "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94"
-        )
-        .reply(200, compare)
+        .get("/repos/robotland/test/pulls/113/commits")
+        .query({ per_page: "100" })
+        .reply(200, compare.commits)
 
         .post("/repos/robotland/test/check-runs")
         .reply(403)
@@ -159,10 +454,9 @@ describe("dco", () => {
     members: false`
             )
 
-            .get(
-              "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94"
-            )
-            .reply(200, compare)
+            .get("/repos/robotland/test/pulls/113/commits")
+            .query({ per_page: "100" })
+            .reply(200, compare.commits)
 
             .get("/orgs/robotland/members/bkeepers")
             .reply(204)
@@ -191,17 +485,16 @@ describe("dco", () => {
     members: false`
             )
 
-            .get(
-              "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94"
-            )
+            .get("/repos/robotland/test/pulls/113/commits")
+            .query({ per_page: "100" })
             // override verification status to true from fixtures, without mutating the fixtures
-            .reply(200, {
-              ...compare,
-              commits: compare.commits.map((commit) => ({
+            .reply(
+              200,
+              compare.commits.map((commit) => ({
                 ...commit,
                 commit: { ...commit.commit, verification: { verified: true } },
-              })),
-            })
+              }))
+            )
 
             .get("/orgs/robotland/members/bkeepers")
             .reply(204)
@@ -230,10 +523,9 @@ describe("dco", () => {
     members: false`
             )
 
-            .get(
-              "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94"
-            )
-            .reply(200, compare)
+            .get("/repos/robotland/test/pulls/113/commits")
+            .query({ per_page: "100" })
+            .reply(200, compare.commits)
 
             .get("/orgs/robotland/members/bkeepers")
             .reply(404)
@@ -262,14 +554,10 @@ describe("dco", () => {
     members: false`
             )
 
-            .get(
-              "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94"
-            )
+            .get("/repos/robotland/test/pulls/113/commits")
+            .query({ per_page: "100" })
             // duplicate commit without mutating the fixtures
-            .reply(200, {
-              ...compare,
-              commits: [compare.commits[0], compare.commits[0]],
-            })
+            .reply(200, [compare.commits[0], compare.commits[0]])
 
             .get("/orgs/robotland/members/bkeepers")
             .reply(204)
@@ -298,10 +586,9 @@ describe("dco", () => {
     members: false`
             )
 
-            .get(
-              "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94"
-            )
-            .reply(200, compare)
+            .get("/repos/robotland/test/pulls/113/commits")
+            .query({ per_page: "100" })
+            .reply(200, compare.commits)
 
             .post("/repos/robotland/test/check-runs", (body) => {
               body.started_at = "2018-07-14T18:18:54.156Z";
@@ -331,10 +618,9 @@ describe("dco", () => {
     members: false`
             )
 
-            .get(
-              "/repos/bkeepers/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94"
-            )
-            .reply(200, compare)
+            .get("/repos/bkeepers/test/pulls/113/commits")
+            .query({ per_page: "100" })
+            .reply(200, compare.commits)
 
             .post("/repos/bkeepers/test/check-runs", (body) => {
               body.started_at = "2018-07-14T18:18:54.156Z";
@@ -376,10 +662,9 @@ allowRemediationCommits:
   individual: true`
             )
 
-            .get(
-              "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94"
-            )
-            .reply(200, compare)
+            .get("/repos/robotland/test/pulls/113/commits")
+            .query({ per_page: "100" })
+            .reply(200, compare.commits)
 
             .post("/repos/robotland/test/check-runs", (body) => {
               body.started_at = "2018-07-14T18:18:54.156Z";
@@ -408,10 +693,9 @@ allowRemediationCommits:
   thirdParty: true`
           )
 
-          .get(
-            "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94"
-          )
-          .reply(200, compare)
+          .get("/repos/robotland/test/pulls/113/commits")
+          .query({ per_page: "100" })
+          .reply(200, compare.commits)
 
           .post("/repos/robotland/test/check-runs", (body) => {
             body.started_at = "2018-07-14T18:18:54.156Z";
@@ -437,32 +721,28 @@ allowRemediationCommits:
   thirdParty: true`
           )
 
-          .get(
-            "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94"
-          )
+          .get("/repos/robotland/test/pulls/113/commits")
+          .query({ per_page: "100" })
           // add 2nd commit without mutating the fixtures
-          .reply(200, {
-            ...compare,
-            commits: [
-              compare.commits[0],
-              {
-                sha: "<other sha>",
-                commit: {
-                  author: {
-                    name: "Not Brandon Keepers",
-                    email: "not-bkeepers@github.com",
-                    date: "2017-09-22T23:20:56Z",
-                  },
-                  committer: {
-                    name: "Monalisa Octocat",
-                    email: "support@github.com",
-                    date: "2021-11-09T23:01:26.210Z",
-                  },
-                  message: "Other update README.md",
+          .reply(200, [
+            {
+              sha: "<other sha>",
+              commit: {
+                author: {
+                  name: "Not Brandon Keepers",
+                  email: "not-bkeepers@github.com",
+                  date: "2017-09-22T23:20:56Z",
                 },
+                committer: {
+                  name: "Monalisa Octocat",
+                  email: "support@github.com",
+                  date: "2021-11-09T23:01:26.210Z",
+                },
+                message: "Other update README.md",
               },
-            ],
-          })
+            },
+            compare.commits[0],
+          ])
 
           .post("/repos/robotland/test/check-runs", (body) => {
             body.started_at = "2018-07-14T18:18:54.156Z";
@@ -488,14 +768,10 @@ allowRemediationCommits:
   thirdParty: true`
           )
 
-          .get(
-            "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94"
-          )
+          .get("/repos/robotland/test/pulls/113/commits")
+          .query({ per_page: "100" })
           // add 2nd commit without mutating the fixtures
-          .reply(200, {
-            ...compare,
-            commits: [compare.commits[0], compare.commits[0]],
-          })
+          .reply(200, [compare.commits[0], compare.commits[0]])
 
           .post("/repos/robotland/test/check-runs", (body) => {
             body.started_at = "2018-07-14T18:18:54.156Z";
@@ -587,10 +863,9 @@ allowRemediationCommits:
         .get("/repos/octocat/.github/contents/.github%2Fdco.yml")
         .reply(404)
 
-        .get(
-          "/repos/octocat/Hello-World/compare/a10867b14bb761a232cd80139fbd4c0d33264240...34c5c7793cb3b279e22454cb6750c80560547b3a"
-        )
-        .reply(200, compareSuccess)
+        .get("/repos/octocat/Hello-World/pulls/1/commits")
+        .query({ per_page: "100" })
+        .reply(200, compareSuccessCommits)
 
         .post("/repos/octocat/Hello-World/check-runs", (body) => {
           body.started_at = "2018-07-14T18:18:54.156Z";
@@ -656,10 +931,9 @@ allowRemediationCommits:
         .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
         .reply(404)
 
-        .get(
-          "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94"
-        )
-        .reply(200, compare)
+        .get("/repos/robotland/test/pulls/113/commits")
+        .query({ per_page: "100" })
+        .reply(200, compare.commits)
 
         .post("/repos/robotland/test/check-runs", (body) => {
           body.started_at = "2018-07-14T18:18:54.156Z";
@@ -695,10 +969,9 @@ allowRemediationCommits:
     members: false`
         )
 
-        .get(
-          "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94"
-        )
-        .reply(200, compare)
+        .get("/repos/robotland/test/pulls/113/commits")
+        .query({ per_page: "100" })
+        .reply(200, compare.commits)
 
         .get("/orgs/robotland/members/bkeepers")
         .reply(204)
@@ -827,6 +1100,62 @@ allowRemediationCommits:
           }
         )
         .reply(201);
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("creates a failing check when compare commits fails", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/pulls/113")
+        .reply(200, payload.pull_request)
+
+        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+        .reply(404)
+        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
+        .reply(404)
+
+        .get(
+          "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...abc123def456abc123def456abc123def456abc1"
+        )
+        .reply(422, {
+          message:
+            "Server Error: Sorry, this diff is taking too long to generate.",
+          errors: [
+            {
+              resource: "Comparison",
+              field: "diff",
+              code: "not_available",
+            },
+          ],
+        })
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          body.started_at = "2018-07-14T18:18:54.156Z";
+          body.completed_at = "2018-07-14T18:18:54.156Z";
+          expect(body).toMatchObject({
+            conclusion: "failure",
+            head_branch:
+              "gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
+            head_sha: "abc123def456abc123def456abc123def456abc1",
+            name: "DCO",
+            output: {
+              title: "DCO",
+            },
+            status: "completed",
+          });
+          expect(body.output.summary).toContain(
+            "The DCO check could not be evaluated"
+          );
+          expect(body.output.summary).toContain("HTTP status: 422");
+          expect(body.output.summary).toContain(
+            "GitHub request ID: unavailable"
+          );
+          expect(body.output.summary).not.toContain("Server Error");
+          return true;
+        })
+        .reply(200);
 
       await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
 
