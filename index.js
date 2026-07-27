@@ -195,10 +195,24 @@ Please retry by re-running the check or pushing a new commit.`;
 
   app.on("merge_group.checks_requested", async (context) => {
     const mergeGroup = context.payload.merge_group;
+    const reportSha = mergeGroup.head_sha;
+    const reportRef = mergeGroup.head_ref.replace(/^refs\/heads\//, "");
     const match = mergeGroup.head_ref.match(
       /(?:^|\/)gh-readonly-queue\/.+\/pr-(\d+)-/
     );
-    if (!match) return;
+    if (!match) {
+      await reportDCO(context, {
+        sha: reportSha,
+        ref: reportRef,
+        timeStart: new Date(),
+        conclusion: "failure",
+        summary: `The DCO check could not be evaluated because the merge group head ref has an unrecognized format: ${mergeGroup.head_ref}.
+
+A maintainer can retry the merge queue entry. If this keeps happening, please report the merge group payload to the DCO app maintainers.`,
+        statusDescription: "Unrecognized merge group head ref.",
+      });
+      return;
+    }
     const prNumber = parseInt(match[1], 10);
 
     let pr;
@@ -207,19 +221,30 @@ Please retry by re-running the check or pushing a new commit.`;
         context.repo({ pull_number: prNumber })
       ));
     } catch (error) {
-      if (error.status === 404 || error.status === 403) {
-        context.log.info(
-          `merge_group: could not fetch PR #${prNumber}: ${error.message}`
-        );
-        return;
-      }
-      throw error;
+      context.log.error(error, `merge_group: could not fetch PR #${prNumber}`);
+      const reason =
+        error.status === 404
+          ? `pull request #${prNumber} was not found`
+          : error.status === 403
+            ? `pull request #${prNumber} could not be accessed`
+            : `pull request #${prNumber} could not be fetched`;
+      await reportDCO(context, {
+        sha: reportSha,
+        ref: reportRef,
+        timeStart: new Date(),
+        conclusion: "failure",
+        summary: `The DCO check could not be evaluated because ${reason}.
+
+A maintainer can retry the merge queue entry after confirming the pull request still exists and the DCO app can access it.`,
+        statusDescription: `Could not fetch PR #${prNumber}.`,
+      });
+      return;
     }
 
     await check(context, pr, {
       // Report the check result on the merge group's temporary merge commit.
-      reportSha: mergeGroup.head_sha,
-      reportRef: mergeGroup.head_ref,
+      reportSha,
+      reportRef,
       // Compare the full merge group range so all batched PRs are validated.
       // headSha equals reportSha: both target the merge group head commit.
       baseSha: mergeGroup.base_sha,

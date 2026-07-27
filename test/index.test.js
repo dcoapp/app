@@ -1305,35 +1305,88 @@ allowRemediationCommits:
       expect(mock.activeMocks()).toStrictEqual([]);
     });
 
-    test("skips check when PR lookup returns 404", async () => {
+    test("creates a diagnostic check when PR lookup returns 404", async () => {
       const mock = nock("https://api.github.com")
         .get("/repos/robotland/test/pulls/113")
-        .reply(404);
+        .reply(404)
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          body.started_at = "2018-07-14T18:18:54.156Z";
+          body.completed_at = "2018-07-14T18:18:54.156Z";
+          expect(body).toMatchObject({
+            conclusion: "failure",
+            head_branch:
+              "gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
+            head_sha: "abc123def456abc123def456abc123def456abc1",
+            name: "DCO",
+            status: "completed",
+          });
+          expect(body.output.summary).toContain(
+            "pull request #113 was not found"
+          );
+          return true;
+        })
+        .reply(200);
 
       await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
 
       expect(mock.activeMocks()).toStrictEqual([]);
     });
 
-    test("skips check when PR lookup returns 403", async () => {
+    test("creates a diagnostic check when PR lookup returns 403", async () => {
       const mock = nock("https://api.github.com")
         .get("/repos/robotland/test/pulls/113")
-        .reply(403);
+        .reply(403)
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          body.started_at = "2018-07-14T18:18:54.156Z";
+          body.completed_at = "2018-07-14T18:18:54.156Z";
+          expect(body).toMatchObject({
+            conclusion: "failure",
+            head_branch:
+              "gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
+            head_sha: "abc123def456abc123def456abc123def456abc1",
+            name: "DCO",
+            status: "completed",
+          });
+          expect(body.output.summary).toContain(
+            "pull request #113 could not be accessed"
+          );
+          return true;
+        })
+        .reply(200);
 
       await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
 
       expect(mock.activeMocks()).toStrictEqual([]);
     });
 
-    test("rethrows non-404/403 errors from PR lookup", async () => {
-      // Use 422 (not retried by octokit) to verify non-404/403 errors propagate
-      nock("https://api.github.com")
+    test("creates a diagnostic check when PR lookup returns another error", async () => {
+      const mock = nock("https://api.github.com")
         .get("/repos/robotland/test/pulls/113")
-        .reply(422);
+        .reply(422)
 
-      await expect(
-        probot.receive({ name: "merge_group", payload: mergeGroupPayload })
-      ).rejects.toThrow();
+        .post("/repos/robotland/test/check-runs", (body) => {
+          body.started_at = "2018-07-14T18:18:54.156Z";
+          body.completed_at = "2018-07-14T18:18:54.156Z";
+          expect(body).toMatchObject({
+            conclusion: "failure",
+            head_branch:
+              "gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
+            head_sha: "abc123def456abc123def456abc123def456abc1",
+            name: "DCO",
+            status: "completed",
+          });
+          expect(body.output.summary).toContain(
+            "pull request #113 could not be fetched"
+          );
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
     });
 
     test("creates a passing check when head_ref has no refs/heads/ prefix", async () => {
@@ -1383,7 +1436,7 @@ allowRemediationCommits:
       expect(mock.activeMocks()).toStrictEqual([]);
     });
 
-    test("ignores merge_group with unrecognized head_ref format", async () => {
+    test("creates a diagnostic check for unrecognized head_ref format", async () => {
       const unknownRefPayload = {
         ...mergeGroupPayload,
         merge_group: {
@@ -1392,7 +1445,23 @@ allowRemediationCommits:
         },
       };
 
-      const mock = nock("https://api.github.com");
+      const mock = nock("https://api.github.com")
+        .post("/repos/robotland/test/check-runs", (body) => {
+          body.started_at = "2018-07-14T18:18:54.156Z";
+          body.completed_at = "2018-07-14T18:18:54.156Z";
+          expect(body).toMatchObject({
+            conclusion: "failure",
+            head_branch: "some-feature-branch/pr-113-abc123",
+            head_sha: "abc123def456abc123def456abc123def456abc1",
+            name: "DCO",
+            status: "completed",
+          });
+          expect(body.output.summary).toContain(
+            "unrecognized format: some-feature-branch/pr-113-abc123"
+          );
+          return true;
+        })
+        .reply(200);
 
       await probot.receive({
         name: "merge_group",
