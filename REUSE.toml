@@ -7,6 +7,7 @@ path = [
     "package.json",
     "package-lock.json",
     "test/__snapshots__/index.test.js.snap",
+    "test/fixtures/check_run.rerequested.json",
     "test/fixtures/compare-success.json",
     "test/fixtures/compare.json",
     "test/fixtures/pull_request.opened-success.json",

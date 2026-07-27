@@ -8,14 +8,7 @@ const requireMembers = require("./lib/requireMembers.js");
  * @param {import('probot').Probot} app
  */
 module.exports = (app) => {
-  app.on(
-    [
-      "pull_request.opened",
-      "pull_request.synchronize",
-      "check_run.rerequested",
-    ],
-    check
-  );
+  app.on(["pull_request.opened", "pull_request.synchronize"], check);
 
   async function check(
     context,
@@ -55,13 +48,6 @@ module.exports = (app) => {
           context.octokit.rest.pulls.listCommits,
           context.repo({ pull_number: pr.number, per_page: 100 })
         );
-        /* istanbul ignore if -- exercised by check_run.rerequested */
-        if (pr.head.sha !== sha) {
-          context.log.info(
-            `pull request head changed from ${sha} to ${pr.head.sha}; skipping stale DCO report`
-          );
-          return;
-        }
         if (commits.length === 0) {
           await reportDCO(context, {
             sha,
@@ -157,7 +143,6 @@ module.exports = (app) => {
   ) {
     const params = {
       name: "DCO",
-      head_branch: ref,
       head_sha: sha,
       status: "completed",
       started_at: timeStart,
@@ -168,6 +153,7 @@ module.exports = (app) => {
         summary,
       },
     };
+    if (ref) params.head_branch = ref;
     if (actions) params.actions = actions;
 
     try {
@@ -240,6 +226,71 @@ Please retry by re-running the check or pushing a new commit.`;
       headSha: mergeGroup.head_sha,
     });
   });
+
+  app.on("check_run.rerequested", onCheckRunRerequested);
+  async function onCheckRunRerequested(context) {
+    const checkRun = context.payload.check_run;
+    const ref = checkRun.check_suite.head_branch;
+    const pullRequest = checkRun.pull_requests[0];
+
+    if (!pullRequest) {
+      await reportDCO(context, {
+        sha: checkRun.head_sha,
+        ref,
+        timeStart: new Date(),
+        conclusion: "failure",
+        summary:
+          "The DCO check could not be evaluated because this check run is not associated with a pull request.\n\nPlease retry by pushing a new commit or opening a pull request with this commit.",
+        statusDescription: "DCO check is not associated with a pull request.",
+      });
+      return;
+    }
+
+    let pr;
+    try {
+      ({ data: pr } = await context.octokit.rest.pulls.get(
+        context.repo({ pull_number: pullRequest.number })
+      ));
+    } catch (error) {
+      context.log.error(
+        error,
+        `check_run: could not fetch PR #${pullRequest.number}`
+      );
+      await reportDCO(context, {
+        sha: checkRun.head_sha,
+        ref,
+        timeStart: new Date(),
+        conclusion: "failure",
+        summary: `The DCO check could not be evaluated because pull request #${pullRequest.number} could not be fetched.
+
+Please retry by re-running the check or pushing a new commit.`,
+        statusDescription: `Could not fetch PR #${pullRequest.number}.`,
+      });
+      return;
+    }
+
+    if (pr.head.sha !== checkRun.head_sha) {
+      await reportDCO(context, {
+        sha: checkRun.head_sha,
+        ref,
+        timeStart: new Date(),
+        conclusion: "neutral",
+        summary: `This DCO check was re-run for a commit that has been superseded by the current pull request head.
+
+Current pull request head: ${pr.head.sha}
+
+Please use the DCO check on the current pull request head, or push a new commit to trigger a fresh check.`,
+        statusState: "success",
+        statusDescription: "This commit has been superseded.",
+      });
+      return;
+    }
+
+    await check(context, pr, {
+      reportSha: checkRun.head_sha,
+      reportRef: ref,
+    });
+  }
 
   function isRecheckCommand(body) {
     if (!body) return false;

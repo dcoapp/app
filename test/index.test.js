@@ -7,6 +7,7 @@ const dco = require("..");
 
 const payload = require("./fixtures/pull_request.opened");
 const payloadSuccess = require("./fixtures/pull_request.opened-success");
+const checkRunRerequestedPayload = require("./fixtures/check_run.rerequested");
 const pullRequestReviewPayload = require("./fixtures/pull_request_review.submitted");
 const pullRequestReviewCommentPayload = require("./fixtures/pull_request_review_comment.created");
 const mergeGroupPayload = require("./fixtures/merge_group.checks_requested");
@@ -207,7 +208,7 @@ describe("dco", () => {
       expect(mock.activeMocks()).toStrictEqual([]);
     });
 
-    test("evaluates pull requests with more than 250 commits", async () => {
+    test("evaluates all 250 returned pull request commits", async () => {
       const commits = [
         ...Array.from({ length: 249 }, (_, index) => ({
           ...compareSuccess.commits[0],
@@ -785,6 +786,148 @@ allowRemediationCommits:
 
         expect(mock.activeMocks()).toStrictEqual([]);
       });
+    });
+  });
+
+  describe("check_run.rerequested event", () => {
+    test("creates a failing check for a rerequested DCO check run", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/pulls/113")
+        .reply(200, payload.pull_request)
+
+        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+        .reply(404)
+        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
+        .reply(404)
+
+        .get("/repos/robotland/test/pulls/113/commits")
+        .query({ per_page: "100" })
+        .reply(200, compare.commits)
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          body.started_at = "2018-07-14T18:18:54.156Z";
+          body.completed_at = "2018-07-14T18:18:54.156Z";
+          expect(body).toMatchObject({
+            conclusion: "action_required",
+            head_branch: "dco-test",
+            head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
+            name: "DCO",
+            output: {
+              title: "DCO",
+            },
+            status: "completed",
+          });
+          expect(body.output.summary).toContain("The sign-off is missing.");
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({
+        name: "check_run",
+        payload: checkRunRerequestedPayload,
+      });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("creates a neutral check when the commit was superseded", async () => {
+      const supersededPr = structuredClone(payload.pull_request);
+      supersededPr.head.sha = "0000000000000000000000000000000000000000";
+
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/pulls/113")
+        .reply(200, supersededPr)
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          body.started_at = "2018-07-14T18:18:54.156Z";
+          body.completed_at = "2018-07-14T18:18:54.156Z";
+          expect(body).toMatchObject({
+            conclusion: "neutral",
+            head_branch: "dco-test",
+            head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
+            name: "DCO",
+            output: {
+              title: "DCO",
+            },
+            status: "completed",
+          });
+          expect(body.output.summary).toContain("has been superseded");
+          expect(body.output.summary).toContain(supersededPr.head.sha);
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({
+        name: "check_run",
+        payload: checkRunRerequestedPayload,
+      });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("creates a diagnostic check when no pull requests are associated", async () => {
+      const payload = structuredClone(checkRunRerequestedPayload);
+      payload.check_run.pull_requests = [];
+      payload.check_run.check_suite.pull_requests = [];
+      payload.check_run.check_suite.head_branch = null;
+
+      const mock = nock("https://api.github.com")
+        .post("/repos/robotland/test/check-runs", (body) => {
+          body.started_at = "2018-07-14T18:18:54.156Z";
+          body.completed_at = "2018-07-14T18:18:54.156Z";
+          expect(body).toMatchObject({
+            conclusion: "failure",
+            head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
+            name: "DCO",
+            output: {
+              title: "DCO",
+            },
+            status: "completed",
+          });
+          expect(body).not.toHaveProperty("head_branch");
+          expect(body.output.summary).toContain(
+            "not associated with a pull request"
+          );
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({ name: "check_run", payload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("creates a diagnostic check when pull request lookup fails", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/pulls/113")
+        .reply(404)
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          body.started_at = "2018-07-14T18:18:54.156Z";
+          body.completed_at = "2018-07-14T18:18:54.156Z";
+          expect(body).toMatchObject({
+            conclusion: "failure",
+            head_branch: "dco-test",
+            head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
+            name: "DCO",
+            output: {
+              title: "DCO",
+            },
+            status: "completed",
+          });
+          expect(body.output.summary).toContain(
+            "pull request #113 could not be fetched"
+          );
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({
+        name: "check_run",
+        payload: checkRunRerequestedPayload,
+      });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
     });
   });
 
