@@ -24,7 +24,8 @@ entries under **Repository permissions** and lists **Members** under
 | Checks | Repository | Write | Creates the `DCO` check run and handles the manual "Set DCO to pass" check-run action. |
 | Contents | Repository | Read | Reads commits with `compareCommits` so the app can check sign-offs. |
 | Metadata | Repository | Read | Required baseline permission for all GitHub Apps. |
-| Pull requests | Repository | Read | Reads pull request details and handles pull-request, review, review-comment, and merge-queue events. |
+| Merge queues | Repository | Read | Receives `merge_group` deliveries for merge queues. |
+| Pull requests | Repository | Read | Reads pull request details and handles pull-request, review, and review-comment events. |
 | Members | Organization | Read | Checks organization membership when a repository sets `require.members: false` to skip sign-off for organization members. |
 
 <!-- markdownlint-enable MD013 -->
@@ -33,7 +34,9 @@ entries under **Repository permissions** and lists **Members** under
 
 In GitHub's "Subscribe to events" list, use the display label shown in the
 second column. The technical event name appears in webhook deliveries and in
-`app.yml`.
+`app.yml`. Verify technical event names against GitHub's webhook catalogue;
+similar names are not interchangeable. This app handles `merge_group`, not
+`merge_queue_entry`.
 
 <!-- markdownlint-disable MD013 -->
 
@@ -44,7 +47,7 @@ second column. The technical event name appears in webhook deliveries and in
 | `pull_request_review` | Pull request review | Pull requests | Re-runs DCO when a review summary contains `@dcoapp recheck` on its own line. |
 | `pull_request_review_comment` | Pull request review comment | Pull requests | Re-runs DCO when an inline review comment contains `@dcoapp recheck` on its own line. |
 | `push` | Push | Contents | Listed in the manifest; the current code has no dedicated `push` handler. |
-| `merge_group` | Merge queue entry | Pull requests | Runs DCO on merge-queue entries. GitHub shows this event as "Merge queue entry", not `merge_group`. |
+| `merge_group` | Merge group | Merge queues | Runs DCO on merge groups for merge queues. |
 
 <!-- markdownlint-enable MD013 -->
 
@@ -74,11 +77,17 @@ effects:
   installation re-approval.
 - Adding or removing an event subscription does not require installation
   re-approval when the app already has the event's gating permission.
-- GitHub hides an event checkbox until the app has the event's gating
+- GitHub gates delivery on the event's underlying permission. A subscription
+  alone does not deliver webhooks without the gating permission.
+- GitHub can hide an event checkbox until the app has the event's gating
   permission. For example, `issue_comment` needs the **Issues** permission;
-  **Pull requests** alone does not expose that checkbox. Enabling
-  issue-comment-based commands needs a permission change and installation
-  re-approval.
+  **Pull requests** alone does not expose that checkbox, and `merge_group`
+  needs **Merge queues** before the **Merge group** checkbox appears.
+- Similar event names are not evidence of equivalence. Verify technical event
+  names against GitHub's webhook catalogue rather than inferring them from UI
+  labels.
+- After saving settings, confirm the live registration's actual permissions
+  and technical event names with `gh api /apps/dco --jq '{permissions, events}'`.
 
 ## Post-change verification
 
