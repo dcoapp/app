@@ -81,6 +81,10 @@ default_permissions:
   # https://developer.github.com/v3/apps/permissions/#metadata-permissions
   metadata: read
 
+  # Merge queues.
+  # https://docs.github.com/rest/authentication/permissions-required-for-github-apps#merge-queues
+  merge_queues: read
+
   # Retrieve Pages statuses, configuration, and builds, as well as create new builds.
   # https://developer.github.com/v3/apps/permissions/#permission-on-pages
   # pages: read
