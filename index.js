@@ -4,6 +4,11 @@
 const getDCOStatus = require("./lib/dco.js");
 const requireMembers = require("./lib/requireMembers.js");
 
+// GitHub documents a 250-commit cap on the pull request commits REST endpoint.
+const PULL_REQUEST_COMMITS_REST_LIMIT = 250;
+const PULL_REQUEST_COMMITS_GRAPHQL_PAGE_SIZE = 100;
+const PULL_REQUEST_COMMITS_GRAPHQL_PAGE_MARGIN = 1;
+
 /**
  * @param {import('probot').Probot} app
  */
@@ -44,10 +49,7 @@ module.exports = (app) => {
         );
         commits = compare.data.commits;
       } else {
-        commits = await context.octokit.paginate(
-          context.octokit.rest.pulls.listCommits,
-          context.repo({ pull_number: pr.number, per_page: 100 })
-        );
+        commits = await listPullRequestCommits(context, pr);
         if (commits.length === 0) {
           await reportDCO(context, {
             sha,
@@ -128,6 +130,203 @@ module.exports = (app) => {
     }
   }
 
+  async function listPullRequestCommits(context, pr) {
+    const commits = await context.octokit.paginate(
+      context.octokit.rest.pulls.listCommits,
+      context.repo({ pull_number: pr.number, per_page: 100 })
+    );
+
+    if (commits.length !== PULL_REQUEST_COMMITS_REST_LIMIT) {
+      return commits;
+    }
+
+    return fetchCompletePullRequestCommits(context, pr);
+  }
+
+  async function fetchCompletePullRequestCommits(context, pr) {
+    try {
+      const commits = [];
+      const commitShas = new Set();
+      let cursor = null;
+      let hasNextPage = true;
+      let expectedCommitCount;
+      let maxPages;
+      let pageCount = 0;
+
+      while (hasNextPage) {
+        const response = await context.octokit.graphql(
+          `query PullRequestCommits(
+            $owner: String!
+            $repo: String!
+            $pullNumber: Int!
+            $cursor: String
+            $pageSize: Int!
+          ) {
+            repository(owner: $owner, name: $repo) {
+              pullRequest(number: $pullNumber) {
+                commits(first: $pageSize, after: $cursor) {
+                  totalCount
+                  nodes {
+                    commit {
+                      oid
+                      url
+                      message
+                      author {
+                        name
+                        email
+                        date
+                        user {
+                          login
+                          __typename
+                        }
+                      }
+                      committer {
+                        name
+                        email
+                        date
+                        user {
+                          login
+                          __typename
+                        }
+                      }
+                      signature {
+                        isValid
+                        state
+                        signature
+                        payload
+                      }
+                      parents(first: 100) {
+                        nodes {
+                          oid
+                          url
+                        }
+                      }
+                    }
+                  }
+                  pageInfo {
+                    hasNextPage
+                    endCursor
+                  }
+                }
+              }
+            }
+          }`,
+          context.repo({
+            pullNumber: pr.number,
+            cursor,
+            pageSize: PULL_REQUEST_COMMITS_GRAPHQL_PAGE_SIZE,
+          })
+        );
+        const connection = response.repository.pullRequest.commits;
+        pageCount += 1;
+        if (connection.totalCount < PULL_REQUEST_COMMITS_REST_LIMIT) {
+          throw new Error(
+            `GraphQL reported only ${connection.totalCount} pull request commits.`
+          );
+        }
+        if (expectedCommitCount === undefined) {
+          expectedCommitCount = connection.totalCount;
+          maxPages =
+            Math.ceil(
+              expectedCommitCount / PULL_REQUEST_COMMITS_GRAPHQL_PAGE_SIZE
+            ) + PULL_REQUEST_COMMITS_GRAPHQL_PAGE_MARGIN;
+        } else if (connection.totalCount !== expectedCommitCount) {
+          throw new Error(
+            `GraphQL totalCount changed from ${expectedCommitCount} to ${connection.totalCount}.`
+          );
+        }
+
+        for (const node of connection.nodes) {
+          const commit = mapGraphQLCommit(node);
+          if (commitShas.has(commit.sha)) {
+            throw new Error(
+              `GraphQL returned duplicate pull request commit ${commit.sha}.`
+            );
+          }
+          commitShas.add(commit.sha);
+          commits.push(commit);
+        }
+
+        hasNextPage = connection.pageInfo.hasNextPage;
+        const previousCursor = cursor;
+        cursor = connection.pageInfo.endCursor;
+
+        if (hasNextPage && !cursor) {
+          throw new Error("GraphQL pagination ended without a cursor.");
+        }
+        if (hasNextPage && cursor === previousCursor) {
+          throw new Error("GraphQL pagination cursor did not advance.");
+        }
+        if (hasNextPage && pageCount >= maxPages) {
+          throw new Error("GraphQL commit pagination exceeded expected pages.");
+        }
+      }
+
+      if (commitShas.size !== expectedCommitCount) {
+        throw new Error(
+          `GraphQL returned ${commitShas.size} of ${expectedCommitCount} pull request commits.`
+        );
+      }
+
+      return commits;
+    } catch (error) {
+      error.incompleteCommitList = true;
+      throw error;
+    }
+  }
+
+  function mapGraphQLCommit(node) {
+    const commit = node.commit;
+    const signature = commit.signature || {
+      isValid: false,
+      state: "unsigned",
+      signature: null,
+      payload: null,
+    };
+
+    return {
+      sha: commit.oid,
+      html_url: commit.url,
+      author: mapGraphQLUser(commit.author.user),
+      committer: mapGraphQLUser(commit.committer.user),
+      parents: commit.parents.nodes.map((parent) => ({
+        sha: parent.oid,
+        html_url: parent.url,
+      })),
+      commit: {
+        author: {
+          name: commit.author.name,
+          email: commit.author.email,
+          date: commit.author.date,
+        },
+        committer: {
+          name: commit.committer.name,
+          email: commit.committer.email,
+          date: commit.committer.date,
+        },
+        message: commit.message,
+        verification: {
+          verified: signature.isValid,
+          reason: signature.state,
+          signature: signature.signature,
+          payload: signature.payload,
+          verified_at: null,
+        },
+      },
+    };
+  }
+
+  function mapGraphQLUser(user) {
+    if (!user) {
+      return null;
+    }
+
+    return {
+      login: user.login,
+      type: user.login.endsWith("[bot]") ? "Bot" : user.__typename,
+    };
+  }
+
   async function reportDCO(
     context,
     {
@@ -185,6 +384,17 @@ module.exports = (app) => {
   function evaluationErrorSummary(error) {
     const requestId =
       error.response?.headers?.["x-github-request-id"] || "unavailable";
+    if (error.incompleteCommitList) {
+      return `The DCO check could not be evaluated because the complete pull request commit list could not be retrieved.
+
+GitHub returned 250 commits from the REST API, so the app attempted to retrieve the full list through GraphQL before evaluating the pull request. That fallback did not complete, so the DCO verdict is unknown.
+
+HTTP status: ${error.status || "unknown"}
+GitHub request ID: ${requestId}
+
+Please retry by re-running the check or pushing a new commit.`;
+    }
+
     return `The DCO check could not be evaluated because an error occurred while gathering or evaluating commits.
 
 HTTP status: ${error.status || "unknown"}
