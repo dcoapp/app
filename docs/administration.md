@@ -22,7 +22,7 @@ entries under **Repository permissions** and lists **Members** under
 | Permission | Scope | Access | Why it's needed |
 | --- | --- | --- | --- |
 | Checks | Repository | Write | Creates the `DCO` check run and handles the manual "Set DCO to pass" check-run action. |
-| Contents | Repository | Read | Reads commits with `compareCommits` so the app can check sign-offs. |
+| Contents | Repository | Read | Reads repository configuration and merge-queue commit ranges so the app can check sign-offs. |
 | Metadata | Repository | Read | Required baseline permission for all GitHub Apps. |
 | Merge queues | Repository | Read | Receives `merge_group` deliveries for merge queues. |
 | Pull requests | Repository | Read | Reads pull request details and handles pull-request, review, and review-comment events. |

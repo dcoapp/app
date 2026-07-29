@@ -1,0 +1,164 @@
+{
+  "action": "rerequested",
+  "check_run": {
+    "id": 4,
+    "node_id": "MDg6Q2hlY2tSdW40",
+    "head_sha": "e76ed6025cec8879c75454a6efd6081d46de4c94",
+    "external_id": "",
+    "url": "https://api.github.com/repos/robotland/test/check-runs/4",
+    "html_url": "https://github.com/robotland/test/runs/4",
+    "details_url": "https://github.com/probot/dco#how-it-works",
+    "status": "completed",
+    "conclusion": "failure",
+    "started_at": "2017-09-22T23:21:03Z",
+    "completed_at": "2017-09-22T23:21:04Z",
+    "output": {
+      "title": "DCO",
+      "summary": "The sign-off is missing.",
+      "text": "",
+      "annotations_count": 0,
+      "annotations_url": "https://api.github.com/repos/robotland/test/check-runs/4/annotations"
+    },
+    "name": "DCO",
+    "check_suite": {
+      "id": 5,
+      "node_id": "MDEwOkNoZWNrU3VpdGU1",
+      "head_branch": "dco-test",
+      "head_sha": "e76ed6025cec8879c75454a6efd6081d46de4c94",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2017-09-22T23:21:03Z",
+      "updated_at": "2017-09-22T23:21:04Z",
+      "url": "https://api.github.com/repos/robotland/test/check-suites/5",
+      "before": "607c64cd8e37eb2db939f99a17bee5c7d1a90a31",
+      "after": "e76ed6025cec8879c75454a6efd6081d46de4c94",
+      "app": {
+        "id": 1,
+        "slug": "dco",
+        "node_id": "MDM6QXBwMQ==",
+        "owner": {
+          "login": "dcoapp",
+          "id": 1,
+          "node_id": "MDEyOk9yZ2FuaXphdGlvbjE=",
+          "url": "https://api.github.com/orgs/dcoapp",
+          "html_url": "https://github.com/dcoapp",
+          "type": "Organization",
+          "site_admin": false
+        },
+        "name": "DCO",
+        "description": "DCO GitHub App",
+        "external_url": "https://github.com/probot/dco",
+        "html_url": "https://github.com/apps/dco"
+      },
+      "pull_requests": [
+        {
+          "url": "https://api.github.com/repos/robotland/test/pulls/113",
+          "id": 142686911,
+          "number": 113,
+          "head": {
+            "ref": "dco-test",
+            "sha": "e76ed6025cec8879c75454a6efd6081d46de4c94",
+            "repo": {
+              "id": 68474533,
+              "url": "https://api.github.com/repos/robotland/test",
+              "name": "test"
+            }
+          },
+          "base": {
+            "ref": "master",
+            "sha": "607c64cd8e37eb2db939f99a17bee5c7d1a90a31",
+            "repo": {
+              "id": 68474533,
+              "url": "https://api.github.com/repos/robotland/test",
+              "name": "test"
+            }
+          }
+        }
+      ]
+    },
+    "app": {
+      "id": 1,
+      "slug": "dco",
+      "node_id": "MDM6QXBwMQ==",
+      "owner": {
+        "login": "dcoapp",
+        "id": 1,
+        "node_id": "MDEyOk9yZ2FuaXphdGlvbjE=",
+        "url": "https://api.github.com/orgs/dcoapp",
+        "html_url": "https://github.com/dcoapp",
+        "type": "Organization",
+        "site_admin": false
+      },
+      "name": "DCO",
+      "description": "DCO GitHub App",
+      "external_url": "https://github.com/probot/dco",
+      "html_url": "https://github.com/apps/dco"
+    },
+    "pull_requests": [
+      {
+        "url": "https://api.github.com/repos/robotland/test/pulls/113",
+        "id": 142686911,
+        "number": 113,
+        "head": {
+          "ref": "dco-test",
+          "sha": "e76ed6025cec8879c75454a6efd6081d46de4c94",
+          "repo": {
+            "id": 68474533,
+            "url": "https://api.github.com/repos/robotland/test",
+            "name": "test"
+          }
+        },
+        "base": {
+          "ref": "master",
+          "sha": "607c64cd8e37eb2db939f99a17bee5c7d1a90a31",
+          "repo": {
+            "id": 68474533,
+            "url": "https://api.github.com/repos/robotland/test",
+            "name": "test"
+          }
+        }
+      }
+    ]
+  },
+  "repository": {
+    "id": 68474533,
+    "name": "test",
+    "full_name": "robotland/test",
+    "owner": {
+      "login": "robotland",
+      "id": 11724939,
+      "node_id": "MDEyOk9yZ2FuaXphdGlvbjExNzI0OTM5",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/11724939?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/robotland",
+      "html_url": "https://github.com/robotland",
+      "type": "Organization",
+      "site_admin": false
+    },
+    "private": false,
+    "html_url": "https://github.com/robotland/test",
+    "description": "a trainable robot that responds to activity on GitHub",
+    "fork": false,
+    "url": "https://api.github.com/repos/robotland/test",
+    "default_branch": "master"
+  },
+  "organization": {
+    "login": "robotland",
+    "id": 11724939,
+    "url": "https://api.github.com/orgs/robotland"
+  },
+  "sender": {
+    "login": "bkeepers",
+    "id": 173,
+    "node_id": "MDQ6VXNlcjE3Mw==",
+    "avatar_url": "https://avatars0.githubusercontent.com/u/173?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/bkeepers",
+    "html_url": "https://github.com/bkeepers",
+    "type": "User",
+    "site_admin": true
+  },
+  "installation": {
+    "id": 13055
+  }
+}
