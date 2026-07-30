@@ -1,0 +1,308 @@
+{
+  "url": "https://api.github.com/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...abc123def456abc123def456abc123def456abc1",
+  "html_url": "https://github.com/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...abc123def456abc123def456abc123def456abc1",
+  "permalink_url": "https://github.com/robotland/test/compare/robotland:607c64c...robotland:abc123d",
+  "diff_url": "https://github.com/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...abc123def456abc123def456abc123def456abc1.diff",
+  "patch_url": "https://github.com/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...abc123def456abc123def456abc123def456abc1.patch",
+  "status": "ahead",
+  "ahead_by": 5,
+  "behind_by": 0,
+  "total_commits": 5,
+  "commits": [
+    {
+      "sha": "0acbabe211111111111111111111111111111111",
+      "commit": {
+        "author": {
+          "name": "Tyranisaur",
+          "email": "tyranisaur@example.com",
+          "date": "2026-01-14T09:12:33Z"
+        },
+        "committer": {
+          "name": "Tyranisaur",
+          "email": "tyranisaur@example.com",
+          "date": "2026-01-14T09:12:33Z"
+        },
+        "message": "Refactor step 1\n\nSigned-off-by: Tyranisaur <tyranisaur@example.com>",
+        "tree": {
+          "sha": "7ee0abe211111111111111111111111111111111",
+          "url": "https://api.github.com/repos/robotland/test/git/trees/0acbabe211111111111111111111111111111111"
+        },
+        "url": "https://api.github.com/repos/robotland/test/git/commits/0acbabe211111111111111111111111111111111",
+        "comment_count": 0,
+        "verification": {
+          "verified": false,
+          "reason": "unsigned",
+          "signature": null,
+          "payload": null
+        }
+      },
+      "url": "https://api.github.com/repos/robotland/test/commits/0acbabe211111111111111111111111111111111",
+      "html_url": "https://github.com/robotland/test/commit/0acbabe211111111111111111111111111111111",
+      "comments_url": "https://api.github.com/repos/robotland/test/commits/0acbabe211111111111111111111111111111111/comments",
+      "author": {
+        "login": "Tyranisaur",
+        "id": 2452571,
+        "avatar_url": "https://avatars.githubusercontent.com/u/2452571?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/Tyranisaur",
+        "html_url": "https://github.com/Tyranisaur",
+        "type": "User",
+        "site_admin": false
+      },
+      "committer": {
+        "login": "Tyranisaur",
+        "id": 2452571,
+        "avatar_url": "https://avatars.githubusercontent.com/u/2452571?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/Tyranisaur",
+        "html_url": "https://github.com/Tyranisaur",
+        "type": "User",
+        "site_admin": false
+      },
+      "parents": [
+        {
+          "sha": "607c64cd8e37eb2db939f99a17bee5c7d1a90a31",
+          "url": "https://api.github.com/repos/robotland/test/commits/607c64cd8e37eb2db939f99a17bee5c7d1a90a31",
+          "html_url": "https://github.com/robotland/test/commit/607c64cd8e37eb2db939f99a17bee5c7d1a90a31"
+        }
+      ]
+    },
+    {
+      "sha": "0acbabe222222222222222222222222222222222",
+      "commit": {
+        "author": {
+          "name": "Tyranisaur",
+          "email": "tyranisaur@example.com",
+          "date": "2026-01-14T09:12:33Z"
+        },
+        "committer": {
+          "name": "Tyranisaur",
+          "email": "tyranisaur@example.com",
+          "date": "2026-01-14T09:12:33Z"
+        },
+        "message": "Refactor step 2\n\nSigned-off-by: Tyranisaur <tyranisaur@example.com>",
+        "tree": {
+          "sha": "7ee0abe222222222222222222222222222222222",
+          "url": "https://api.github.com/repos/robotland/test/git/trees/0acbabe222222222222222222222222222222222"
+        },
+        "url": "https://api.github.com/repos/robotland/test/git/commits/0acbabe222222222222222222222222222222222",
+        "comment_count": 0,
+        "verification": {
+          "verified": false,
+          "reason": "unsigned",
+          "signature": null,
+          "payload": null
+        }
+      },
+      "url": "https://api.github.com/repos/robotland/test/commits/0acbabe222222222222222222222222222222222",
+      "html_url": "https://github.com/robotland/test/commit/0acbabe222222222222222222222222222222222",
+      "comments_url": "https://api.github.com/repos/robotland/test/commits/0acbabe222222222222222222222222222222222/comments",
+      "author": {
+        "login": "Tyranisaur",
+        "id": 2452571,
+        "avatar_url": "https://avatars.githubusercontent.com/u/2452571?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/Tyranisaur",
+        "html_url": "https://github.com/Tyranisaur",
+        "type": "User",
+        "site_admin": false
+      },
+      "committer": {
+        "login": "Tyranisaur",
+        "id": 2452571,
+        "avatar_url": "https://avatars.githubusercontent.com/u/2452571?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/Tyranisaur",
+        "html_url": "https://github.com/Tyranisaur",
+        "type": "User",
+        "site_admin": false
+      },
+      "parents": [
+        {
+          "sha": "0acbabe211111111111111111111111111111111",
+          "url": "https://api.github.com/repos/robotland/test/commits/0acbabe211111111111111111111111111111111",
+          "html_url": "https://github.com/robotland/test/commit/0acbabe211111111111111111111111111111111"
+        }
+      ]
+    },
+    {
+      "sha": "0acbabe233333333333333333333333333333333",
+      "commit": {
+        "author": {
+          "name": "Tyranisaur",
+          "email": "tyranisaur@example.com",
+          "date": "2026-01-14T09:12:33Z"
+        },
+        "committer": {
+          "name": "Tyranisaur",
+          "email": "tyranisaur@example.com",
+          "date": "2026-01-14T09:12:33Z"
+        },
+        "message": "Refactor step 3\n\nSigned-off-by: Tyranisaur <tyranisaur@example.com>",
+        "tree": {
+          "sha": "7ee0abe233333333333333333333333333333333",
+          "url": "https://api.github.com/repos/robotland/test/git/trees/0acbabe233333333333333333333333333333333"
+        },
+        "url": "https://api.github.com/repos/robotland/test/git/commits/0acbabe233333333333333333333333333333333",
+        "comment_count": 0,
+        "verification": {
+          "verified": false,
+          "reason": "unsigned",
+          "signature": null,
+          "payload": null
+        }
+      },
+      "url": "https://api.github.com/repos/robotland/test/commits/0acbabe233333333333333333333333333333333",
+      "html_url": "https://github.com/robotland/test/commit/0acbabe233333333333333333333333333333333",
+      "comments_url": "https://api.github.com/repos/robotland/test/commits/0acbabe233333333333333333333333333333333/comments",
+      "author": {
+        "login": "Tyranisaur",
+        "id": 2452571,
+        "avatar_url": "https://avatars.githubusercontent.com/u/2452571?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/Tyranisaur",
+        "html_url": "https://github.com/Tyranisaur",
+        "type": "User",
+        "site_admin": false
+      },
+      "committer": {
+        "login": "Tyranisaur",
+        "id": 2452571,
+        "avatar_url": "https://avatars.githubusercontent.com/u/2452571?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/Tyranisaur",
+        "html_url": "https://github.com/Tyranisaur",
+        "type": "User",
+        "site_admin": false
+      },
+      "parents": [
+        {
+          "sha": "0acbabe222222222222222222222222222222222",
+          "url": "https://api.github.com/repos/robotland/test/commits/0acbabe222222222222222222222222222222222",
+          "html_url": "https://github.com/robotland/test/commit/0acbabe222222222222222222222222222222222"
+        }
+      ]
+    },
+    {
+      "sha": "0acbabe244444444444444444444444444444444",
+      "commit": {
+        "author": {
+          "name": "Tyranisaur",
+          "email": "tyranisaur@example.com",
+          "date": "2026-01-14T09:12:33Z"
+        },
+        "committer": {
+          "name": "Tyranisaur",
+          "email": "tyranisaur@example.com",
+          "date": "2026-01-14T09:12:33Z"
+        },
+        "message": "Refactor step 4\n\nSigned-off-by: Tyranisaur <tyranisaur@example.com>",
+        "tree": {
+          "sha": "7ee0abe244444444444444444444444444444444",
+          "url": "https://api.github.com/repos/robotland/test/git/trees/0acbabe244444444444444444444444444444444"
+        },
+        "url": "https://api.github.com/repos/robotland/test/git/commits/0acbabe244444444444444444444444444444444",
+        "comment_count": 0,
+        "verification": {
+          "verified": false,
+          "reason": "unsigned",
+          "signature": null,
+          "payload": null
+        }
+      },
+      "url": "https://api.github.com/repos/robotland/test/commits/0acbabe244444444444444444444444444444444",
+      "html_url": "https://github.com/robotland/test/commit/0acbabe244444444444444444444444444444444",
+      "comments_url": "https://api.github.com/repos/robotland/test/commits/0acbabe244444444444444444444444444444444/comments",
+      "author": {
+        "login": "Tyranisaur",
+        "id": 2452571,
+        "avatar_url": "https://avatars.githubusercontent.com/u/2452571?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/Tyranisaur",
+        "html_url": "https://github.com/Tyranisaur",
+        "type": "User",
+        "site_admin": false
+      },
+      "committer": {
+        "login": "Tyranisaur",
+        "id": 2452571,
+        "avatar_url": "https://avatars.githubusercontent.com/u/2452571?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/Tyranisaur",
+        "html_url": "https://github.com/Tyranisaur",
+        "type": "User",
+        "site_admin": false
+      },
+      "parents": [
+        {
+          "sha": "0acbabe233333333333333333333333333333333",
+          "url": "https://api.github.com/repos/robotland/test/commits/0acbabe233333333333333333333333333333333",
+          "html_url": "https://github.com/robotland/test/commit/0acbabe233333333333333333333333333333333"
+        }
+      ]
+    },
+    {
+      "sha": "abc123def456abc123def456abc123def456abc1",
+      "commit": {
+        "author": {
+          "name": "Henrique Gemignani",
+          "email": "henrique@example.com",
+          "date": "2026-01-14T09:12:33Z"
+        },
+        "committer": {
+          "name": "GitHub",
+          "email": "noreply@github.com",
+          "date": "2026-01-14T09:12:33Z"
+        },
+        "message": "Merge pull request #113 from Tyranisaur/refactor",
+        "tree": {
+          "sha": "7ee023def456abc123def456abc123def456abc1",
+          "url": "https://api.github.com/repos/robotland/test/git/trees/abc123def456abc123def456abc123def456abc1"
+        },
+        "url": "https://api.github.com/repos/robotland/test/git/commits/abc123def456abc123def456abc123def456abc1",
+        "comment_count": 0,
+        "verification": {
+          "verified": true,
+          "reason": "valid",
+          "signature": null,
+          "payload": null
+        }
+      },
+      "url": "https://api.github.com/repos/robotland/test/commits/abc123def456abc123def456abc123def456abc1",
+      "html_url": "https://github.com/robotland/test/commit/abc123def456abc123def456abc123def456abc1",
+      "comments_url": "https://api.github.com/repos/robotland/test/commits/abc123def456abc123def456abc123def456abc1/comments",
+      "author": {
+        "login": "dyceron",
+        "id": 8286327,
+        "avatar_url": "https://avatars.githubusercontent.com/u/8286327?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/dyceron",
+        "html_url": "https://github.com/dyceron",
+        "type": "User",
+        "site_admin": false
+      },
+      "committer": {
+        "login": "web-flow",
+        "id": 19864447,
+        "avatar_url": "https://avatars.githubusercontent.com/u/19864447?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/web-flow",
+        "html_url": "https://github.com/web-flow",
+        "type": "User",
+        "site_admin": false
+      },
+      "parents": [
+        {
+          "sha": "607c64cd8e37eb2db939f99a17bee5c7d1a90a31",
+          "url": "https://api.github.com/repos/robotland/test/commits/607c64cd8e37eb2db939f99a17bee5c7d1a90a31",
+          "html_url": "https://github.com/robotland/test/commit/607c64cd8e37eb2db939f99a17bee5c7d1a90a31"
+        },
+        {
+          "sha": "0acbabe244444444444444444444444444444444",
+          "url": "https://api.github.com/repos/robotland/test/commits/0acbabe244444444444444444444444444444444",
+          "html_url": "https://github.com/robotland/test/commit/0acbabe244444444444444444444444444444444"
+        }
+      ]
+    }
+  ]
+}
