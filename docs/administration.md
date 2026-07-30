@@ -30,6 +30,10 @@ entries under **Repository permissions** and lists **Members** under
 
 <!-- markdownlint-enable MD013 -->
 
+The app publishes DCO results through the Checks API. The `statuses`
+permission is not requested, and self-hosted deployments should not expect the
+app to fall back to commit statuses when check creation fails.
+
 ## Required event subscriptions
 
 In GitHub's "Subscribe to events" list, use the display label shown in the

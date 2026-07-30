@@ -16,15 +16,6 @@ Object {
 }
 `;
 
-exports[`dco merge_group event falls back to status API when check-runs returns 403 1`] = `
-Object {
-  "context": "DCO",
-  "description": "The sign-off is missing.",
-  "state": "failure",
-  "target_url": "https://github.com/probot/dco#how-it-works",
-}
-`;
-
 exports[`dco pull_request event allowRemediationCommits.thirdParty: true creates a failing check with remidiation instructions 1`] = `
 Object {
   "actions": Array [
@@ -321,15 +312,6 @@ Commit sha: [<other ](https://github.com/robotland/test/pull/113/commits/<other 
 }
 `;
 
-exports[`dco pull_request event creates a error status if app has no access to checks 1`] = `
-Object {
-  "context": "DCO",
-  "description": "The sign-off is missing.",
-  "state": "failure",
-  "target_url": "https://github.com/probot/dco#how-it-works",
-}
-`;
-
 exports[`dco pull_request event creates a failing check 1`] = `
 Object {
   "actions": Array [
@@ -397,15 +379,6 @@ Object {
   },
   "started_at": "2018-07-14T18:18:54.156Z",
   "status": "completed",
-}
-`;
-
-exports[`dco pull_request event creates a passing status if app has no access to checks 1`] = `
-Object {
-  "context": "DCO",
-  "description": "All commits are signed off!",
-  "state": "success",
-  "target_url": "https://github.com/probot/dco#how-it-works",
 }
 `;
 

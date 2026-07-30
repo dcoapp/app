@@ -27,6 +27,7 @@ module.exports = (app) => {
     let commits;
     let dcoFailed;
     let allowRemediationCommits;
+    let noPullRequestCommits = false;
     try {
       const config = await context.config("dco.yml", {
         require: {
@@ -50,27 +51,17 @@ module.exports = (app) => {
         commits = compare.data.commits;
       } else {
         commits = await listPullRequestCommits(context, pr);
-        if (commits.length === 0) {
-          await reportDCO(context, {
-            sha,
-            ref,
-            timeStart,
-            conclusion: "neutral",
-            summary:
-              "The DCO check could not be evaluated because GitHub returned no commits for this pull request.\n\nPlease retry by re-running the check or pushing a new commit.",
-            statusState: "error",
-            statusDescription: "No pull request commits were returned.",
-          });
-          return;
-        }
+        noPullRequestCommits = commits.length === 0;
       }
 
-      dcoFailed = await getDCOStatus(
-        commits,
-        requireMembers(requireForMembers, context),
-        pr.html_url,
-        allowRemediationCommits
-      );
+      if (!noPullRequestCommits) {
+        dcoFailed = await getDCOStatus(
+          commits,
+          requireMembers(requireForMembers, context),
+          pr.html_url,
+          allowRemediationCommits
+        );
+      }
     } catch (error) {
       context.log.error(error, "failed to evaluate DCO check");
       await reportDCO(context, {
@@ -79,7 +70,18 @@ module.exports = (app) => {
         timeStart,
         conclusion: "failure",
         summary: evaluationErrorSummary(error),
-        statusDescription: "DCO check could not be evaluated.",
+      });
+      return;
+    }
+
+    if (noPullRequestCommits) {
+      await reportDCO(context, {
+        sha,
+        ref,
+        timeStart,
+        conclusion: "neutral",
+        summary:
+          "The DCO check could not be evaluated because GitHub returned no commits for this pull request.\n\nPlease retry by re-running the check or pushing a new commit.",
       });
       return;
     }
@@ -91,8 +93,6 @@ module.exports = (app) => {
         timeStart,
         conclusion: "success",
         summary: "All commits are signed off!",
-        statusState: "success",
-        statusDescription: "All commits are signed off!",
       });
     } else {
       let summary = [];
@@ -115,10 +115,6 @@ module.exports = (app) => {
         timeStart,
         conclusion: "action_required",
         summary,
-        statusDescription: dcoFailed[dcoFailed.length - 1].message.substring(
-          0,
-          140
-        ),
         actions: [
           {
             label: "Set DCO to pass",
@@ -329,16 +325,7 @@ module.exports = (app) => {
 
   async function reportDCO(
     context,
-    {
-      sha,
-      ref,
-      timeStart,
-      conclusion,
-      summary,
-      statusState = "failure",
-      statusDescription,
-      actions,
-    }
+    { sha, ref, timeStart, conclusion, summary, actions }
   ) {
     const params = {
       name: "DCO",
@@ -358,26 +345,8 @@ module.exports = (app) => {
     try {
       await context.octokit.rest.checks.create(context.repo(params));
     } catch (error) {
-      if (error.status !== 403) {
-        context.log.error(error, "failed to create DCO check");
-        throw error;
-      }
-
-      context.log.info("resource not accessible, creating status instead");
-      try {
-        await context.octokit.rest.repos.createCommitStatus(
-          context.repo({
-            sha,
-            context: "DCO",
-            state: statusState,
-            description: statusDescription,
-            target_url: "https://github.com/probot/dco#how-it-works",
-          })
-        );
-      } catch (statusError) {
-        context.log.error(statusError, "failed to create DCO status");
-        throw statusError;
-      }
+      context.log.error(error, "failed to create DCO check");
+      throw error;
     }
   }
 
@@ -419,7 +388,6 @@ Please retry by re-running the check or pushing a new commit.`;
         summary: `The DCO check could not be evaluated because the merge group head ref has an unrecognized format: ${mergeGroup.head_ref}.
 
 A maintainer can retry the merge queue entry. If this keeps happening, please report the merge group payload to the DCO app maintainers.`,
-        statusDescription: "Unrecognized merge group head ref.",
       });
       return;
     }
@@ -446,7 +414,6 @@ A maintainer can retry the merge queue entry. If this keeps happening, please re
         summary: `The DCO check could not be evaluated because ${reason}.
 
 A maintainer can retry the merge queue entry after confirming the pull request still exists and the DCO app can access it.`,
-        statusDescription: `Could not fetch PR #${prNumber}.`,
       });
       return;
     }
@@ -476,7 +443,6 @@ A maintainer can retry the merge queue entry after confirming the pull request s
         conclusion: "failure",
         summary:
           "The DCO check could not be evaluated because this check run is not associated with a pull request.\n\nPlease retry by pushing a new commit or opening a pull request with this commit.",
-        statusDescription: "DCO check is not associated with a pull request.",
       });
       return;
     }
@@ -499,7 +465,6 @@ A maintainer can retry the merge queue entry after confirming the pull request s
         summary: `The DCO check could not be evaluated because pull request #${pullRequest.number} could not be fetched.
 
 Please retry by re-running the check or pushing a new commit.`,
-        statusDescription: `Could not fetch PR #${pullRequest.number}.`,
       });
       return;
     }
@@ -515,8 +480,6 @@ Please retry by re-running the check or pushing a new commit.`,
 Current pull request head: ${pr.head.sha}
 
 Please use the DCO check on the current pull request head, or push a new commit to trigger a fresh check.`,
-        statusState: "success",
-        statusDescription: "This commit has been superseded.",
       });
       return;
     }

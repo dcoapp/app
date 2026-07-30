@@ -83,6 +83,22 @@ function graphQLCommits(commits, pageInfo, options = {}) {
   };
 }
 
+function expectCommitStatusNotCalled(path) {
+  let called = false;
+  const scope = nock("https://api.github.com")
+    .post(path)
+    .reply(() => {
+      called = true;
+      return [201];
+    });
+
+  return () => {
+    expect(called).toBe(false);
+    expect(scope.isDone()).toBe(false);
+    nock.cleanAll();
+  };
+}
+
 function expectIncompleteCommitListCheck(body) {
   body.started_at = "2018-07-14T18:18:54.156Z";
   body.completed_at = "2018-07-14T18:18:54.156Z";
@@ -175,7 +191,10 @@ describe("dco", () => {
       expect(mock.activeMocks()).toStrictEqual([]);
     });
 
-    test("creates a passing status if app has no access to checks", async () => {
+    test("rethrows when passing check creation returns 403", async () => {
+      const assertCommitStatusNotCalled = expectCommitStatusNotCalled(
+        "/repos/octocat/Hello-World/statuses/34c5c7793cb3b279e22454cb6750c80560547b3a"
+      );
       const mock = nock("https://api.github.com")
         .get("/repos/octocat/Hello-World/contents/.github%2Fdco.yml")
         .reply(404)
@@ -187,21 +206,16 @@ describe("dco", () => {
         .reply(200, compareSuccessCommits)
 
         .post("/repos/octocat/Hello-World/check-runs")
-        .reply(403)
+        .reply(403);
 
-        .post(
-          "/repos/octocat/Hello-World/statuses/34c5c7793cb3b279e22454cb6750c80560547b3a",
-          (body) => {
-            expect(body).toMatchSnapshot();
-
-            return true;
-          }
-        )
-        .reply(201);
-
-      await probot.receive({ name: "pull_request", payload: payloadSuccess });
+      await expect(
+        probot.receive({ name: "pull_request", payload: payloadSuccess })
+      ).rejects.toMatchObject({
+        errors: [expect.objectContaining({ status: 403 })],
+      });
 
       expect(mock.activeMocks()).toStrictEqual([]);
+      assertCommitStatusNotCalled();
     });
 
     test("creates a failing check when commits cannot be listed", async () => {
@@ -998,8 +1012,9 @@ describe("dco", () => {
 
         .get("/repos/robotland/test/pulls/113/commits")
         .query({ per_page: "100" })
-        .reply(200, [])
+        .reply(200, []);
 
+      const checkRunMock = nock("https://api.github.com")
         .post("/repos/robotland/test/check-runs", (body) => {
           body.started_at = "2018-07-14T18:18:54.156Z";
           body.completed_at = "2018-07-14T18:18:54.156Z";
@@ -1021,6 +1036,59 @@ describe("dco", () => {
       await probot.receive({ name: "pull_request", payload });
 
       expect(mock.activeMocks()).toStrictEqual([]);
+      expect(checkRunMock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("rethrows when no-commit check creation returns 403", async () => {
+      let checkRunRequests = 0;
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+        .reply(404)
+        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
+        .reply(404)
+
+        .get("/repos/robotland/test/pulls/113/commits")
+        .query({ per_page: "100" })
+        .reply(200, []);
+
+      const checkRunMock = nock("https://api.github.com")
+        .post("/repos/robotland/test/check-runs", (body) => {
+          checkRunRequests += 1;
+          expect(body).toMatchObject({
+            conclusion: "neutral",
+            head_branch: "dco-test",
+            head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
+            name: "DCO",
+            status: "completed",
+          });
+          expect(body.output.summary).toContain("returned no commits");
+          return true;
+        })
+        .reply(403);
+
+      const unmatchedCheckRunRequests = [];
+      const onNoMatch = (request) => {
+        const path = request.path || request.options?.path || request.href;
+        if (path?.includes("/repos/robotland/test/check-runs")) {
+          unmatchedCheckRunRequests.push(path);
+        }
+      };
+      nock.emitter.on("no match", onNoMatch);
+
+      try {
+        await expect(
+          probot.receive({ name: "pull_request", payload })
+        ).rejects.toMatchObject({
+          errors: [expect.objectContaining({ status: 403 })],
+        });
+      } finally {
+        nock.emitter.removeListener("no match", onNoMatch);
+      }
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+      expect(checkRunMock.activeMocks()).toStrictEqual([]);
+      expect(unmatchedCheckRunRequests).toStrictEqual([]);
+      expect(checkRunRequests).toBe(1);
     });
 
     test("evaluates commits from paginated pull request commits", async () => {
@@ -1121,7 +1189,7 @@ describe("dco", () => {
       expect(mock.activeMocks()).toStrictEqual([]);
     });
 
-    test("rethrows when the failure status cannot be created", async () => {
+    test("rethrows when the failure check returns 403", async () => {
       const mock = nock("https://api.github.com")
         .get("/repos/robotland/test/contents/.github%2Fdco.yml")
         .reply(404)
@@ -1136,21 +1204,21 @@ describe("dco", () => {
         })
 
         .post("/repos/robotland/test/check-runs")
-        .reply(403)
-
-        .post(
-          "/repos/robotland/test/statuses/e76ed6025cec8879c75454a6efd6081d46de4c94"
-        )
         .reply(403);
 
       await expect(
         probot.receive({ name: "pull_request", payload })
-      ).rejects.toThrow();
+      ).rejects.toMatchObject({
+        errors: [expect.objectContaining({ status: 403 })],
+      });
 
       expect(mock.activeMocks()).toStrictEqual([]);
     });
 
-    test("creates a error status if app has no access to checks", async () => {
+    test("rethrows when failing check creation returns 403", async () => {
+      const assertCommitStatusNotCalled = expectCommitStatusNotCalled(
+        "/repos/robotland/test/statuses/e76ed6025cec8879c75454a6efd6081d46de4c94"
+      );
       const mock = nock("https://api.github.com")
         .get("/repos/robotland/test/contents/.github%2Fdco.yml")
         .reply(404)
@@ -1162,21 +1230,16 @@ describe("dco", () => {
         .reply(200, compare.commits)
 
         .post("/repos/robotland/test/check-runs")
-        .reply(403)
+        .reply(403);
 
-        .post(
-          "/repos/robotland/test/statuses/e76ed6025cec8879c75454a6efd6081d46de4c94",
-          (body) => {
-            expect(body).toMatchSnapshot();
-
-            return true;
-          }
-        )
-        .reply(201);
-
-      await probot.receive({ name: "pull_request", payload });
+      await expect(
+        probot.receive({ name: "pull_request", payload })
+      ).rejects.toMatchObject({
+        errors: [expect.objectContaining({ status: 403 })],
+      });
 
       expect(mock.activeMocks()).toStrictEqual([]);
+      assertCommitStatusNotCalled();
     });
 
     describe("with custom configuration", () => {
@@ -1954,7 +2017,10 @@ allowRemediationCommits:
       expect(mock.activeMocks()).toStrictEqual([]);
     });
 
-    test("falls back to status API when check-runs returns 403", async () => {
+    test("rethrows when check-runs returns 403", async () => {
+      const assertCommitStatusNotCalled = expectCommitStatusNotCalled(
+        "/repos/robotland/test/statuses/abc123def456abc123def456abc123def456abc1"
+      );
       const mock = nock("https://api.github.com")
         .get("/repos/robotland/test/pulls/113")
         .reply(200, payload.pull_request)
@@ -1970,20 +2036,16 @@ allowRemediationCommits:
         .reply(200, compare)
 
         .post("/repos/robotland/test/check-runs")
-        .reply(403)
+        .reply(403);
 
-        .post(
-          "/repos/robotland/test/statuses/abc123def456abc123def456abc123def456abc1",
-          (body) => {
-            expect(body).toMatchSnapshot();
-            return true;
-          }
-        )
-        .reply(201);
-
-      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+      await expect(
+        probot.receive({ name: "merge_group", payload: mergeGroupPayload })
+      ).rejects.toMatchObject({
+        errors: [expect.objectContaining({ status: 403 })],
+      });
 
       expect(mock.activeMocks()).toStrictEqual([]);
+      assertCommitStatusNotCalled();
     });
 
     test("creates a failing check when compare commits fails", async () => {
