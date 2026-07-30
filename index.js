@@ -2,12 +2,15 @@
 // SPDX-License-Identifier: ISC
 
 const getDCOStatus = require("./lib/dco.js");
+const hasSignoffTrailer = require("./lib/hasSignoffTrailer.js");
 const requireMembers = require("./lib/requireMembers.js");
 
 // GitHub documents a 250-commit cap on the pull request commits REST endpoint.
 const PULL_REQUEST_COMMITS_REST_LIMIT = 250;
 const PULL_REQUEST_COMMITS_GRAPHQL_PAGE_SIZE = 100;
 const PULL_REQUEST_COMMITS_GRAPHQL_PAGE_MARGIN = 1;
+// The compare endpoint returns at most 250 commits per page.
+const COMPARE_COMMITS_PAGE_SIZE = 100;
 
 /**
  * @param {import('probot').Probot} app
@@ -18,7 +21,7 @@ module.exports = (app) => {
   async function check(
     context,
     pr = context.payload.pull_request,
-    { reportSha, reportRef, baseSha, headSha } = {}
+    { reportSha, reportRef, mergeGroup } = {}
   ) {
     const timeStart = new Date();
     const sha = reportSha || pr.head.sha;
@@ -26,6 +29,7 @@ module.exports = (app) => {
 
     let commits;
     let dcoFailed;
+    let synthesizedFailed = [];
     let allowRemediationCommits;
     let noPullRequestCommits = false;
     try {
@@ -41,14 +45,12 @@ module.exports = (app) => {
       const requireForMembers = config.require.members;
       allowRemediationCommits = config.allowRemediationCommits;
 
-      if (baseSha && headSha) {
-        const compare = await context.octokit.rest.repos.compareCommits(
-          context.repo({
-            base: baseSha,
-            head: headSha,
-          })
-        );
-        commits = compare.data.commits;
+      if (mergeGroup) {
+        ({ commits, synthesizedFailed } = await inspectMergeGroup(
+          context,
+          pr,
+          mergeGroup
+        ));
       } else {
         commits = await listPullRequestCommits(context, pr);
         noPullRequestCommits = commits.length === 0;
@@ -86,7 +88,9 @@ module.exports = (app) => {
       return;
     }
 
-    if (!dcoFailed.length) {
+    const allFailed = synthesizedFailed.concat(dcoFailed);
+
+    if (!allFailed.length) {
       await reportDCO(context, {
         sha,
         ref,
@@ -96,7 +100,7 @@ module.exports = (app) => {
       });
     } else {
       let summary = [];
-      dcoFailed.forEach(function (commit) {
+      allFailed.forEach(function (commit) {
         summary.push(
           `Commit sha: [${commit.sha.substr(0, 7)}](${commit.url}), Author: ${
             commit.author
@@ -105,9 +109,24 @@ module.exports = (app) => {
       });
       summary = summary.join("\n");
 
-      summary =
-        handleCommits(pr, commits.length, dcoFailed, allowRemediationCommits) +
-        `\n\n### Summary\n\n${summary}`;
+      // The remediation boilerplate is addressed to the contributor, so it is
+      // only emitted for the failures the contributor can actually act on. A
+      // merge queue commit missing its trailer is a repository configuration
+      // problem and gets its own explanation instead.
+      let guidance = "";
+      if (dcoFailed.length) {
+        guidance += handleCommits(
+          pr,
+          commits.length,
+          dcoFailed,
+          allowRemediationCommits
+        );
+      }
+      if (synthesizedFailed.length) {
+        guidance += mergeQueueSignoffSummary(dcoFailed.length > 0);
+      }
+
+      summary = `${guidance}\n\n### Summary\n\n${summary}`;
 
       await reportDCO(context, {
         sha,
@@ -115,15 +134,141 @@ module.exports = (app) => {
         timeStart,
         conclusion: "action_required",
         summary,
-        actions: [
-          {
-            label: "Set DCO to pass",
-            description: "would set status to passing",
-            identifier: "override",
-          },
-        ],
+        // The "Set DCO to pass" action resolves a check run back to its pull
+        // request, and check_run.pull_requests is empty for merge group check
+        // runs, so the override is offered on pull requests only.
+        actions: mergeGroup
+          ? undefined
+          : [
+              {
+                label: "Set DCO to pass",
+                description: "would set status to passing",
+                identifier: "override",
+              },
+            ],
       });
     }
+  }
+
+  // Classifies the commits in a merge group's compare range.
+  //
+  // GitHub's merge queue does not merge the pull request's own commits: it
+  // builds new ones. Under the squash strategy the synthesized commit's author
+  // identity comes from the GitHub *account* (display name, and an
+  // `<id>+<login>@users.noreply.github.com` address when email privacy is on),
+  // while the `Signed-off-by` trailer is carried over verbatim from the
+  // original commit and still holds the original *git* identity. Requiring
+  // those to match is unsatisfiable, so the certification is evaluated against
+  // the pull request's own commits and the synthesized commits are only
+  // asserted to still carry a trailer.
+  //
+  // A range commit is SYNTHESIZED if and only if its sha is absent from the
+  // resolved pull request's commit list. Committer shape is deliberately not
+  // used: a commit made through the GitHub web editor is indistinguishable
+  // from a squashed merge queue commit by that measure (one parent, committer
+  // `GitHub <noreply@github.com>`, committer login `web-flow`) and would be
+  // silently downgraded from identity matching to presence only.
+  async function inspectMergeGroup(context, pr, mergeGroup) {
+    const rangeCommits = await listMergeGroupRangeCommits(context, mergeGroup);
+
+    const commits = await listPullRequestCommits(context, pr);
+    if (commits.length === 0) {
+      // Fail closed. The pull request commits are the only place the sign-off
+      // certification can be verified, so without them there is no verdict.
+      const error = new Error(
+        `GitHub returned no commits for pull request #${pr.number}.`
+      );
+      error.emptyMergeGroupCommitList = true;
+      throw error;
+    }
+
+    const prShas = new Set(commits.map((commit) => commit.sha));
+    const synthesizedFailed = [];
+
+    for (const commit of rangeCommits) {
+      // A genuine pull request commit: evaluated with full identity matching.
+      if (prShas.has(commit.sha)) continue;
+      // The merge strategy's two-parent head, authored by whoever enqueued the
+      // pull request and carrying no sign-off of its own.
+      if (commit.parents.length > 1) continue;
+      if (commit.author?.type === "Bot") continue;
+      // The rebase strategy is assumed to produce one rewritten copy of each
+      // original commit, each retaining its trailer. That shape is an
+      // assumption: no public repository using a merge queue with the rebase
+      // strategy was found to verify it against.
+      if (hasSignoffTrailer(commit.commit.message)) continue;
+
+      synthesizedFailed.push({
+        sha: commit.sha,
+        // A synthesized commit is by definition absent from the pull request's
+        // commit list, so the /pull/<n>/commits/<sha> form lib/dco.js uses for
+        // genuine pull request commits would 404. The compare payload already
+        // carries the authoritative /commit/<sha> link.
+        url: commit.html_url,
+        author: commit.commit.author.name,
+        email: commit.commit.author.email,
+        committer: commit.commit.committer.name,
+        message:
+          "The merge queue built this commit without a Signed-off-by trailer.",
+      });
+    }
+
+    return { commits, synthesizedFailed };
+  }
+
+  // The compare endpoint caps its `commits` array, so under the merge strategy
+  // a large pull request truncates the range. Every commit in the range has to
+  // be seen for the "no synthesized commit lost its trailer" invariant to hold,
+  // so page until the whole range is collected.
+  //
+  // octokit's paginate() cannot be used here: this endpoint returns an object
+  // rather than an array, and normalizePaginatedListResponse mangles it (it
+  // mistakes `status: "ahead"` for the namespaced list key and throws). Page
+  // manually instead.
+  async function listMergeGroupRangeCommits(context, mergeGroup) {
+    // Keyed on sha: dedupes and preserves insertion order in one structure.
+    // Counting raw entries instead would let a compare endpoint that ignored
+    // the `page` parameter satisfy the completeness check with duplicates of
+    // page 1, defeating the fail-closed backstop with the same inflated count
+    // the backstop relies on.
+    const commits = new Map();
+    let totalCommits = 0;
+    let page = 1;
+
+    for (;;) {
+      const response = await context.octokit.rest.repos.compareCommits(
+        context.repo({
+          base: mergeGroup.base_sha,
+          head: mergeGroup.head_sha,
+          per_page: COMPARE_COMMITS_PAGE_SIZE,
+          page,
+        })
+      );
+
+      totalCommits = response.data.total_commits;
+      const seenBefore = commits.size;
+      for (const commit of response.data.commits) {
+        commits.set(commit.sha, commit);
+      }
+
+      if (commits.size >= totalCommits) break;
+      // An iteration that adds no new commit would otherwise loop forever.
+      // This covers both an empty page and a page repeated verbatim; the
+      // shortfall check below then fails the group closed.
+      if (commits.size === seenBefore) break;
+
+      page += 1;
+    }
+
+    if (commits.size < totalCommits) {
+      const error = new Error(
+        `GitHub returned ${commits.size} of ${totalCommits} merge group commits.`
+      );
+      error.truncatedMergeGroupRange = true;
+      throw error;
+    }
+
+    return [...commits.values()];
   }
 
   async function listPullRequestCommits(context, pr) {
@@ -353,6 +498,22 @@ module.exports = (app) => {
   function evaluationErrorSummary(error) {
     const requestId =
       error.response?.headers?.["x-github-request-id"] || "unavailable";
+    if (error.emptyMergeGroupCommitList) {
+      return `The DCO check could not be evaluated because GitHub returned no commits for the pull request in this merge group.
+
+The sign-off certification is verified against the pull request's own commits, so without them there is no verdict to report.
+
+Please retry by re-running the check or removing and re-adding the pull request to the merge queue.`;
+    }
+    if (error.truncatedMergeGroupRange) {
+      // Internally detected: every compare request can have succeeded, so
+      // there is no meaningful HTTP status or request ID to report here.
+      return `The DCO check could not be evaluated because the complete merge group commit range could not be retrieved.
+
+Every commit in the range has to be examined before the merge group can be certified, so a partial range gives no verdict.
+
+Please retry by re-running the check, or by removing and re-adding the pull request to the merge queue.`;
+    }
     if (error.incompleteCommitList) {
       return `The DCO check could not be evaluated because the complete pull request commit list could not be retrieved.
 
@@ -422,10 +583,18 @@ A maintainer can retry the merge queue entry after confirming the pull request s
       // Report the check result on the merge group's temporary merge commit.
       reportSha,
       reportRef,
-      // Compare the full merge group range so all batched PRs are validated.
-      // headSha equals reportSha: both target the merge group head commit.
-      baseSha: mergeGroup.base_sha,
-      headSha: mergeGroup.head_sha,
+      // merge_group.base_sha is the PARENT of the merge group head, so the
+      // compare range always covers exactly one pull request. Batching does
+      // not put several pull requests in one group: GitHub chains one group
+      // per pull request, each based on the previous group's head. Sampled
+      // across five live merge queues, all 251 distinct gh-readonly-queue
+      // refs carried exactly one pr-<number>-<sha> segment.
+      //
+      // Range cardinality still varies by the queue's merge method: squash
+      // yields a single synthesized commit, merge yields the pull request's
+      // own commits plus a two-parent head, and rebase yields one rewritten
+      // copy per original commit.
+      mergeGroup,
     });
   });
 
@@ -537,6 +706,42 @@ Please use the DCO check on the current pull request head, or push a new commit 
     );
   }
 };
+
+// The reassurance that contributors need do nothing is only true when the
+// merge queue commit is the *sole* failure. When the pull request's own
+// commits also failed, that line would contradict the remediation
+// instructions rendered directly above it and tell a contributor with
+// genuinely unsigned commits to ignore a real problem, so a variant that
+// names both problems separately is emitted instead.
+function mergeQueueSignoffSummary(prCommitsAlsoFailed) {
+  const preamble = prCommitsAlsoFailed
+    ? `There are **two separate problems** here, and fixing either one alone is not enough.
+
+**1. The contributor** must sign off the pull request commits listed above, following the instructions in that section.
+
+**2. Separately, a maintainer** should check the repository's configuration: GitHub's merge queue does not merge the pull request's commits, it builds a new one, and the commit it built does not carry a \`Signed-off-by\` trailer either. Even once the pull request commits are signed off, the trailer would be dropped again unless this is also corrected.`
+    : `**Contributors do not need to change anything.** This is a repository configuration problem, not a problem with the contribution.
+
+The pull request's own commits are signed off, but GitHub's merge queue does not merge those commits: it builds a new one. The commit the merge queue built does not carry a \`Signed-off-by\` trailer, so the sign-off certification could not be carried through to what would actually be merged.`;
+
+  return `---
+
+### The merge queue commit is missing a \`Signed-off-by\` trailer
+
+${preamble}
+
+Most commonly this is caused by the repository's squash commit message setting, so a maintainer should check that first:
+
+1. Open **Settings → General → Pull Requests** for this repository.
+1. Under **Allow squash merging**, look at the default commit message. *Pull request title and description* (\`squash_merge_commit_message: PR_BODY\`) and *Default to pull request title* (\`squash_merge_commit_message: BLANK\`) both discard the original commit messages, and with them every \`Signed-off-by\` trailer.
+1. Set it to **Default to pull request title and commit details** (\`squash_merge_commit_message: COMMIT_MESSAGES\`), then remove this pull request from the merge queue and re-queue it.
+
+If that setting already looks right, something else is rewriting the commit message on the way into the queue. Any merge method or automation that replaces the message rather than preserving it will drop the trailer the same way.
+
+---
+
+`;
+}
 
 function handleCommits(pr, commitLength, dcoFailed, allowRemediationCommits) {
   let returnMessage = "";

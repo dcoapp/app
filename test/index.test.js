@@ -11,6 +11,16 @@ const checkRunRerequestedPayload = require("./fixtures/check_run.rerequested");
 const pullRequestReviewPayload = require("./fixtures/pull_request_review.submitted");
 const pullRequestReviewCommentPayload = require("./fixtures/pull_request_review_comment.created");
 const mergeGroupPayload = require("./fixtures/merge_group.checks_requested");
+const mergeQueuePrCommits = require("./fixtures/merge-queue-pr-commits");
+const mergeQueueSquashSigned = require("./fixtures/merge-queue-squash-signed");
+const mergeQueueSquashUnsigned = require("./fixtures/merge-queue-squash-unsigned");
+const mergeQueueSquashFabricated = require("./fixtures/merge-queue-squash-fabricated");
+const mergeQueueNoreplyPrCommits = require("./fixtures/merge-queue-noreply-pr-commits");
+const mergeQueueNoreplySquash = require("./fixtures/merge-queue-noreply-squash");
+const mergeQueueMergePrCommits = require("./fixtures/merge-queue-merge-pr-commits");
+const mergeQueueMergeRange = require("./fixtures/merge-queue-merge-range");
+const mergeQueueRebaseRange = require("./fixtures/merge-queue-rebase-range");
+const mergeQueueBotSquash = require("./fixtures/merge-queue-bot-squash");
 const compare = require("./fixtures/compare");
 const compareSuccess = require("./fixtures/compare-success");
 const compareSuccessCommits = compareSuccess.commits.map((commit, index) =>
@@ -118,6 +128,101 @@ function expectIncompleteCommitListCheck(body) {
   expect(body.output.summary).toContain("verdict is unknown");
   expect(body.output.summary).not.toContain("All commits are signed");
   return true;
+}
+
+const MERGE_GROUP_HEAD_SHA = "abc123def456abc123def456abc123def456abc1";
+const MERGE_GROUP_BRANCH =
+  "gh-readonly-queue/master/pr-113-607c64cd8e37eb2db939f99a17bee5c7d1a90a31";
+const MERGE_GROUP_COMPARE_PATH = `/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...${MERGE_GROUP_HEAD_SHA}`;
+const COMPARE_PAGE_1 = { per_page: "100", page: "1" };
+const COMPARE_PAGE_2 = { per_page: "100", page: "2" };
+
+function normalizeTimes(body) {
+  body.started_at = "2018-07-14T18:18:54.156Z";
+  body.completed_at = "2018-07-14T18:18:54.156Z";
+}
+
+function mergeGroupCheck(conclusion) {
+  return {
+    conclusion,
+    head_branch: MERGE_GROUP_BRANCH,
+    head_sha: MERGE_GROUP_HEAD_SHA,
+    name: "DCO",
+    output: {
+      title: "DCO",
+    },
+    status: "completed",
+  };
+}
+
+function stripSignoffs(commits) {
+  return commits.map((entry) => ({
+    ...entry,
+    commit: {
+      ...entry.commit,
+      message: entry.commit.message.replace(/\n*^Signed-off-by:.*$/gim, ""),
+    },
+  }));
+}
+
+function renameCommit(source, sha) {
+  return {
+    ...source,
+    sha,
+    url: `https://api.github.com/repos/robotland/test/commits/${sha}`,
+    html_url: `https://github.com/robotland/test/commit/${sha}`,
+  };
+}
+
+function mismatchSignoffs(commits) {
+  return commits.map((entry) => ({
+    ...entry,
+    commit: {
+      ...entry.commit,
+      message: entry.commit.message.replace(
+        /^Signed-off-by:.*$/gim,
+        "Signed-off-by: Someone Else <someone@example.com>"
+      ),
+    },
+  }));
+}
+
+function mergeQueueMocks({
+  compare: compareResponse,
+  prCommits,
+  config,
+  assert,
+}) {
+  let scope = nock("https://api.github.com")
+    .get("/repos/robotland/test/pulls/113")
+    .reply(200, payload.pull_request);
+
+  if (config) {
+    scope = scope
+      .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+      .reply(200, config);
+  } else {
+    scope = scope
+      .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+      .reply(404)
+      .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
+      .reply(404);
+  }
+
+  return scope
+    .get(MERGE_GROUP_COMPARE_PATH)
+    .query(COMPARE_PAGE_1)
+    .reply(200, compareResponse)
+
+    .get("/repos/robotland/test/pulls/113/commits")
+    .query({ per_page: "100" })
+    .reply(200, prCommits)
+
+    .post("/repos/robotland/test/check-runs", (body) => {
+      normalizeTimes(body);
+      return assert(body);
+    })
+    .reply(200);
 }
 
 nock.disableNetConnect();
@@ -1948,31 +2053,338 @@ allowRemediationCommits:
 
   describe("merge_group event", () => {
     test("creates a failing check on merge queue entry", async () => {
+      const mock = mergeQueueMocks({
+        compare: mergeQueueSquashUnsigned,
+        prCommits: stripSignoffs(mergeQueuePrCommits),
+        assert(body) {
+          expect(body).toMatchObject(mergeGroupCheck("action_required"));
+          expect(body.actions).toBeUndefined();
+          return true;
+        },
+      });
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("P1: passes when the squash commit only diverges by name", async () => {
+      const mock = mergeQueueMocks({
+        compare: mergeQueueSquashSigned,
+        prCommits: mergeQueuePrCommits,
+        assert(body) {
+          expect(body).toMatchObject(mergeGroupCheck("success"));
+          expect(body.output.summary).toBe("All commits are signed off!");
+          return true;
+        },
+      });
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("P2: passes when the squash commit diverges by name and email", async () => {
+      const mock = mergeQueueMocks({
+        compare: mergeQueueNoreplySquash,
+        prCommits: mergeQueueNoreplyPrCommits,
+        assert(body) {
+          expect(body).toMatchObject(mergeGroupCheck("success"));
+          expect(body.output.summary).toBe("All commits are signed off!");
+          return true;
+        },
+      });
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("P3: passes a merge strategy range with a two-parent head", async () => {
+      const mock = mergeQueueMocks({
+        compare: mergeQueueMergeRange,
+        prCommits: mergeQueueMergePrCommits,
+        assert(body) {
+          expect(body).toMatchObject(mergeGroupCheck("success"));
+          return true;
+        },
+      });
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("P4: passes a rebase shaped range that retains its trailers", async () => {
+      const mock = mergeQueueMocks({
+        compare: mergeQueueRebaseRange,
+        prCommits: mergeQueuePrCommits,
+        assert(body) {
+          expect(body).toMatchObject(mergeGroupCheck("success"));
+          return true;
+        },
+      });
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("P5: passes a bot authored synthesized commit", async () => {
+      const mock = mergeQueueMocks({
+        compare: mergeQueueBotSquash,
+        prCommits: mergeQueuePrCommits,
+        assert(body) {
+          expect(body).toMatchObject(mergeGroupCheck("success"));
+          return true;
+        },
+      });
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("P6: passes when the range holds only genuine pull request commits", async () => {
+      const mock = mergeQueueMocks({
+        compare: { ...mergeQueueSquashSigned, commits: mergeQueuePrCommits },
+        prCommits: mergeQueuePrCommits,
+        assert(body) {
+          expect(body).toMatchObject(mergeGroupCheck("success"));
+          return true;
+        },
+      });
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("P7: passes when an individual remediation covers a queued commit", async () => {
+      const unsigned = stripSignoffs(mergeQueuePrCommits)[0];
+      const remediation = {
+        ...unsigned,
+        sha: "c0ffeec0ffeec0ffeec0ffeec0ffeec0ffeec0ff",
+        commit: {
+          ...unsigned.commit,
+          message: `Document the new backend
+
+I, mdzurick <mitch_dz@hotmail.com>, hereby add my Signed-off-by to this commit: ${unsigned.sha}
+
+Signed-off-by: mdzurick <mitch_dz@hotmail.com>`,
+        },
+      };
+
+      const mock = mergeQueueMocks({
+        config: `
+allowRemediationCommits:
+  individual: true`,
+        compare: mergeQueueSquashSigned,
+        prCommits: [unsigned, remediation],
+        assert(body) {
+          expect(body).toMatchObject(mergeGroupCheck("success"));
+          return true;
+        },
+      });
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("F1: fails when both the pull request and the squash commit are unsigned", async () => {
+      const mock = mergeQueueMocks({
+        compare: mergeQueueSquashUnsigned,
+        prCommits: stripSignoffs(mergeQueuePrCommits),
+        assert(body) {
+          expect(body).toMatchObject(mergeGroupCheck("action_required"));
+          expect(body.output.summary).toContain("The sign-off is missing.");
+          expect(body.output.summary).toContain(
+            "The merge queue built this commit without a Signed-off-by trailer."
+          );
+          // The contributor facing remediation boilerplate is still emitted,
+          // because the pull request's own commits genuinely need fixing.
+          expect(body.output.summary).toContain("git rebase HEAD~");
+          // ...and because they do, the merge queue explanation must NOT
+          // claim otherwise. Both of these are false when the pull request's
+          // own commits failed too, and the first directly contradicts the
+          // rebase instructions rendered immediately above it.
+          expect(body.output.summary).not.toContain(
+            "Contributors do not need to change anything."
+          );
+          expect(body.output.summary).not.toContain(
+            "The pull request's own commits are signed off"
+          );
+          // The variant that names both problems is emitted instead.
+          expect(body.output.summary).toContain(
+            "There are **two separate problems** here"
+          );
+          expect(body.output.summary).toContain("squash_merge_commit_message");
+          return true;
+        },
+      });
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("F2: fails when an unsigned pull request is squashed with a fabricated trailer", async () => {
+      const mock = mergeQueueMocks({
+        compare: mergeQueueSquashFabricated,
+        prCommits: stripSignoffs(mergeQueuePrCommits),
+        assert(body) {
+          expect(body.conclusion).toBe("action_required");
+          expect(body.conclusion).not.toBe("success");
+          expect(body.conclusion).not.toBe("neutral");
+          expect(body).toMatchObject(mergeGroupCheck("action_required"));
+          // Presence of a trailer on the synthesized commit must never be
+          // sufficient on its own: identity matching still runs against the
+          // pull request's own commits, and fails.
+          expect(body.output.summary).toContain("The sign-off is missing.");
+          expect(body.output.summary).toContain(
+            mergeQueuePrCommits[0].sha.substr(0, 7)
+          );
+          // The fabricated trailer WAS accepted by the presence check, so the
+          // synthesized commit raised no failure of its own. This is what
+          // pins the scenario: the verdict came from identity evaluation, not
+          // from the trailer being absent.
+          expect(body.output.summary).not.toContain(
+            "The merge queue built this commit without a Signed-off-by trailer."
+          );
+          expect(body.output.summary).not.toContain(
+            mergeQueueSquashFabricated.commits[0].sha.substr(0, 7)
+          );
+          expect(body.output.summary).not.toContain(
+            "All commits are signed off!"
+          );
+          return true;
+        },
+      });
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("F3: fails when the merge queue strips the trailer", async () => {
+      const mock = mergeQueueMocks({
+        compare: mergeQueueSquashUnsigned,
+        prCommits: mergeQueuePrCommits,
+        assert(body) {
+          expect(body).toMatchObject(mergeGroupCheck("action_required"));
+          expect(body.actions).toBeUndefined();
+          expect(body.output.summary).toContain("squash_merge_commit_message");
+          expect(body.output.summary).toContain("COMMIT_MESSAGES");
+          expect(body.output.summary).toContain(
+            "Contributors do not need to change anything."
+          );
+          expect(body.output.summary).not.toContain(
+            "There are **two separate problems** here"
+          );
+          // A synthesized commit is absent from the pull request, so the
+          // /pull/<n>/commits/<sha> link form would 404. Link to the commit.
+          expect(body.output.summary).toContain(
+            `https://github.com/robotland/test/commit/${MERGE_GROUP_HEAD_SHA}`
+          );
+          expect(body.output.summary).not.toContain("/pull/");
+          // The contributor facing remediation boilerplate is suppressed: the
+          // pull request's own commits are fine.
+          expect(body.output.summary).not.toContain("git rebase HEAD~");
+          expect(body.output.summary).not.toContain("DCO Remediation Commit");
+          return true;
+        },
+      });
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("F4: fails a pull request whose trailers do not match its authors", async () => {
+      const mock = mergeQueueMocks({
+        compare: mergeQueueSquashSigned,
+        prCommits: mismatchSignoffs(mergeQueuePrCommits),
+        assert(body) {
+          expect(body).toMatchObject(mergeGroupCheck("action_required"));
+          expect(body.output.summary).toContain(
+            'Expected "mdzurick <mitch_dz@hotmail.com>", but got "Someone Else <someone@example.com>".'
+          );
+          return true;
+        },
+      });
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("F5: fails a merge strategy range with an unsigned original", async () => {
+      const prCommits = [
+        stripSignoffs([mergeQueueMergePrCommits[0]])[0],
+        ...mergeQueueMergePrCommits.slice(1),
+      ];
+      const mock = mergeQueueMocks({
+        compare: mergeQueueMergeRange,
+        prCommits,
+        assert(body) {
+          expect(body).toMatchObject(mergeGroupCheck("action_required"));
+          expect(body.output.summary).toContain("The sign-off is missing.");
+          expect(body.output.summary).toContain(prCommits[0].sha.substr(0, 7));
+          return true;
+        },
+      });
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("F6: creates a diagnostic check for unrecognized head_ref format", async () => {
+      const unknownRefPayload = {
+        ...mergeGroupPayload,
+        merge_group: {
+          ...mergeGroupPayload.merge_group,
+          head_ref: "some-feature-branch/pr-113-abc123",
+        },
+      };
+
       const mock = nock("https://api.github.com")
-        .get("/repos/robotland/test/pulls/113")
-        .reply(200, payload.pull_request)
-
-        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
-        .reply(404)
-        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
-        .reply(404)
-
-        .get(
-          "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...abc123def456abc123def456abc123def456abc1"
-        )
-        .reply(200, compare)
-
         .post("/repos/robotland/test/check-runs", (body) => {
-          body.started_at = "2018-07-14T18:18:54.156Z";
-          body.completed_at = "2018-07-14T18:18:54.156Z";
+          normalizeTimes(body);
           expect(body).toMatchObject({
-            conclusion: "action_required",
-            head_branch:
-              "gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
-            head_sha: "abc123def456abc123def456abc123def456abc1",
+            conclusion: "failure",
+            head_branch: "some-feature-branch/pr-113-abc123",
+            head_sha: MERGE_GROUP_HEAD_SHA,
             name: "DCO",
             status: "completed",
           });
+          expect(body.output.summary).toContain(
+            "unrecognized format: some-feature-branch/pr-113-abc123"
+          );
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({
+        name: "merge_group",
+        payload: unknownRefPayload,
+      });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("F7: creates a diagnostic check when PR lookup returns 404 (not found)", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/pulls/113")
+        .reply(404)
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          normalizeTimes(body);
+          expect(body).toMatchObject(mergeGroupCheck("failure"));
+          expect(body.output.summary).toContain(
+            "pull request #113 was not found"
+          );
           return true;
         })
         .reply(200);
@@ -1982,7 +2394,75 @@ allowRemediationCommits:
       expect(mock.activeMocks()).toStrictEqual([]);
     });
 
-    test("creates a passing check on merge queue entry", async () => {
+    test("F7: creates a diagnostic check when PR lookup returns 403 (forbidden)", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/pulls/113")
+        .reply(403)
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          normalizeTimes(body);
+          expect(body).toMatchObject(mergeGroupCheck("failure"));
+          expect(body.output.summary).toContain(
+            "pull request #113 could not be accessed"
+          );
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("F7: creates a diagnostic check when PR lookup returns 422 (other error)", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/pulls/113")
+        .reply(422)
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          normalizeTimes(body);
+          expect(body).toMatchObject(mergeGroupCheck("failure"));
+          expect(body.output.summary).toContain(
+            "pull request #113 could not be fetched"
+          );
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("F8: fails closed when the pull request commit list is empty", async () => {
+      const mock = mergeQueueMocks({
+        compare: mergeQueueSquashSigned,
+        prCommits: [],
+        assert(body) {
+          expect(body).toMatchObject(mergeGroupCheck("failure"));
+          expect(body.conclusion).not.toBe("neutral");
+          expect(body.output.summary).toContain(
+            "GitHub returned no commits for the pull request in this merge group"
+          );
+          return true;
+        },
+      });
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("classifies synthesized commits from every compare page", async () => {
+      const first = renameCommit(
+        mergeQueueSquashUnsigned.commits[0],
+        "1111111111111111111111111111111111111111"
+      );
+      const second = renameCommit(
+        mergeQueueSquashUnsigned.commits[0],
+        "2222222222222222222222222222222222222222"
+      );
+
       const mock = nock("https://api.github.com")
         .get("/repos/robotland/test/pulls/113")
         .reply(200, payload.pull_request)
@@ -1992,22 +2472,216 @@ allowRemediationCommits:
         .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
         .reply(404)
 
-        .get(
-          "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...abc123def456abc123def456abc123def456abc1"
-        )
-        .reply(200, compareSuccess)
+        .get(MERGE_GROUP_COMPARE_PATH)
+        .query(COMPARE_PAGE_1)
+        .reply(200, {
+          ...mergeQueueSquashUnsigned,
+          total_commits: 2,
+          commits: [first],
+        })
+
+        .get(MERGE_GROUP_COMPARE_PATH)
+        .query(COMPARE_PAGE_2)
+        .reply(200, {
+          ...mergeQueueSquashUnsigned,
+          total_commits: 2,
+          commits: [second],
+        })
+
+        .get("/repos/robotland/test/pulls/113/commits")
+        .query({ per_page: "100" })
+        .reply(200, mergeQueuePrCommits)
 
         .post("/repos/robotland/test/check-runs", (body) => {
-          body.started_at = "2018-07-14T18:18:54.156Z";
-          body.completed_at = "2018-07-14T18:18:54.156Z";
-          expect(body).toMatchObject({
-            conclusion: "success",
-            head_branch:
-              "gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
-            head_sha: "abc123def456abc123def456abc123def456abc1",
-            name: "DCO",
-            status: "completed",
-          });
+          normalizeTimes(body);
+          expect(body).toMatchObject(mergeGroupCheck("action_required"));
+          expect(body.output.summary).toContain(first.sha.substr(0, 7));
+          expect(body.output.summary).toContain(second.sha.substr(0, 7));
+          expect(body.output.summary).toContain(
+            `https://github.com/robotland/test/commit/${second.sha}`
+          );
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("fails closed when the compare range stays truncated", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/pulls/113")
+        .reply(200, payload.pull_request)
+
+        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+        .reply(404)
+        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
+        .reply(404)
+
+        .get(MERGE_GROUP_COMPARE_PATH)
+        .query(COMPARE_PAGE_1)
+        .reply(200, {
+          ...mergeQueueSquashUnsigned,
+          total_commits: 4,
+          commits: mergeQueueSquashUnsigned.commits,
+        })
+
+        .get(MERGE_GROUP_COMPARE_PATH)
+        .query(COMPARE_PAGE_2)
+        .reply(200, {
+          ...mergeQueueSquashUnsigned,
+          total_commits: 4,
+          commits: [],
+        })
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          normalizeTimes(body);
+          expect(body).toMatchObject(mergeGroupCheck("failure"));
+          expect(body.conclusion).not.toBe("neutral");
+          expect(body.output.summary).toContain(
+            "complete merge group commit range could not be retrieved"
+          );
+          expect(body.output.summary).not.toContain(
+            "All commits are signed off!"
+          );
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("fails closed when the compare endpoint repeats a page", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/pulls/113")
+        .reply(200, payload.pull_request)
+
+        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+        .reply(404)
+        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
+        .reply(404)
+
+        // The same page content for page=1 and page=2. Counting raw entries
+        // would reach total_commits with duplicates and report success while
+        // never having seen the tail of the range.
+        .get(MERGE_GROUP_COMPARE_PATH)
+        .query(COMPARE_PAGE_1)
+        .reply(200, {
+          ...mergeQueueSquashUnsigned,
+          total_commits: 3,
+          commits: mergeQueueSquashUnsigned.commits,
+        })
+
+        .get(MERGE_GROUP_COMPARE_PATH)
+        .query(COMPARE_PAGE_2)
+        .reply(200, {
+          ...mergeQueueSquashUnsigned,
+          total_commits: 3,
+          commits: mergeQueueSquashUnsigned.commits,
+        })
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          normalizeTimes(body);
+          expect(body).toMatchObject(mergeGroupCheck("failure"));
+          expect(body.conclusion).not.toBe("success");
+          expect(body.conclusion).not.toBe("neutral");
+          expect(body.output.summary).toContain(
+            "complete merge group commit range could not be retrieved"
+          );
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("F9: creates a failing check when compare commits fails", async () => {
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/pulls/113")
+        .reply(200, payload.pull_request)
+
+        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+        .reply(404)
+        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
+        .reply(404)
+
+        .get(MERGE_GROUP_COMPARE_PATH)
+        .query(COMPARE_PAGE_1)
+        .reply(422, {
+          message:
+            "Server Error: Sorry, this diff is taking too long to generate.",
+          errors: [
+            {
+              resource: "Comparison",
+              field: "diff",
+              code: "not_available",
+            },
+          ],
+        })
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          normalizeTimes(body);
+          expect(body).toMatchObject(mergeGroupCheck("failure"));
+          expect(body.output.summary).toContain(
+            "The DCO check could not be evaluated"
+          );
+          expect(body.output.summary).toContain("HTTP status: 422");
+          expect(body.output.summary).toContain(
+            "GitHub request ID: unavailable"
+          );
+          expect(body.output.summary).not.toContain("Server Error");
+          return true;
+        })
+        .reply(200);
+
+      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
+
+      expect(mock.activeMocks()).toStrictEqual([]);
+    });
+
+    test("F10: fails closed when the GraphQL completeness path fails", async () => {
+      const restCommits = Array.from({ length: 250 }, (_, index) =>
+        makeCommit(mergeQueuePrCommits[0], index)
+      );
+
+      const mock = nock("https://api.github.com")
+        .get("/repos/robotland/test/pulls/113")
+        .reply(200, payload.pull_request)
+
+        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
+        .reply(404)
+        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
+        .reply(404)
+
+        .get(MERGE_GROUP_COMPARE_PATH)
+        .query(COMPARE_PAGE_1)
+        .reply(200, mergeQueueSquashSigned)
+
+        .get("/repos/robotland/test/pulls/113/commits")
+        .query({ per_page: "100" })
+        .reply(200, restCommits)
+
+        .post("/graphql")
+        .reply(200, {
+          data: graphQLCommits(restCommits, {
+            hasNextPage: false,
+            endCursor: null,
+          }),
+          errors: [{ message: "GraphQL returned partial data" }],
+        })
+
+        .post("/repos/robotland/test/check-runs", (body) => {
+          normalizeTimes(body);
+          expect(body).toMatchObject(mergeGroupCheck("failure"));
+          expect(body.output.summary).toContain(
+            "complete pull request commit list could not be retrieved"
+          );
+          expect(body.output.summary).toContain("verdict is unknown");
           return true;
         })
         .reply(200);
@@ -2030,10 +2704,13 @@ allowRemediationCommits:
         .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
         .reply(404)
 
-        .get(
-          "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...abc123def456abc123def456abc123def456abc1"
-        )
-        .reply(200, compare)
+        .get(MERGE_GROUP_COMPARE_PATH)
+        .query(COMPARE_PAGE_1)
+        .reply(200, mergeQueueSquashUnsigned)
+
+        .get("/repos/robotland/test/pulls/113/commits")
+        .query({ per_page: "100" })
+        .reply(200, mergeQueuePrCommits)
 
         .post("/repos/robotland/test/check-runs")
         .reply(403);
@@ -2048,223 +2725,27 @@ allowRemediationCommits:
       assertCommitStatusNotCalled();
     });
 
-    test("creates a failing check when compare commits fails", async () => {
-      const mock = nock("https://api.github.com")
-        .get("/repos/robotland/test/pulls/113")
-        .reply(200, payload.pull_request)
-
-        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
-        .reply(404)
-        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
-        .reply(404)
-
-        .get(
-          "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...abc123def456abc123def456abc123def456abc1"
-        )
-        .reply(422, {
-          message:
-            "Server Error: Sorry, this diff is taking too long to generate.",
-          errors: [
-            {
-              resource: "Comparison",
-              field: "diff",
-              code: "not_available",
-            },
-          ],
-        })
-
-        .post("/repos/robotland/test/check-runs", (body) => {
-          body.started_at = "2018-07-14T18:18:54.156Z";
-          body.completed_at = "2018-07-14T18:18:54.156Z";
-          expect(body).toMatchObject({
-            conclusion: "failure",
-            head_branch:
-              "gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
-            head_sha: "abc123def456abc123def456abc123def456abc1",
-            name: "DCO",
-            output: {
-              title: "DCO",
-            },
-            status: "completed",
-          });
-          expect(body.output.summary).toContain(
-            "The DCO check could not be evaluated"
-          );
-          expect(body.output.summary).toContain("HTTP status: 422");
-          expect(body.output.summary).toContain(
-            "GitHub request ID: unavailable"
-          );
-          expect(body.output.summary).not.toContain("Server Error");
-          return true;
-        })
-        .reply(200);
-
-      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
-
-      expect(mock.activeMocks()).toStrictEqual([]);
-    });
-
-    test("creates a diagnostic check when PR lookup returns 404", async () => {
-      const mock = nock("https://api.github.com")
-        .get("/repos/robotland/test/pulls/113")
-        .reply(404)
-
-        .post("/repos/robotland/test/check-runs", (body) => {
-          body.started_at = "2018-07-14T18:18:54.156Z";
-          body.completed_at = "2018-07-14T18:18:54.156Z";
-          expect(body).toMatchObject({
-            conclusion: "failure",
-            head_branch:
-              "gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
-            head_sha: "abc123def456abc123def456abc123def456abc1",
-            name: "DCO",
-            status: "completed",
-          });
-          expect(body.output.summary).toContain(
-            "pull request #113 was not found"
-          );
-          return true;
-        })
-        .reply(200);
-
-      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
-
-      expect(mock.activeMocks()).toStrictEqual([]);
-    });
-
-    test("creates a diagnostic check when PR lookup returns 403", async () => {
-      const mock = nock("https://api.github.com")
-        .get("/repos/robotland/test/pulls/113")
-        .reply(403)
-
-        .post("/repos/robotland/test/check-runs", (body) => {
-          body.started_at = "2018-07-14T18:18:54.156Z";
-          body.completed_at = "2018-07-14T18:18:54.156Z";
-          expect(body).toMatchObject({
-            conclusion: "failure",
-            head_branch:
-              "gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
-            head_sha: "abc123def456abc123def456abc123def456abc1",
-            name: "DCO",
-            status: "completed",
-          });
-          expect(body.output.summary).toContain(
-            "pull request #113 could not be accessed"
-          );
-          return true;
-        })
-        .reply(200);
-
-      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
-
-      expect(mock.activeMocks()).toStrictEqual([]);
-    });
-
-    test("creates a diagnostic check when PR lookup returns another error", async () => {
-      const mock = nock("https://api.github.com")
-        .get("/repos/robotland/test/pulls/113")
-        .reply(422)
-
-        .post("/repos/robotland/test/check-runs", (body) => {
-          body.started_at = "2018-07-14T18:18:54.156Z";
-          body.completed_at = "2018-07-14T18:18:54.156Z";
-          expect(body).toMatchObject({
-            conclusion: "failure",
-            head_branch:
-              "gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
-            head_sha: "abc123def456abc123def456abc123def456abc1",
-            name: "DCO",
-            status: "completed",
-          });
-          expect(body.output.summary).toContain(
-            "pull request #113 could not be fetched"
-          );
-          return true;
-        })
-        .reply(200);
-
-      await probot.receive({ name: "merge_group", payload: mergeGroupPayload });
-
-      expect(mock.activeMocks()).toStrictEqual([]);
-    });
-
     test("creates a passing check when head_ref has no refs/heads/ prefix", async () => {
       const bareRefPayload = {
         ...mergeGroupPayload,
         merge_group: {
           ...mergeGroupPayload.merge_group,
-          head_ref:
-            "gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
+          head_ref: MERGE_GROUP_BRANCH,
         },
       };
 
-      const mock = nock("https://api.github.com")
-        .get("/repos/robotland/test/pulls/113")
-        .reply(200, payload.pull_request)
-
-        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
-        .reply(404)
-        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
-        .reply(404)
-
-        .get(
-          "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...abc123def456abc123def456abc123def456abc1"
-        )
-        .reply(200, compareSuccess)
-
-        .post("/repos/robotland/test/check-runs", (body) => {
-          body.started_at = "2018-07-14T18:18:54.156Z";
-          body.completed_at = "2018-07-14T18:18:54.156Z";
-          expect(body).toMatchObject({
-            conclusion: "success",
-            head_branch:
-              "gh-readonly-queue/master/pr-113-e76ed6025cec8879c75454a6efd6081d46de4c94",
-            head_sha: "abc123def456abc123def456abc123def456abc1",
-            name: "DCO",
-            status: "completed",
-          });
+      const mock = mergeQueueMocks({
+        compare: mergeQueueSquashSigned,
+        prCommits: mergeQueuePrCommits,
+        assert(body) {
+          expect(body).toMatchObject(mergeGroupCheck("success"));
           return true;
-        })
-        .reply(200);
+        },
+      });
 
       await probot.receive({
         name: "merge_group",
         payload: bareRefPayload,
-      });
-
-      expect(mock.activeMocks()).toStrictEqual([]);
-    });
-
-    test("creates a diagnostic check for unrecognized head_ref format", async () => {
-      const unknownRefPayload = {
-        ...mergeGroupPayload,
-        merge_group: {
-          ...mergeGroupPayload.merge_group,
-          head_ref: "some-feature-branch/pr-113-abc123",
-        },
-      };
-
-      const mock = nock("https://api.github.com")
-        .post("/repos/robotland/test/check-runs", (body) => {
-          body.started_at = "2018-07-14T18:18:54.156Z";
-          body.completed_at = "2018-07-14T18:18:54.156Z";
-          expect(body).toMatchObject({
-            conclusion: "failure",
-            head_branch: "some-feature-branch/pr-113-abc123",
-            head_sha: "abc123def456abc123def456abc123def456abc1",
-            name: "DCO",
-            status: "completed",
-          });
-          expect(body.output.summary).toContain(
-            "unrecognized format: some-feature-branch/pr-113-abc123"
-          );
-          return true;
-        })
-        .reply(200);
-
-      await probot.receive({
-        name: "merge_group",
-        payload: unknownRefPayload,
       });
 
       expect(mock.activeMocks()).toStrictEqual([]);
