@@ -22,7 +22,7 @@
     "probot": "^14.3.2"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.5",
+    "@biomejs/biome": "2.5.7",
     "jest": "^30.4.2",
     "nock": "^14.0.17",
     "smee-client": "^5.0.0"
