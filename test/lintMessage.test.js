@@ -104,6 +104,39 @@ describe("lintCommitMessage", () => {
     expect(failure.message).toBe("not-an-email is not a valid email address.");
   });
 
+  test("requires a trailer even for a bot-shaped identity", async () => {
+    // Deliberate, conservative divergence: the app exempts commits whose
+    // GitHub account type is Bot, but account type is not knowable locally,
+    // so the adapter's null account means every commit needs a trailer.
+    // Fails safe, and bots commit through the API rather than through a
+    // commit-msg hook.
+    const bot = {
+      name: "dependabot[bot]",
+      email: "49699333+dependabot[bot]@users.noreply.github.com",
+    };
+    const [failure] = await lint("Chore: Bump a dependency", bot, bot);
+    expect(failure.message).toBe("The sign-off is missing.");
+  });
+
+  test("rejects a GitHub bot address as an invalid email", async () => {
+    // A second, sharper divergence. GitHub bot noreply addresses contain
+    // square brackets, which the email validator in lib/dco.js rejects.
+    // The app never reaches that check for a bot, because it skips on
+    // account type first; locally there is no account type, so the address
+    // is validated and refused even when the trailer matches. Recorded so
+    // the behaviour is known rather than discovered.
+    const bot = {
+      name: "dependabot[bot]",
+      email: "49699333+dependabot[bot]@users.noreply.github.com",
+    };
+    const [failure] = await lint(
+      "Chore: Bump it\n\nSigned-off-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+      bot,
+      bot
+    );
+    expect(failure.message).toContain("is not a valid email address");
+  });
+
   test("does not honour remediation trailers for a single pending commit", async () => {
     // Remediation certifies another commit by sha, which cannot exist for a
     // commit that has not been written yet.

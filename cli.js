@@ -25,9 +25,16 @@ Checks that the commit message carries a Signed-off-by trailer matching the
 git author or committer. Intended to run from git's commit-msg hook.`;
 
 // core.commentChar may be unset, or set to "auto", in which case git picks a
-// character that does not begin any line of the message. Resolving "auto"
-// would mean reimplementing that search; "#" is git's own starting point and
-// the overwhelmingly common case, so it is the fallback for both.
+// character that does not begin any line of the message. That choice is made
+// before the comment block is appended, so it cannot be re-derived from the
+// finished file: by then every candidate character appears used.
+//
+// Falling back to "#" is safe because the comment character cannot change the
+// verdict. See the note in lib/commitMessage.js: a trailer is only recognised
+// at column 0, and neither a comment line nor a diff line ever presents one
+// there, so guessing wrong can only keep a comment or drop a body line
+// beginning with "#", neither of which can be a valid trailer. The scissors
+// cut is matched independently of this character.
 function readCommentChar(run = defaultGitConfig) {
   const value = run();
   if (!value || value === "auto") return "#";
@@ -54,6 +61,14 @@ function defaultGitConfig() {
 // MERGE_HEAD is present only for a true merge. `git merge --squash`,
 // cherry-pick and revert all produce ordinary single-parent commits, which the
 // app does evaluate, so they are deliberately not exempted here.
+//
+// Known limitation: `git commit --amend` on an existing merge produces a
+// two-parent commit that the app skips, but leaves no MERGE_HEAD and sets no
+// distinguishing environment variable, so it cannot be told apart from an
+// ordinary commit made on top of a merge, which the app does evaluate. That
+// case is therefore still checked. It fails safe — a sign-off is asked for
+// where the app would not have required one — and amending a merge message is
+// rare.
 function defaultMergeInProgress() {
   try {
     const path = execFileSync(
@@ -76,8 +91,8 @@ function formatFailure(failure) {
     `  Committer: ${failure.committer}`,
     `  Problem:   ${failure.message}`,
     "",
-    "Every commit needs a Signed-off-by line matching its author, for",
-    "example:",
+    "A Signed-off-by line must match either the author or the committer of",
+    "the commit, for example:",
     "",
     `  Signed-off-by: ${failure.author} <${failure.email}>`,
     "",
