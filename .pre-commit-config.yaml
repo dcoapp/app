@@ -15,6 +15,12 @@ ci:
 
     Signed-off-by: pre-commit-ci[bot] <pre-commit-ci@users.noreply.github.com>
 
+# gitlint declares stages: [commit-msg]; without installing that hook
+# type it never runs. Hooks that declare no stage would otherwise run
+# again at commit-msg, so confine them to pre-commit.
+default_install_hook_types: [pre-commit, commit-msg]
+default_stages: [pre-commit]
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
