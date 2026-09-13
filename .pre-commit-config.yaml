@@ -5,7 +5,7 @@
 ci:
   # pre-commit.ci sandbox prevents network calls and has no Node
   # toolchain; disable hooks that need either.
-  skip: [jest, gha-workflow-linter]
+  skip: [jest, gha-workflow-linter, dco-check]
   autofix_commit_msg: |
     Chore: pre-commit autofixes
 
@@ -15,9 +15,9 @@ ci:
 
     Signed-off-by: pre-commit-ci[bot] <pre-commit-ci@users.noreply.github.com>
 
-# gitlint declares stages: [commit-msg]; without installing that hook
-# type it never runs. Hooks that declare no stage would otherwise run
-# again at commit-msg, so confine them to pre-commit.
+# gitlint and dco-check both declare stages: [commit-msg]; without
+# installing that hook type neither ever runs. Hooks that declare no stage
+# would otherwise run again at commit-msg, so confine them to pre-commit.
 default_install_hook_types: [pre-commit, commit-msg]
 default_stages: [pre-commit]
 
@@ -110,7 +110,19 @@ repos:
     hooks:
       - id: biome-format
         additional_dependencies: ["@biomejs/biome@2.5.2"]
-        files: ^(biome\.jsonc|index\.js|package\.json|(lib|test|docs)/.+\.(js|json))$
+        files: ^(biome\.jsonc|index\.js|cli\.js|package\.json|(lib|test|docs)/.+\.(js|json))$
+
+  # Dogfood the commit-msg linter this repository ships. Uses the working
+  # tree rather than a pinned rev so a change to cli.js or lib/ is exercised
+  # by the very next commit. Skipped on pre-commit.ci, which has no Node
+  # toolchain, and which sees no commit-msg stage in any case.
+  - repo: local
+    hooks:
+      - id: dco-check
+        name: DCO sign-off
+        entry: ./cli.js
+        language: system
+        stages: [commit-msg]
 
   # Run the test suite last so any auto-fixes from earlier hooks are
   # exercised. Tests need the full project dependency tree, so this

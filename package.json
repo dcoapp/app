@@ -6,6 +6,9 @@
   "author": "Brandon Keepers",
   "license": "ISC",
   "repository": "github:dcoapp/app",
+  "bin": {
+    "dco-check": "./cli.js"
+  },
   "scripts": {
     "start": "probot run ./index.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",

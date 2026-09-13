@@ -1,0 +1,15 @@
+---
+# SPDX-License-Identifier: ISC
+# SPDX-FileCopyrightText: 2018 - 2026 DCO App Contributors
+
+# pre-commit appends the commit message file to the command, so the hook
+# receives it as its only argument. Mirrors the shape of gitlint's own
+# commit-msg hook.
+- id: dco-check
+  name: DCO sign-off
+  description: >
+    Check that the commit message carries a Signed-off-by trailer matching
+    the commit author or committer, using the same logic as the DCO app.
+  entry: dco-check
+  language: node
+  stages: [commit-msg]
