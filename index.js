@@ -336,7 +336,7 @@ module.exports = (app) => {
                         signature
                         payload
                       }
-                      parents(first: 100) {
+                      parents(first: 2) {
                         nodes {
                           oid
                           url
@@ -515,10 +515,16 @@ Every commit in the range has to be examined before the merge group can be certi
 Please retry by re-running the check, or by removing and re-adding the pull request to the merge queue.`;
     }
     if (error.incompleteCommitList) {
+      const graphqlMessage =
+        error.graphqlErrors?.[0]?.message ||
+        error.errors?.[0]?.message ||
+        error.message ||
+        "unknown";
       return `The DCO check could not be evaluated because the complete pull request commit list could not be retrieved.
 
 GitHub returned 250 commits from the REST API, so the app attempted to retrieve the full list through GraphQL before evaluating the pull request. That fallback did not complete, so the DCO verdict is unknown.
 
+GraphQL error: ${graphqlMessage}
 HTTP status: ${error.status || "unknown"}
 GitHub request ID: ${requestId}
 
