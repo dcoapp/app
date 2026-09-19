@@ -336,7 +336,7 @@ module.exports = (app) => {
                         signature
                         payload
                       }
-                      parents(first: 100) {
+                      parents(first: 2) {
                         nodes {
                           oid
                           url
