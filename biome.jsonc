@@ -8,6 +8,7 @@
     "includes": [
       "biome.jsonc",
       "index.js",
+      "cli.js",
       "package.json",
       "lib/**/*.js",
       "lib/**/*.json",
