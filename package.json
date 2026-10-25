@@ -24,7 +24,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
     "jest": "^30.5.2",
-    "nock": "^14.0.17",
+    "nock": "^15.0.2",
     "smee-client": "^5.0.0"
   },
   "standard": {
