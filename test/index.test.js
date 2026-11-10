@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2018 - 2026 DCO App Contributors
 // SPDX-License-Identifier: ISC
 
-const nock = require("nock");
+const nock = require("nock").default;
 
 const dco = require("..");
 
@@ -1173,8 +1173,9 @@ describe("dco", () => {
 
       const unmatchedCheckRunRequests = [];
       const onNoMatch = (request) => {
-        const path = request.path || request.options?.path || request.href;
-        if (path?.includes("/repos/robotland/test/check-runs")) {
+        // nock 15 emits a web Request, which only exposes the full URL.
+        const path = new URL(request.url).pathname;
+        if (path.includes("/repos/robotland/test/check-runs")) {
           unmatchedCheckRunRequests.push(path);
         }
       };
