@@ -19,7 +19,7 @@
   "dependencies": {
     "@sentry/node": "^11.10.0",
     "email-validator": "^2.0.3",
-    "probot": "^14.3.2"
+    "probot": "^14.3.7"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.4",
