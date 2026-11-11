@@ -427,6 +427,7 @@ describe("dco", () => {
         .reply(200, restCommits)
 
         .post("/graphql", (body) => {
+          expect(body.query).toContain("parents(first: 2)");
           expect(body.variables).toMatchObject({
             owner: "robotland",
             repo: "test",
