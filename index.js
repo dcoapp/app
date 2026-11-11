@@ -5,10 +5,10 @@ const getDCOStatus = require("./lib/dco.js");
 const hasSignoffTrailer = require("./lib/hasSignoffTrailer.js");
 const requireMembers = require("./lib/requireMembers.js");
 
-// GitHub documents a 250-commit cap on the pull request commits REST endpoint.
+// The pull request commits REST endpoint serves at most 250 commits, the
+// newest ones. GraphQL's pullRequest.commits has the same cap while still
+// reporting the true totalCount, so neither can list a larger pull request.
 const PULL_REQUEST_COMMITS_REST_LIMIT = 250;
-const PULL_REQUEST_COMMITS_GRAPHQL_PAGE_SIZE = 100;
-const PULL_REQUEST_COMMITS_GRAPHQL_PAGE_MARGIN = 1;
 // The compare endpoint returns at most 250 commits per page.
 const COMPARE_COMMITS_PAGE_SIZE = 100;
 
@@ -169,7 +169,11 @@ module.exports = (app) => {
   // `GitHub <noreply@github.com>`, committer login `web-flow`) and would be
   // silently downgraded from identity matching to presence only.
   async function inspectMergeGroup(context, pr, mergeGroup) {
-    const rangeCommits = await listMergeGroupRangeCommits(context, mergeGroup);
+    const rangeCommits = await listCompareCommits(
+      context,
+      mergeGroup.base_sha,
+      mergeGroup.head_sha
+    );
 
     const commits = await listPullRequestCommits(context, pr);
     if (commits.length === 0) {
@@ -185,7 +189,7 @@ module.exports = (app) => {
     const prShas = new Set(commits.map((commit) => commit.sha));
     const synthesizedFailed = [];
 
-    for (const commit of rangeCommits) {
+    for (const commit of rangeCommits.values()) {
       // A genuine pull request commit: evaluated with full identity matching.
       if (prShas.has(commit.sha)) continue;
       // The merge strategy's two-parent head, authored by whoever enqueued the
@@ -216,16 +220,16 @@ module.exports = (app) => {
     return { commits, synthesizedFailed };
   }
 
-  // The compare endpoint caps its `commits` array, so under the merge strategy
-  // a large pull request truncates the range. Every commit in the range has to
-  // be seen for the "no synthesized commit lost its trailer" invariant to hold,
-  // so page until the whole range is collected.
+  // The compare endpoint caps its `commits` array, so a large range is
+  // truncated: under the merge strategy for a merge group, past 250 commits
+  // for a pull request. Every commit in the range has to be seen for a verdict
+  // to hold, so page until the whole range is collected.
   //
   // octokit's paginate() cannot be used here: this endpoint returns an object
   // rather than an array, and normalizePaginatedListResponse mangles it (it
   // mistakes `status: "ahead"` for the namespaced list key and throws). Page
   // manually instead.
-  async function listMergeGroupRangeCommits(context, mergeGroup) {
+  async function listCompareCommits(context, base, head) {
     // Keyed on sha: dedupes and preserves insertion order in one structure.
     // Counting raw entries instead would let a compare endpoint that ignored
     // the `page` parameter satisfy the completeness check with duplicates of
@@ -238,8 +242,8 @@ module.exports = (app) => {
     for (;;) {
       const response = await context.octokit.rest.repos.compareCommits(
         context.repo({
-          base: mergeGroup.base_sha,
-          head: mergeGroup.head_sha,
+          base,
+          head,
           per_page: COMPARE_COMMITS_PAGE_SIZE,
           page,
         })
@@ -254,7 +258,7 @@ module.exports = (app) => {
       if (commits.size >= totalCommits) break;
       // An iteration that adds no new commit would otherwise loop forever.
       // This covers both an empty page and a page repeated verbatim; the
-      // shortfall check below then fails the group closed.
+      // shortfall check below then fails the range closed.
       if (commits.size === seenBefore) break;
 
       page += 1;
@@ -262,210 +266,48 @@ module.exports = (app) => {
 
     if (commits.size < totalCommits) {
       const error = new Error(
-        `GitHub returned ${commits.size} of ${totalCommits} merge group commits.`
+        `GitHub returned ${commits.size} of ${totalCommits} commits comparing ${base}...${head}.`
       );
-      error.truncatedMergeGroupRange = true;
+      error.truncatedCompareRange = true;
       throw error;
     }
 
-    return [...commits.values()];
+    return commits;
   }
 
   async function listPullRequestCommits(context, pr) {
-    const commits = await context.octokit.paginate(
+    const newest = await context.octokit.paginate(
       context.octokit.rest.pulls.listCommits,
       context.repo({ pull_number: pr.number, per_page: 100 })
     );
 
-    if (commits.length !== PULL_REQUEST_COMMITS_REST_LIMIT) {
-      return commits;
+    if (newest.length !== PULL_REQUEST_COMMITS_REST_LIMIT) {
+      return newest;
     }
 
-    return fetchCompletePullRequestCommits(context, pr);
-  }
-
-  async function fetchCompletePullRequestCommits(context, pr) {
+    // At the cap the list may be cut short, so take the full range from the
+    // compare endpoint instead. Both shas resolve in the base repository even
+    // for a pull request from a fork. The range is `git log base..head`, so a
+    // base.sha behind the base branch can only add commits to it, never hide
+    // one: the verdict may be too strict, not too lenient.
     try {
-      const commits = [];
-      const commitShas = new Set();
-      let cursor = null;
-      let hasNextPage = true;
-      let expectedCommitCount;
-      let maxPages;
-      let pageCount = 0;
-
-      while (hasNextPage) {
-        const response = await context.octokit.graphql(
-          `query PullRequestCommits(
-            $owner: String!
-            $repo: String!
-            $pullNumber: Int!
-            $cursor: String
-            $pageSize: Int!
-          ) {
-            repository(owner: $owner, name: $repo) {
-              pullRequest(number: $pullNumber) {
-                commits(first: $pageSize, after: $cursor) {
-                  totalCount
-                  nodes {
-                    commit {
-                      oid
-                      url
-                      message
-                      author {
-                        name
-                        email
-                        date
-                        user {
-                          login
-                          __typename
-                        }
-                      }
-                      committer {
-                        name
-                        email
-                        date
-                        user {
-                          login
-                          __typename
-                        }
-                      }
-                      signature {
-                        isValid
-                        state
-                        signature
-                        payload
-                      }
-                      parents(first: 100) {
-                        nodes {
-                          oid
-                          url
-                        }
-                      }
-                    }
-                  }
-                  pageInfo {
-                    hasNextPage
-                    endCursor
-                  }
-                }
-              }
-            }
-          }`,
-          context.repo({
-            pullNumber: pr.number,
-            cursor,
-            pageSize: PULL_REQUEST_COMMITS_GRAPHQL_PAGE_SIZE,
-          })
-        );
-        const connection = response.repository.pullRequest.commits;
-        pageCount += 1;
-        if (connection.totalCount < PULL_REQUEST_COMMITS_REST_LIMIT) {
-          throw new Error(
-            `GraphQL reported only ${connection.totalCount} pull request commits.`
-          );
-        }
-        if (expectedCommitCount === undefined) {
-          expectedCommitCount = connection.totalCount;
-          maxPages =
-            Math.ceil(
-              expectedCommitCount / PULL_REQUEST_COMMITS_GRAPHQL_PAGE_SIZE
-            ) + PULL_REQUEST_COMMITS_GRAPHQL_PAGE_MARGIN;
-        } else if (connection.totalCount !== expectedCommitCount) {
-          throw new Error(
-            `GraphQL totalCount changed from ${expectedCommitCount} to ${connection.totalCount}.`
-          );
-        }
-
-        for (const node of connection.nodes) {
-          const commit = mapGraphQLCommit(node);
-          if (commitShas.has(commit.sha)) {
-            throw new Error(
-              `GraphQL returned duplicate pull request commit ${commit.sha}.`
-            );
-          }
-          commitShas.add(commit.sha);
-          commits.push(commit);
-        }
-
-        hasNextPage = connection.pageInfo.hasNextPage;
-        const previousCursor = cursor;
-        cursor = connection.pageInfo.endCursor;
-
-        if (hasNextPage && !cursor) {
-          throw new Error("GraphQL pagination ended without a cursor.");
-        }
-        if (hasNextPage && cursor === previousCursor) {
-          throw new Error("GraphQL pagination cursor did not advance.");
-        }
-        if (hasNextPage && pageCount >= maxPages) {
-          throw new Error("GraphQL commit pagination exceeded expected pages.");
-        }
-      }
-
-      if (commitShas.size !== expectedCommitCount) {
+      const commits = await listCompareCommits(
+        context,
+        pr.base.sha,
+        pr.head.sha
+      );
+      // Guards against a complete range that is not this pull request's.
+      const missing = newest.find((commit) => !commits.has(commit.sha));
+      if (missing) {
         throw new Error(
-          `GraphQL returned ${commitShas.size} of ${expectedCommitCount} pull request commits.`
+          `Comparing ${pr.base.sha}...${pr.head.sha} did not return pull request commit ${missing.sha}.`
         );
       }
-
-      return commits;
+      return [...commits.values()];
     } catch (error) {
       error.incompleteCommitList = true;
       throw error;
     }
-  }
-
-  function mapGraphQLCommit(node) {
-    const commit = node.commit;
-    const signature = commit.signature || {
-      isValid: false,
-      state: "unsigned",
-      signature: null,
-      payload: null,
-    };
-
-    return {
-      sha: commit.oid,
-      html_url: commit.url,
-      author: mapGraphQLUser(commit.author.user),
-      committer: mapGraphQLUser(commit.committer.user),
-      parents: commit.parents.nodes.map((parent) => ({
-        sha: parent.oid,
-        html_url: parent.url,
-      })),
-      commit: {
-        author: {
-          name: commit.author.name,
-          email: commit.author.email,
-          date: commit.author.date,
-        },
-        committer: {
-          name: commit.committer.name,
-          email: commit.committer.email,
-          date: commit.committer.date,
-        },
-        message: commit.message,
-        verification: {
-          verified: signature.isValid,
-          reason: signature.state,
-          signature: signature.signature,
-          payload: signature.payload,
-          verified_at: null,
-        },
-      },
-    };
-  }
-
-  function mapGraphQLUser(user) {
-    if (!user) {
-      return null;
-    }
-
-    return {
-      login: user.login,
-      type: user.login.endsWith("[bot]") ? "Bot" : user.__typename,
-    };
   }
 
   async function reportDCO(
@@ -505,7 +347,18 @@ The sign-off certification is verified against the pull request's own commits, s
 
 Please retry by re-running the check or removing and re-adding the pull request to the merge queue.`;
     }
-    if (error.truncatedMergeGroupRange) {
+    if (error.incompleteCommitList) {
+      return `The DCO check could not be evaluated because the complete pull request commit list could not be retrieved.
+
+GitHub lists at most 250 commits for a pull request, so the app attempted to retrieve the full range by comparing the pull request's base and head. That did not complete, so the DCO verdict is unknown.
+
+${error.status ? "" : `Reason: ${error.message}\n\n`}HTTP status: ${error.status || "unknown"}
+GitHub request ID: ${requestId}
+
+Please retry by re-running the check or pushing a new commit.`;
+    }
+
+    if (error.truncatedCompareRange) {
       // Internally detected: every compare request can have succeeded, so
       // there is no meaningful HTTP status or request ID to report here.
       return `The DCO check could not be evaluated because the complete merge group commit range could not be retrieved.
@@ -514,17 +367,6 @@ Every commit in the range has to be examined before the merge group can be certi
 
 Please retry by re-running the check, or by removing and re-adding the pull request to the merge queue.`;
     }
-    if (error.incompleteCommitList) {
-      return `The DCO check could not be evaluated because the complete pull request commit list could not be retrieved.
-
-GitHub returned 250 commits from the REST API, so the app attempted to retrieve the full list through GraphQL before evaluating the pull request. That fallback did not complete, so the DCO verdict is unknown.
-
-HTTP status: ${error.status || "unknown"}
-GitHub request ID: ${requestId}
-
-Please retry by re-running the check or pushing a new commit.`;
-    }
-
     return `The DCO check could not be evaluated because an error occurred while gathering or evaluating commits.
 
 HTTP status: ${error.status || "unknown"}
