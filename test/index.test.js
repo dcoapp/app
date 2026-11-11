@@ -28,68 +28,11 @@ const compareSuccessCommits = compareSuccess.commits.map((commit, index) =>
     ? { ...commit, sha: payloadSuccess.pull_request.head.sha }
     : commit
 );
-const belowRestLimitGraphQLTotalCounts = [249, 0];
 
 function makeCommit(source, index) {
   return {
     ...source,
     sha: index.toString(16).padStart(40, "0"),
-  };
-}
-
-function graphQLNode(restCommit, options = {}) {
-  const authorUser =
-    options.authorUser === undefined
-      ? {
-          login: restCommit.author.login,
-          __typename: restCommit.author.type,
-        }
-      : options.authorUser;
-  const committerUser =
-    options.committerUser === undefined
-      ? {
-          login: restCommit.committer.login,
-          __typename: restCommit.committer.type,
-        }
-      : options.committerUser;
-
-  return {
-    commit: {
-      oid: restCommit.sha,
-      url: restCommit.html_url,
-      message: restCommit.commit.message,
-      author: {
-        ...restCommit.commit.author,
-        user: authorUser,
-      },
-      committer: {
-        ...restCommit.commit.committer,
-        user: committerUser,
-      },
-      signature: options.signature || null,
-      parents: {
-        nodes: restCommit.parents.map((parent) => ({
-          oid: parent.sha,
-          url: parent.html_url,
-        })),
-      },
-    },
-  };
-}
-
-function graphQLCommits(commits, pageInfo, options = {}) {
-  return {
-    repository: {
-      pullRequest: {
-        commits: {
-          totalCount: options.totalCount ?? commits.length,
-          nodes: commits.map((commit, index) =>
-            graphQLNode(commit, options[index])
-          ),
-          pageInfo,
-        },
-      },
-    },
   };
 }
 
@@ -134,6 +77,8 @@ const MERGE_GROUP_HEAD_SHA = "abc123def456abc123def456abc123def456abc1";
 const MERGE_GROUP_BRANCH =
   "gh-readonly-queue/master/pr-113-607c64cd8e37eb2db939f99a17bee5c7d1a90a31";
 const MERGE_GROUP_COMPARE_PATH = `/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...${MERGE_GROUP_HEAD_SHA}`;
+const PULL_REQUEST_COMPARE_PATH =
+  "/repos/robotland/test/compare/607c64cd8e37eb2db939f99a17bee5c7d1a90a31...e76ed6025cec8879c75454a6efd6081d46de4c94";
 const COMPARE_PAGE_1 = { per_page: "100", page: "1" };
 const COMPARE_PAGE_2 = { per_page: "100", page: "2" };
 
@@ -412,470 +357,17 @@ describe("dco", () => {
       expect(mock.activeMocks()).toStrictEqual([]);
     });
 
-    test("escalates exactly 250 REST commits to GraphQL", async () => {
-      const restCommits = Array.from({ length: 250 }, (_, index) =>
+    // pulls.listCommits serves only the newest 250 commits of a pull request,
+    // so a 340-commit pull request is modelled as REST returning the last 250
+    // and the compare endpoint paging through all 340.
+    describe("with more than 250 commits", () => {
+      const allCommits = Array.from({ length: 340 }, (_, index) =>
         makeCommit(compareSuccess.commits[0], index)
       );
-      const mock = nock("https://api.github.com")
-        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
-        .reply(404)
-        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
-        .reply(404)
+      const restCommits = allCommits.slice(-250);
 
-        .get("/repos/robotland/test/pulls/113/commits")
-        .query({ per_page: "100" })
-        .reply(200, restCommits)
-
-        .post("/graphql", (body) => {
-          expect(body.variables).toMatchObject({
-            owner: "robotland",
-            repo: "test",
-            pullNumber: 113,
-            cursor: null,
-          });
-          return true;
-        })
-        .reply(200, {
-          data: graphQLCommits(
-            restCommits,
-            {
-              hasNextPage: false,
-              endCursor: null,
-            },
-            {
-              0: {
-                authorUser: null,
-                committerUser: null,
-                signature: {
-                  isValid: true,
-                  state: "VALID",
-                  signature: "signature",
-                  payload: "payload",
-                },
-              },
-            }
-          ),
-        })
-
-        .post("/repos/robotland/test/check-runs", (body) => {
-          body.started_at = "2018-07-14T18:18:54.156Z";
-          body.completed_at = "2018-07-14T18:18:54.156Z";
-          expect(body).toMatchObject({
-            conclusion: "success",
-            head_branch: "dco-test",
-            head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
-            name: "DCO",
-            output: {
-              title: "DCO",
-            },
-            status: "completed",
-          });
-          expect(body.output.summary).toContain("All commits are signed off!");
-          return true;
-        })
-        .reply(200);
-
-      await probot.receive({ name: "pull_request", payload });
-
-      expect(mock.activeMocks()).toStrictEqual([]);
-    });
-
-    test("fails when only GraphQL sees a missing sign-off", async () => {
-      const restCommits = Array.from({ length: 250 }, (_, index) =>
-        makeCommit(compareSuccess.commits[0], index)
-      );
-      const failingCommit = makeCommit(compare.commits[0], 250);
-      const commits = [...restCommits, failingCommit];
-      const mock = nock("https://api.github.com")
-        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
-        .reply(404)
-        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
-        .reply(404)
-
-        .get("/repos/robotland/test/pulls/113/commits")
-        .query({ per_page: "100" })
-        .reply(200, restCommits)
-
-        .post("/graphql")
-        .reply(200, {
-          data: graphQLCommits(commits, {
-            hasNextPage: false,
-            endCursor: null,
-          }),
-        })
-
-        .post("/repos/robotland/test/check-runs", (body) => {
-          body.started_at = "2018-07-14T18:18:54.156Z";
-          body.completed_at = "2018-07-14T18:18:54.156Z";
-          expect(body).toMatchObject({
-            conclusion: "action_required",
-            head_branch: "dco-test",
-            head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
-            name: "DCO",
-            output: {
-              title: "DCO",
-            },
-            status: "completed",
-          });
-          expect(body.output.summary).toContain("The sign-off is missing.");
-          expect(body.output.summary).toContain(failingCommit.sha);
-          return true;
-        })
-        .reply(200);
-
-      await probot.receive({ name: "pull_request", payload });
-
-      expect(mock.activeMocks()).toStrictEqual([]);
-    });
-
-    test("preserves bot author handling from GraphQL commits", async () => {
-      const restCommits = Array.from({ length: 250 }, (_, index) =>
-        makeCommit(compareSuccess.commits[0], index)
-      );
-      const botCommit = makeCommit(compare.commits[0], 250);
-      const commits = [...restCommits, botCommit];
-      const mock = nock("https://api.github.com")
-        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
-        .reply(404)
-        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
-        .reply(404)
-
-        .get("/repos/robotland/test/pulls/113/commits")
-        .query({ per_page: "100" })
-        .reply(200, restCommits)
-
-        .post("/graphql")
-        .reply(200, {
-          data: graphQLCommits(
-            commits,
-            {
-              hasNextPage: false,
-              endCursor: null,
-            },
-            {
-              250: {
-                authorUser: {
-                  login: "dependabot[bot]",
-                  __typename: "User",
-                },
-              },
-            }
-          ),
-        })
-
-        .post("/repos/robotland/test/check-runs", (body) => {
-          body.started_at = "2018-07-14T18:18:54.156Z";
-          body.completed_at = "2018-07-14T18:18:54.156Z";
-          expect(body).toMatchObject({
-            conclusion: "success",
-            head_branch: "dco-test",
-            head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
-            name: "DCO",
-            output: {
-              title: "DCO",
-            },
-            status: "completed",
-          });
-          expect(body.output.summary).toContain("All commits are signed off!");
-          return true;
-        })
-        .reply(200);
-
-      await probot.receive({ name: "pull_request", payload });
-
-      expect(mock.activeMocks()).toStrictEqual([]);
-    });
-
-    test("paginates GraphQL commits after REST truncation", async () => {
-      const restCommits = Array.from({ length: 250 }, (_, index) =>
-        makeCommit(compareSuccess.commits[0], index)
-      );
-      const commits = Array.from({ length: 251 }, (_, index) =>
-        makeCommit(compareSuccess.commits[0], index)
-      );
-      const mock = nock("https://api.github.com")
-        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
-        .reply(404)
-        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
-        .reply(404)
-
-        .get("/repos/robotland/test/pulls/113/commits")
-        .query({ per_page: "100" })
-        .reply(200, restCommits)
-
-        .post("/graphql", (body) => {
-          expect(body.variables.cursor).toBeNull();
-          return true;
-        })
-        .reply(200, {
-          data: graphQLCommits(
-            commits.slice(0, 100),
-            {
-              hasNextPage: true,
-              endCursor: "cursor-100",
-            },
-            { totalCount: commits.length }
-          ),
-        })
-
-        .post("/graphql", (body) => {
-          expect(body.variables.cursor).toBe("cursor-100");
-          return true;
-        })
-        .reply(200, {
-          data: graphQLCommits(
-            commits.slice(100),
-            {
-              hasNextPage: false,
-              endCursor: null,
-            },
-            { totalCount: commits.length }
-          ),
-        })
-
-        .post("/repos/robotland/test/check-runs", (body) => {
-          body.started_at = "2018-07-14T18:18:54.156Z";
-          body.completed_at = "2018-07-14T18:18:54.156Z";
-          expect(body).toMatchObject({
-            conclusion: "success",
-            head_branch: "dco-test",
-            head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
-            name: "DCO",
-            output: {
-              title: "DCO",
-            },
-            status: "completed",
-          });
-          expect(body.output.summary).toContain("All commits are signed off!");
-          return true;
-        })
-        .reply(200);
-
-      await probot.receive({ name: "pull_request", payload });
-
-      expect(mock.activeMocks()).toStrictEqual([]);
-    });
-
-    test("fails closed when GraphQL commit fetching fails", async () => {
-      const restCommits = Array.from({ length: 250 }, (_, index) =>
-        makeCommit(compareSuccess.commits[0], index)
-      );
-      const mock = nock("https://api.github.com")
-        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
-        .reply(404)
-        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
-        .reply(404)
-
-        .get("/repos/robotland/test/pulls/113/commits")
-        .query({ per_page: "100" })
-        .reply(200, restCommits)
-
-        .post("/graphql")
-        .reply(200, {
-          errors: [{ message: "GraphQL unavailable" }],
-        })
-
-        .post("/repos/robotland/test/check-runs", (body) => {
-          body.started_at = "2018-07-14T18:18:54.156Z";
-          body.completed_at = "2018-07-14T18:18:54.156Z";
-          expect(body).toMatchObject({
-            conclusion: "failure",
-            head_branch: "dco-test",
-            head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
-            name: "DCO",
-            output: {
-              title: "DCO",
-            },
-            status: "completed",
-          });
-          expect(body.output.summary).toContain(
-            "complete pull request commit list could not be retrieved"
-          );
-          expect(body.output.summary).toContain("verdict is unknown");
-          expect(body.output.summary).toContain("HTTP status:");
-          expect(body.output.summary).toContain(
-            "GitHub request ID: unavailable"
-          );
-          expect(body.output.summary).not.toContain("All commits are signed");
-          return true;
-        })
-        .reply(200);
-
-      await probot.receive({ name: "pull_request", payload });
-
-      expect(mock.activeMocks()).toStrictEqual([]);
-    });
-
-    test("fails closed when GraphQL returns partial data with errors", async () => {
-      const restCommits = Array.from({ length: 250 }, (_, index) =>
-        makeCommit(compareSuccess.commits[0], index)
-      );
-      const mock = nock("https://api.github.com")
-        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
-        .reply(404)
-        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
-        .reply(404)
-
-        .get("/repos/robotland/test/pulls/113/commits")
-        .query({ per_page: "100" })
-        .reply(200, restCommits)
-
-        .post("/graphql")
-        .reply(200, {
-          data: graphQLCommits(restCommits, {
-            hasNextPage: false,
-            endCursor: null,
-          }),
-          errors: [{ message: "GraphQL returned partial data" }],
-        })
-
-        .post("/repos/robotland/test/check-runs", (body) => {
-          expectIncompleteCommitListCheck(body);
-          expect(body.output.summary).toContain("HTTP status:");
-          expect(body.output.summary).toContain(
-            "GitHub request ID: unavailable"
-          );
-          return true;
-        })
-        .reply(200);
-
-      await probot.receive({ name: "pull_request", payload });
-
-      expect(mock.activeMocks()).toStrictEqual([]);
-    });
-
-    test("fails closed when GraphQL pagination is incomplete", async () => {
-      const restCommits = Array.from({ length: 250 }, (_, index) =>
-        makeCommit(compareSuccess.commits[0], index)
-      );
-      const mock = nock("https://api.github.com")
-        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
-        .reply(404)
-        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
-        .reply(404)
-
-        .get("/repos/robotland/test/pulls/113/commits")
-        .query({ per_page: "100" })
-        .reply(200, restCommits)
-
-        .post("/graphql")
-        .reply(200, {
-          data: graphQLCommits(
-            restCommits.slice(0, 100),
-            {
-              hasNextPage: true,
-              endCursor: null,
-            },
-            { totalCount: 250 }
-          ),
-        })
-
-        .post("/repos/robotland/test/check-runs", (body) => {
-          body.started_at = "2018-07-14T18:18:54.156Z";
-          body.completed_at = "2018-07-14T18:18:54.156Z";
-          expect(body).toMatchObject({
-            conclusion: "failure",
-            head_branch: "dco-test",
-            head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
-            name: "DCO",
-            output: {
-              title: "DCO",
-            },
-            status: "completed",
-          });
-          expect(body.output.summary).toContain(
-            "complete pull request commit list could not be retrieved"
-          );
-          expect(body.output.summary).toContain("verdict is unknown");
-          return true;
-        })
-        .reply(200);
-
-      await probot.receive({ name: "pull_request", payload });
-
-      expect(mock.activeMocks()).toStrictEqual([]);
-    });
-
-    test("fails closed when GraphQL pagination exceeds expected pages", async () => {
-      const restCommits = Array.from({ length: 250 }, (_, index) =>
-        makeCommit(compareSuccess.commits[0], index)
-      );
-      const mock = nock("https://api.github.com")
-        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
-        .reply(404)
-        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
-        .reply(404)
-
-        .get("/repos/robotland/test/pulls/113/commits")
-        .query({ per_page: "100" })
-        .reply(200, restCommits)
-
-        .post("/graphql")
-        .reply(200, {
-          data: graphQLCommits(
-            [],
-            {
-              hasNextPage: true,
-              endCursor: "cursor-60",
-            },
-            { totalCount: 250 }
-          ),
-        })
-
-        .post("/graphql")
-        .reply(200, {
-          data: graphQLCommits(
-            [],
-            {
-              hasNextPage: true,
-              endCursor: "cursor-120",
-            },
-            { totalCount: 250 }
-          ),
-        })
-
-        .post("/graphql")
-        .reply(200, {
-          data: graphQLCommits(
-            [],
-            {
-              hasNextPage: true,
-              endCursor: "cursor-180",
-            },
-            { totalCount: 250 }
-          ),
-        })
-
-        .post("/graphql")
-        .reply(200, {
-          data: graphQLCommits(
-            [],
-            {
-              hasNextPage: true,
-              endCursor: "cursor-240",
-            },
-            { totalCount: 250 }
-          ),
-        })
-
-        .post("/repos/robotland/test/check-runs", (body) => {
-          expectIncompleteCommitListCheck(body);
-          return true;
-        })
-        .reply(200);
-
-      await probot.receive({ name: "pull_request", payload });
-
-      expect(mock.activeMocks()).toStrictEqual([]);
-    }, 10_000);
-
-    for (const totalCount of belowRestLimitGraphQLTotalCounts) {
-      test(`fails closed when GraphQL totalCount is ${totalCount}`, async () => {
-        const restCommits = Array.from({ length: 250 }, (_, index) =>
-          makeCommit(compareSuccess.commits[0], index)
-        );
-        const graphQLCommitsPage = restCommits.slice(0, totalCount);
-        const mock = nock("https://api.github.com")
+      function largePullRequestMock(restPage = restCommits) {
+        return nock("https://api.github.com")
           .get("/repos/robotland/test/contents/.github%2Fdco.yml")
           .reply(404)
           .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
@@ -883,229 +375,144 @@ describe("dco", () => {
 
           .get("/repos/robotland/test/pulls/113/commits")
           .query({ per_page: "100" })
-          .reply(200, restCommits)
+          .reply(200, restPage);
+      }
 
-          .post("/graphql")
-          .reply(200, {
-            data: graphQLCommits(
-              graphQLCommitsPage,
-              {
-                hasNextPage: false,
-                endCursor: null,
-              },
-              { totalCount }
-            ),
-          })
+      function comparePages(mock, commits, total = commits.length) {
+        for (let page = 1; (page - 1) * 100 < commits.length; page += 1) {
+          mock
+            .get(PULL_REQUEST_COMPARE_PATH)
+            .query({ per_page: "100", page: String(page) })
+            .reply(200, {
+              ...compareSuccess,
+              total_commits: total,
+              commits: commits.slice((page - 1) * 100, page * 100),
+            });
+        }
+        return mock;
+      }
 
+      function expectCheck(mock, conclusion, extra = () => {}) {
+        return mock
           .post("/repos/robotland/test/check-runs", (body) => {
-            expectIncompleteCommitListCheck(body);
+            normalizeTimes(body);
+            expect(body).toMatchObject({
+              conclusion,
+              head_branch: "dco-test",
+              head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
+              name: "DCO",
+              status: "completed",
+            });
+            extra(body);
             return true;
           })
           .reply(200);
+      }
+
+      test("pages the compare endpoint for the complete commit list", async () => {
+        const mock = expectCheck(
+          comparePages(largePullRequestMock(), allCommits),
+          "success",
+          (body) =>
+            expect(body.output.summary).toContain("All commits are signed off!")
+        );
 
         await probot.receive({ name: "pull_request", payload });
 
         expect(mock.activeMocks()).toStrictEqual([]);
       });
-    }
 
-    test("fails closed when GraphQL totalCount changes between pages", async () => {
-      const restCommits = Array.from({ length: 250 }, (_, index) =>
-        makeCommit(compareSuccess.commits[0], index)
-      );
-      const mock = nock("https://api.github.com")
-        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
-        .reply(404)
-        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
-        .reply(404)
+      test("uses the compare endpoint at exactly 250 commits", async () => {
+        const mock = expectCheck(
+          comparePages(largePullRequestMock(), restCommits),
+          "success"
+        );
 
-        .get("/repos/robotland/test/pulls/113/commits")
-        .query({ per_page: "100" })
-        .reply(200, restCommits)
+        await probot.receive({ name: "pull_request", payload });
 
-        .post("/graphql")
-        .reply(200, {
-          data: graphQLCommits(
-            restCommits.slice(0, 100),
-            {
-              hasNextPage: true,
-              endCursor: "cursor-100",
-            },
-            { totalCount: 250 }
-          ),
-        })
+        expect(mock.activeMocks()).toStrictEqual([]);
+      });
 
-        .post("/graphql")
-        .reply(200, {
-          data: graphQLCommits(
-            restCommits.slice(100, 200),
-            {
-              hasNextPage: false,
-              endCursor: null,
-            },
-            { totalCount: 251 }
-          ),
-        })
+      test("fails a missing sign-off older than the newest 250 commits", async () => {
+        const failingCommit = makeCommit(compare.commits[0], 1000);
+        const mock = expectCheck(
+          comparePages(largePullRequestMock(), [
+            failingCommit,
+            ...allCommits.slice(1),
+          ]),
+          "action_required",
+          (body) => {
+            expect(body.output.summary).toContain("The sign-off is missing.");
+            expect(body.output.summary).toContain(failingCommit.sha);
+            expect(body.output.summary).toContain("git rebase HEAD~340");
+          }
+        );
 
-        .post("/repos/robotland/test/check-runs", (body) => {
-          expectIncompleteCommitListCheck(body);
-          return true;
-        })
-        .reply(200);
+        await probot.receive({ name: "pull_request", payload });
 
-      await probot.receive({ name: "pull_request", payload });
+        expect(mock.activeMocks()).toStrictEqual([]);
+      });
 
-      expect(mock.activeMocks()).toStrictEqual([]);
-    });
+      test("fails closed when the compare request fails", async () => {
+        const mock = expectCheck(
+          largePullRequestMock()
+            .get(PULL_REQUEST_COMPARE_PATH)
+            .query(COMPARE_PAGE_1)
+            .reply(
+              404,
+              { message: "Not Found" },
+              {
+                "x-github-request-id": "REQ-1",
+              }
+            ),
+          "failure",
+          (body) => {
+            expectIncompleteCommitListCheck(body);
+            expect(body.output.summary).toContain("HTTP status: 404");
+            expect(body.output.summary).toContain("GitHub request ID: REQ-1");
+          }
+        );
 
-    test("fails closed when GraphQL returns too few commits", async () => {
-      const restCommits = Array.from({ length: 250 }, (_, index) =>
-        makeCommit(compareSuccess.commits[0], index)
-      );
-      const mock = nock("https://api.github.com")
-        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
-        .reply(404)
-        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
-        .reply(404)
+        await probot.receive({ name: "pull_request", payload });
 
-        .get("/repos/robotland/test/pulls/113/commits")
-        .query({ per_page: "100" })
-        .reply(200, restCommits)
+        expect(mock.activeMocks()).toStrictEqual([]);
+      });
 
-        .post("/graphql")
-        .reply(200, {
-          data: graphQLCommits(
-            restCommits.slice(0, 100),
-            {
-              hasNextPage: false,
-              endCursor: null,
-            },
-            { totalCount: 251 }
-          ),
-        })
+      test("fails closed when the compare range stays truncated", async () => {
+        // total_commits promises 340 but every page past the third is empty.
+        const mock = expectCheck(
+          comparePages(largePullRequestMock(), allCommits.slice(0, 300), 340)
+            .get(PULL_REQUEST_COMPARE_PATH)
+            .query({ per_page: "100", page: "4" })
+            .reply(200, { ...compareSuccess, total_commits: 340, commits: [] }),
+          "failure",
+          (body) => {
+            expectIncompleteCommitListCheck(body);
+            expect(body.output.summary).toContain("300 of 340");
+          }
+        );
 
-        .post("/repos/robotland/test/check-runs", (body) => {
-          body.started_at = "2018-07-14T18:18:54.156Z";
-          body.completed_at = "2018-07-14T18:18:54.156Z";
-          expect(body).toMatchObject({
-            conclusion: "failure",
-            head_branch: "dco-test",
-            head_sha: "e76ed6025cec8879c75454a6efd6081d46de4c94",
-            name: "DCO",
-            output: {
-              title: "DCO",
-            },
-            status: "completed",
-          });
-          expect(body.output.summary).toContain(
-            "complete pull request commit list could not be retrieved"
-          );
-          expect(body.output.summary).toContain("verdict is unknown");
-          return true;
-        })
-        .reply(200);
+        await probot.receive({ name: "pull_request", payload });
 
-      await probot.receive({ name: "pull_request", payload });
+        expect(mock.activeMocks()).toStrictEqual([]);
+      });
 
-      expect(mock.activeMocks()).toStrictEqual([]);
-    });
+      test("fails closed when the compare range omits a pull request commit", async () => {
+        // A complete range that is not this pull request's: the commits REST
+        // did return must all be in it.
+        const mock = expectCheck(
+          comparePages(largePullRequestMock(), allCommits.slice(0, 300)),
+          "failure",
+          (body) => {
+            expectIncompleteCommitListCheck(body);
+            expect(body.output.summary).toContain(allCommits[300].sha);
+          }
+        );
 
-    test("fails closed when GraphQL cursor does not advance", async () => {
-      const restCommits = Array.from({ length: 250 }, (_, index) =>
-        makeCommit(compareSuccess.commits[0], index)
-      );
-      const mock = nock("https://api.github.com")
-        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
-        .reply(404)
-        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
-        .reply(404)
+        await probot.receive({ name: "pull_request", payload });
 
-        .get("/repos/robotland/test/pulls/113/commits")
-        .query({ per_page: "100" })
-        .reply(200, restCommits)
-
-        .post("/graphql")
-        .reply(200, {
-          data: graphQLCommits(
-            restCommits.slice(0, 100),
-            {
-              hasNextPage: true,
-              endCursor: "cursor-100",
-            },
-            { totalCount: 250 }
-          ),
-        })
-
-        .post("/graphql")
-        .reply(200, {
-          data: graphQLCommits(
-            restCommits.slice(100, 200),
-            {
-              hasNextPage: true,
-              endCursor: "cursor-100",
-            },
-            { totalCount: 250 }
-          ),
-        })
-
-        .post("/repos/robotland/test/check-runs", (body) => {
-          expectIncompleteCommitListCheck(body);
-          return true;
-        })
-        .reply(200);
-
-      await probot.receive({ name: "pull_request", payload });
-
-      expect(mock.activeMocks()).toStrictEqual([]);
-    });
-
-    test("fails closed when GraphQL returns duplicate commits", async () => {
-      const restCommits = Array.from({ length: 250 }, (_, index) =>
-        makeCommit(compareSuccess.commits[0], index)
-      );
-      const mock = nock("https://api.github.com")
-        .get("/repos/robotland/test/contents/.github%2Fdco.yml")
-        .reply(404)
-        .get("/repos/robotland/.github/contents/.github%2Fdco.yml")
-        .reply(404)
-
-        .get("/repos/robotland/test/pulls/113/commits")
-        .query({ per_page: "100" })
-        .reply(200, restCommits)
-
-        .post("/graphql")
-        .reply(200, {
-          data: graphQLCommits(
-            restCommits.slice(0, 100),
-            {
-              hasNextPage: true,
-              endCursor: "cursor-100",
-            },
-            { totalCount: 250 }
-          ),
-        })
-
-        .post("/graphql")
-        .reply(200, {
-          data: graphQLCommits(
-            restCommits.slice(0, 100),
-            {
-              hasNextPage: false,
-              endCursor: null,
-            },
-            { totalCount: 250 }
-          ),
-        })
-
-        .post("/repos/robotland/test/check-runs", (body) => {
-          expectIncompleteCommitListCheck(body);
-          return true;
-        })
-        .reply(200);
-
-      await probot.receive({ name: "pull_request", payload });
-
-      expect(mock.activeMocks()).toStrictEqual([]);
+        expect(mock.activeMocks()).toStrictEqual([]);
+      });
     });
 
     test("creates a neutral check when no commits are returned", async () => {
@@ -2645,7 +2052,7 @@ allowRemediationCommits:
       expect(mock.activeMocks()).toStrictEqual([]);
     });
 
-    test("F10: fails closed when the GraphQL completeness path fails", async () => {
+    test("F10: fails closed when the pull request compare range is truncated", async () => {
       const restCommits = Array.from({ length: 250 }, (_, index) =>
         makeCommit(mergeQueuePrCommits[0], index)
       );
@@ -2667,14 +2074,18 @@ allowRemediationCommits:
         .query({ per_page: "100" })
         .reply(200, restCommits)
 
-        .post("/graphql")
+        // A truncated compare range for the pull request itself must read as
+        // an incomplete pull request commit list, not as a merge group fault.
+        .get(PULL_REQUEST_COMPARE_PATH)
+        .query(COMPARE_PAGE_1)
         .reply(200, {
-          data: graphQLCommits(restCommits, {
-            hasNextPage: false,
-            endCursor: null,
-          }),
-          errors: [{ message: "GraphQL returned partial data" }],
+          ...compareSuccess,
+          total_commits: 251,
+          commits: restCommits,
         })
+        .get(PULL_REQUEST_COMPARE_PATH)
+        .query(COMPARE_PAGE_2)
+        .reply(200, { ...compareSuccess, total_commits: 251, commits: [] })
 
         .post("/repos/robotland/test/check-runs", (body) => {
           normalizeTimes(body);
