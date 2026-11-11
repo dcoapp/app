@@ -17,14 +17,14 @@
     "node": "24.x"
   },
   "dependencies": {
-    "@sentry/node": "^11.8.0",
+    "@sentry/node": "^11.10.0",
     "email-validator": "^2.0.3",
-    "probot": "^14.3.2"
+    "probot": "^14.3.7"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.15",
+    "@biomejs/biome": "2.6.4",
     "jest": "^30.5.2",
-    "nock": "^14.0.17",
+    "nock": "^15.0.6",
     "smee-client": "^5.0.0"
   },
   "standard": {
